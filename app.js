@@ -1,311 +1,55 @@
 const lessons = [
-  {
-    id: 'animals',
-    title: { de: 'Tiere', es: 'Animales' },
-    subtitle: { de: 'Entdecke deine tierischen Freunde', es: 'Descubre tus amigos animales' },
-    icon: '🦊',
-    accent: 'sage',
-    words: [
-      { id:'dog', emoji:'🐶', de:'Hund', es:'perro' },
-      { id:'cat', emoji:'🐱', de:'Katze', es:'gato' },
-      { id:'bird', emoji:'🐦', de:'Vogel', es:'pájaro' },
-      { id:'fish', emoji:'🐟', de:'Fisch', es:'pez' },
-      { id:'horse', emoji:'🐴', de:'Pferd', es:'caballo' },
-      { id:'cow', emoji:'🐮', de:'Kuh', es:'vaca' },
-      { id:'pig', emoji:'🐷', de:'Schwein', es:'cerdo' },
-      { id:'rabbit', emoji:'🐰', de:'Kaninchen', es:'conejo' }
-    ]
-  },
-  {
-    id: 'food',
-    title: { de: 'Essen', es: 'Comida' },
-    subtitle: { de: 'Leckere Wörter für jeden Tag', es: 'Palabras deliciosas para cada día' },
-    icon: '🍓',
-    accent: 'coral',
-    words: [
-      { id:'apple', emoji:'🍎', de:'Apfel', es:'manzana' },
-      { id:'banana', emoji:'🍌', de:'Banane', es:'plátano' },
-      { id:'bread', emoji:'🍞', de:'Brot', es:'pan' },
-      { id:'milk', emoji:'🥛', de:'Milch', es:'leche' },
-      { id:'cheese', emoji:'🧀', de:'Käse', es:'queso' },
-      { id:'water', emoji:'💧', de:'Wasser', es:'agua' }
-    ]
-  },
-  {
-    id: 'colors',
-    title: { de: 'Farben', es: 'Colores' },
-    subtitle: { de: 'Eine Welt voller Farben', es: 'Un mundo lleno de colores' },
-    icon: '🎨',
-    accent: 'sky',
-    words: [
-      { id:'red', emoji:'🔴', de:'Rot', es:'rojo' },
-      { id:'blue', emoji:'🔵', de:'Blau', es:'azul' },
-      { id:'yellow', emoji:'🟡', de:'Gelb', es:'amarillo' },
-      { id:'green', emoji:'🟢', de:'Grün', es:'verde' },
-      { id:'black', emoji:'⚫', de:'Schwarz', es:'negro' },
-      { id:'white', emoji:'⚪', de:'Weiß', es:'blanco' }
-    ]
-  }
+  { id:'animals', title:{de:'Tiere',es:'Animales'}, subtitle:{de:'Tierische Freunde entdecken',es:'Descubre amigos animales'}, icon:'🦊', scene:'forest', accent:'sage', words:[
+    {id:'dog',emoji:'🐶',de:'Hund',es:'perro'},{id:'cat',emoji:'🐱',de:'Katze',es:'gato'},{id:'bird',emoji:'🐦',de:'Vogel',es:'pájaro'},{id:'fish',emoji:'🐟',de:'Fisch',es:'pez'},{id:'horse',emoji:'🐴',de:'Pferd',es:'caballo'},{id:'cow',emoji:'🐮',de:'Kuh',es:'vaca'},{id:'pig',emoji:'🐷',de:'Schwein',es:'cerdo'},{id:'rabbit',emoji:'🐰',de:'Kaninchen',es:'conejo'}]},
+  { id:'food', title:{de:'Essen',es:'Comida'}, subtitle:{de:'Leckere Wörter sammeln',es:'Colecciona palabras deliciosas'}, icon:'🍓', scene:'garden', accent:'coral', words:[
+    {id:'apple',emoji:'🍎',de:'Apfel',es:'manzana'},{id:'banana',emoji:'🍌',de:'Banane',es:'plátano'},{id:'bread',emoji:'🍞',de:'Brot',es:'pan'},{id:'milk',emoji:'🥛',de:'Milch',es:'leche'},{id:'cheese',emoji:'🧀',de:'Käse',es:'queso'},{id:'water',emoji:'💧',de:'Wasser',es:'agua'},{id:'strawberry',emoji:'🍓',de:'Erdbeere',es:'fresa'},{id:'carrot',emoji:'🥕',de:'Karotte',es:'zanahoria'}]},
+  { id:'colors', title:{de:'Farben',es:'Colores'}, subtitle:{de:'Eine Welt voller Farben',es:'Un mundo lleno de colores'}, icon:'🎨', scene:'rainbow', accent:'sky', words:[
+    {id:'red',emoji:'🔴',de:'Rot',es:'rojo'},{id:'blue',emoji:'🔵',de:'Blau',es:'azul'},{id:'yellow',emoji:'🟡',de:'Gelb',es:'amarillo'},{id:'green',emoji:'🟢',de:'Grün',es:'verde'},{id:'black',emoji:'⚫',de:'Schwarz',es:'negro'},{id:'white',emoji:'⚪',de:'Weiß',es:'blanco'},{id:'orange',emoji:'🟠',de:'Orange',es:'naranja'},{id:'purple',emoji:'🟣',de:'Lila',es:'morado'}]},
+  { id:'home', title:{de:'Zuhause',es:'Casa'}, subtitle:{de:'Wörter aus deinem Alltag',es:'Palabras de cada día'}, icon:'🏡', scene:'home', accent:'gold', words:[
+    {id:'bed',emoji:'🛏️',de:'Bett',es:'cama'},{id:'chair',emoji:'🪑',de:'Stuhl',es:'silla'},{id:'lamp',emoji:'💡',de:'Lampe',es:'lámpara'},{id:'door',emoji:'🚪',de:'Tür',es:'puerta'},{id:'book',emoji:'📘',de:'Buch',es:'libro'},{id:'clock',emoji:'⏰',de:'Uhr',es:'reloj'}]}
 ];
 
-const STORAGE = 'linguaturtle-v2';
-const saved = JSON.parse(localStorage.getItem(STORAGE) || '{}');
-const state = {
-  source: saved.source || 'de',
-  screen: 'home',
-  lessonId: saved.lessonId || 'animals',
-  mode: 'learn',
-  step: 0,
-  score: 0,
-  streak: saved.streak || 1,
-  xp: saved.xp || 0,
-  shells: saved.shells || 0,
-  completed: saved.completed || {},
-  dailyProgress: saved.dailyProgress || 0,
-  order: [],
-  missed: [],
-  locked: false,
-  muted: saved.muted || false
-};
+const STORAGE='linguaturtle-v3';
+const saved=JSON.parse(localStorage.getItem(STORAGE)||'{}');
+const state={source:saved.source||'de',screen:'home',lessonId:saved.lessonId||'animals',mode:'learn',step:0,score:0,combo:0,maxCombo:0,streak:saved.streak||1,xp:saved.xp||0,shells:saved.shells||0,completed:saved.completed||{},dailyProgress:saved.dailyProgress||0,missionProgress:saved.missionProgress||0,treasureReady:saved.treasureReady||false,order:[],missed:[],locked:false,muted:saved.muted||false,calm:saved.calm||false};
+const app=document.querySelector('#app');
+const targetLang=()=>state.source==='de'?'es':'de';
+const lesson=()=>lessons.find(x=>x.id===state.lessonId)||lessons[0];
+const ui={de:{hello:'Hallo, Entdecker!',sub:'Tula wartet schon auf dein nächstes Abenteuer.',daily:'Tagesziel',xp:'Lernpunkte',streak:'Lerntage',choose:'Deine Lernwelten',continue:'Weiterlernen',explore:'Wörter entdecken',quiz:'Hör-Abenteuer',match:'Wort-Magie',speed:'Schnelle Runde',mission:'Tagesmission',treasure:'Schatzkiste',open:'Öffnen',locked:'Noch nicht bereit',hear:'Anhören',next:'Weiter',correct:'Fantastisch!',again:'Fast! Versuch es noch einmal.',finish:'Abenteuer geschafft!',home:'Zur Übersicht',restart:'Noch einmal',question:'Aufgabe',of:'von',level:'Level',settings:'Einstellungen',combo:'Combo',perfect:'Perfekte Runde!',newWorld:'Neue Welt freigeschaltet',words:'Wörter',calm:'Ruhemodus',sound:'Audio'},es:{hello:'¡Hola, explorador!',sub:'Tula ya espera tu próxima aventura.',daily:'Meta diaria',xp:'Puntos',streak:'Días',choose:'Tus mundos',continue:'Seguir aprendiendo',explore:'Descubrir palabras',quiz:'Aventura de audio',match:'Magia de palabras',speed:'Ronda rápida',mission:'Misión diaria',treasure:'Cofre',open:'Abrir',locked:'Aún no está listo',hear:'Escuchar',next:'Siguiente',correct:'¡Fantástico!',again:'¡Casi! Inténtalo otra vez.',finish:'¡Aventura completada!',home:'Vista general',restart:'Otra vez',question:'Pregunta',of:'de',level:'Nivel',settings:'Ajustes',combo:'Combo',perfect:'¡Ronda perfecta!',newWorld:'Nuevo mundo desbloqueado',words:'Palabras',calm:'Modo tranquilo',sound:'Audio'}};
+const t=k=>ui[state.source][k];
 
-const app = document.querySelector('#app');
-const targetLang = () => state.source === 'de' ? 'es' : 'de';
-const lesson = () => lessons.find(item => item.id === state.lessonId) || lessons[0];
-const ui = {
-  de: {
-    greeting: 'Hallo, Entdecker!', sub: 'Was möchtest du heute lernen?', daily:'Tagesziel', xp:'Lernpunkte', streak:'Lerntage', continue:'Weiterlernen', explore:'Wörter entdecken', quiz:'Hör-Quiz', match:'Paare finden', journey:'Dein Lernpfad', choose:'Wähle eine Lernwelt', back:'Zurück', hear:'Anhören', next:'Weiter', correct:'Großartig!', tryAgain:'Fast geschafft', finish:'Lektion geschafft!', restart:'Noch einmal', home:'Zur Übersicht', instructionLearn:'Tippe auf das Wort und höre genau zu.', instructionQuiz:'Hör gut zu und wähle das richtige Bild.', instructionMatch:'Finde das passende Wort zum Bild.', earned:'Du hast neue Muscheln gesammelt.', question:'Aufgabe', of:'von', level:'Level', settings:'Audio', done:'Geschafft'
-  },
-  es: {
-    greeting: '¡Hola, explorador!', sub: '¿Qué quieres aprender hoy?', daily:'Meta diaria', xp:'Puntos', streak:'Días', continue:'Seguir aprendiendo', explore:'Descubrir palabras', quiz:'Quiz de audio', match:'Encontrar parejas', journey:'Tu camino', choose:'Elige un mundo', back:'Atrás', hear:'Escuchar', next:'Siguiente', correct:'¡Genial!', tryAgain:'Casi', finish:'¡Lección completada!', restart:'Otra vez', home:'Vista general', instructionLearn:'Toca la palabra y escucha con atención.', instructionQuiz:'Escucha y elige la imagen correcta.', instructionMatch:'Encuentra la palabra que corresponde.', earned:'Has recogido nuevas conchas.', question:'Pregunta', of:'de', level:'Nivel', settings:'Audio', done:'Hecho'
-  }
-};
-const t = key => ui[state.source][key];
+function persist(){localStorage.setItem(STORAGE,JSON.stringify({source:state.source,lessonId:state.lessonId,streak:state.streak,xp:state.xp,shells:state.shells,completed:state.completed,dailyProgress:state.dailyProgress,missionProgress:state.missionProgress,treasureReady:state.treasureReady,muted:state.muted,calm:state.calm}))}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function level(){return Math.floor(state.xp/120)+1}
+function levelProgress(){return state.xp%120}
+function speak(value,lang=targetLang()){if(state.muted||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(value);u.lang=lang==='de'?'de-DE':'es-ES';u.rate=.76;u.pitch=1.05;speechSynthesis.speak(u)}
+function burst(kind='spark'){if(state.calm)return;const layer=document.createElement('div');layer.className='burst-layer';for(let i=0;i<14;i++){const s=document.createElement('i');s.textContent=kind==='shell'?'🐚':i%3===0?'✦':'•';s.style.setProperty('--x',`${(Math.random()-.5)*260}px`);s.style.setProperty('--y',`${-70-Math.random()*180}px`);s.style.setProperty('--r',`${Math.random()*260-130}deg`);s.style.setProperty('--d',`${Math.random()*.25}s`);layer.appendChild(s)}document.body.appendChild(layer);setTimeout(()=>layer.remove(),1200)}
+function ambient(){return `<div class="ambient ${state.calm?'calm':''}" aria-hidden="true"><i class="cloud c1"></i><i class="cloud c2"></i><i class="star a">✦</i><i class="star b">✧</i><i class="leaf l1">🍃</i><i class="leaf l2">🍃</i></div>`}
+function topbar(back=false){return `<header class="topbar"><button class="icon-button ${back?'':'invisible'}" data-action="home" aria-label="${t('home')}">←</button><div class="brand"><span class="brand-orbit">🐢</span><span>LinguaTurtle</span></div><button class="icon-button" data-action="settings">⚙️</button></header>`}
+function stats(){return `<div class="stats-row"><div class="stat-chip"><span>🔥</span><b>${state.streak}</b><small>${t('streak')}</small></div><div class="stat-chip"><span>✨</span><b>${state.xp}</b><small>${t('xp')}</small></div><div class="stat-chip"><span>🐚</span><b>${state.shells}</b><small>Muscheln</small></div></div>`}
+function levelCard(){return `<section class="level-card"><div class="level-medal">${level()}</div><div><span>${t('level')} ${level()}</span><strong>${120-levelProgress()} XP bis zum nächsten Level</strong><div class="progress-track"><i style="width:${levelProgress()/1.2}%"></i></div></div></section>`}
 
-function persist() {
-  localStorage.setItem(STORAGE, JSON.stringify({
-    source: state.source, lessonId: state.lessonId, streak: state.streak,
-    xp: state.xp, shells: state.shells, completed: state.completed,
-    dailyProgress: state.dailyProgress, muted: state.muted
-  }));
-}
+function renderHome(){state.screen='home';const current=lesson();app.innerHTML=`${ambient()}${topbar()}<section class="hero-premium"><div class="hero-copy"><span class="eyebrow">${t('level')} ${level()}</span><h1>${t('hello')}</h1><p>${t('sub')}</p><button class="hero-button" data-lesson="${current.id}"><span>▶</span><div><small>${t('continue')}</small><strong>${current.title[state.source]}</strong></div></button></div><div class="island-scene"><span class="sun"></span><span class="hill h1"></span><span class="hill h2"></span><span class="tula-hero">🐢</span><span class="butterfly">🦋</span></div></section>${stats()}${levelCard()}<section class="mission-card"><div><span class="mission-icon">🎯</span><div><small>${t('mission')}</small><strong>Schließe 3 Übungen ab</strong></div></div><b>${Math.min(3,state.missionProgress)} / 3</b><div class="progress-track wide"><i style="width:${Math.min(100,state.missionProgress/3*100)}%"></i></div></section><section class="section-title"><div><span class="eyebrow">${t('choose')}</span><h2>Wohin reist du heute?</h2></div><span class="map-pin">🗺️</span></section><div class="world-map">${lessons.map((x,i)=>{const done=state.completed[x.id]||0;return `<button class="world-node ${x.accent} ${i%2?'right':'left'}" data-lesson="${x.id}"><span class="path-dot"></span><span class="world-bubble">${x.icon}</span><div><small>${done?`${done}× geschafft`:'Neue Welt'}</small><strong>${x.title[state.source]}</strong><p>${x.subtitle[state.source]}</p><span class="world-progress"><i style="width:${Math.min(100,done*25)}%"></i></span></div><b>›</b></button>`}).join('')}</div><section class="treasure-card ${state.treasureReady?'ready':''}"><div class="chest-wrap"><span class="chest">${state.treasureReady?'🎁':'🧰'}</span><span class="shine">✦</span></div><div><small>${t('treasure')}</small><strong>${state.treasureReady?t('open'):'3 Übungen für einen Schatz'}</strong></div><button data-action="treasure" ${state.treasureReady?'':'disabled'}>${state.treasureReady?t('open'):t('locked')}</button></section><p class="footer-note">Kostenlos · ohne Anmeldung · Fortschritt bleibt auf diesem Gerät</p>`}
 
-function speak(value, lang = targetLang()) {
-  if (state.muted || !('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(value);
-  utterance.lang = lang === 'de' ? 'de-DE' : 'es-ES';
-  utterance.rate = .78;
-  utterance.pitch = 1.05;
-  speechSynthesis.speak(utterance);
-}
+function renderSettings(){state.screen='settings';app.innerHTML=`${ambient()}${topbar(true)}<section class="panel settings-panel"><span class="eyebrow">${t('settings')}</span><h1>So lernt es sich am besten</h1><button class="setting-row" data-action="mute"><span>${state.muted?'🔇':'🔊'}</span><div><strong>${t('sound')}</strong><small>Wörter und Hinweise vorlesen</small></div><b>${state.muted?'Aus':'An'}</b></button><button class="setting-row" data-action="calm"><span>🌙</span><div><strong>${t('calm')}</strong><small>Weniger Bewegung und Effekte</small></div><b>${state.calm?'An':'Aus'}</b></button><div class="language-switch"><button data-language="de" class="${state.source==='de'?'active':''}">🇩🇪 Deutsch</button><button data-language="es" class="${state.source==='es'?'active':''}">🇪🇸 Español</button></div></section>`}
 
-function shuffle(items) { return [...items].sort(() => Math.random() - .5); }
-function level() { return Math.floor(state.xp / 100) + 1; }
-function levelProgress() { return state.xp % 100; }
+function renderMenu(){state.screen='menu';const x=lesson();app.innerHTML=`${ambient()}${topbar(true)}<section class="world-hero ${x.accent}"><div class="scene-badge">${x.icon}</div><div><span class="eyebrow">Lernwelt</span><h1>${x.title[state.source]}</h1><p>${x.subtitle[state.source]}</p></div><span class="floating-token">✦</span></section><section class="mode-grid"><button class="mode-card" data-mode="learn"><span class="mode-icon mint">◉</span><div><strong>${t('explore')}</strong><small>Neue Wörter sehen, hören und merken</small></div><em>+20 XP</em></button><button class="mode-card" data-mode="quiz"><span class="mode-icon blue">♫</span><div><strong>${t('quiz')}</strong><small>Hören und das richtige Bild wählen</small></div><em>+30 XP</em></button><button class="mode-card" data-mode="match"><span class="mode-icon gold">◇</span><div><strong>${t('match')}</strong><small>Bild und Übersetzung verbinden</small></div><em>+30 XP</em></button><button class="mode-card" data-mode="speed"><span class="mode-icon coral">⚡</span><div><strong>${t('speed')}</strong><small>Kurze Runde mit Combo-Bonus</small></div><em>+40 XP</em></button></section><section class="word-shelf"><div class="section-title compact"><div><span class="eyebrow">${t('words')}</span><h2>Deine Sammlung</h2></div></div><div>${x.words.map(w=>`<button data-speak="${w.id}"><span>${w.emoji}</span><small>${w[state.source]}</small></button>`).join('')}</div></section>`}
 
-function topbar(showBack = false) {
-  return `<header class="topbar">
-    <button class="icon-button ${showBack ? '' : 'ghost-hidden'}" data-action="home" aria-label="${t('back')}">←</button>
-    <div class="brand"><span class="brand-mark">🐢</span><span>LinguaTurtle</span></div>
-    <button class="icon-button" data-action="mute" aria-label="${t('settings')}">${state.muted ? '🔇' : '🔊'}</button>
-  </header>`;
-}
+function startMode(mode){state.mode=mode;state.step=0;state.score=0;state.combo=0;state.maxCombo=0;state.missed=[];state.locked=false;state.order=mode==='learn'?[...lesson().words]:shuffle(lesson().words).slice(0,mode==='speed'?8:6);renderActivity()}
+function activityHeader(){return `${topbar(true)}<section class="activity-head"><div class="progress-track"><i style="width:${state.step/state.order.length*100}%"></i></div><div><span>${t('question')} ${Math.min(state.step+1,state.order.length)} ${t('of')} ${state.order.length}</span><strong>${state.combo>1?`⚡ ${state.combo} ${t('combo')}`:`⭐ ${state.score}`}</strong></div></section>`}
+function current(){return state.order[state.step]}
+function optionsFor(w){return shuffle([w,...shuffle(lesson().words.filter(x=>x.id!==w.id)).slice(0,3)])}
+function renderActivity(feedback=null){if(state.step>=state.order.length)return finish();state.screen='activity';state.locked=false;if(state.mode==='learn')return renderLearn(current());if(state.mode==='match')return renderMatch(current(),feedback);return renderQuiz(current(),feedback)}
+function renderLearn(w){app.innerHTML=`${ambient()}${activityHeader()}<section class="instruction"><span>👂</span><p>Tippe auf die Karte und höre genau zu.</p></section><section class="flashcard deluxe" data-action="speak"><span class="card-glow"></span><small>${lesson().title[state.source]}</small><div>${w.emoji}</div><h1>${w[targetLang()]}</h1><p>${w[state.source]}</p><button class="audio-pill" data-action="speak">🔊 ${t('hear')}</button></section><button class="primary-button" data-action="next">${t('next')} <span>→</span></button>`;setTimeout(()=>speak(w[targetLang()]),200)}
+function renderQuiz(w,feedback){app.innerHTML=`${ambient()}${activityHeader()}<section class="instruction"><span>${state.mode==='speed'?'⚡':'🎧'}</span><p>${state.mode==='speed'?'Schnell! Wähle das richtige Bild.':'Hör genau zu und finde das richtige Bild.'}</p></section><button class="audio-orb" data-action="speak"><span>🔊</span><small>${t('hear')}</small></button><div class="answer-grid">${optionsFor(w).map(x=>`<button class="answer-card ${feedback?.id===x.id?feedback.type:''}" data-word="${x.id}"><span>${x.emoji}</span><strong>${x[state.source]}</strong></button>`).join('')}</div>${feedback?feedbackPanel(feedback):''}`;if(!feedback)setTimeout(()=>speak(w[targetLang()]),180)}
+function renderMatch(w,feedback){app.innerHTML=`${ambient()}${activityHeader()}<section class="instruction"><span>🧩</span><p>Welche Übersetzung gehört zu diesem Bild?</p></section><section class="match-focus"><span class="pulse-ring"></span><b>${w.emoji}</b><small>${w[state.source]}</small></section><div class="word-options">${optionsFor(w).map(x=>`<button class="word-button ${feedback?.id===x.id?feedback.type:''}" data-word="${x.id}">${x[targetLang()]}</button>`).join('')}</div>${feedback?feedbackPanel(feedback):''}`}
+function feedbackPanel(f){return `<section class="feedback-panel ${f.type}"><span>${f.type==='correct'?'✓':'↻'}</span><div><strong>${f.type==='correct'?t('correct'):t('again')}</strong><small>${f.message}</small></div></section>`}
+function answer(id){if(state.locked)return;state.locked=true;const w=current(),ok=id===w.id;if(ok){state.score++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);burst();speak(w[targetLang()]);renderActivity({id,type:'correct',message:`${w[state.source]} = ${w[targetLang()]}`});setTimeout(()=>{state.step++;renderActivity()},760)}else{state.combo=0;state.missed.push(w.id);renderActivity({id,type:'wrong',message:`Richtig ist: ${w[targetLang()]}`});setTimeout(()=>{state.locked=false;renderActivity()},850)}}
+function next(){state.step++;state.score++;renderActivity()}
+function finish(){const base={learn:20,quiz:30,match:30,speed:40}[state.mode]||20;const bonus=state.maxCombo>=4?10:0;const earned=base+bonus;state.xp+=earned;state.shells+=state.score===state.order.length?3:2;state.dailyProgress++;state.missionProgress++;if(state.missionProgress>=3){state.treasureReady=true;state.missionProgress=3}state.completed[state.lessonId]=(state.completed[state.lessonId]||0)+1;persist();burst('shell');app.innerHTML=`${ambient()}${topbar(true)}<section class="finish-scene"><div class="victory-rays"></div><span class="trophy">🏆</span><span class="tula-win">🐢</span><h1>${t('finish')}</h1><p>${state.score===state.order.length?t('perfect'):`${state.score} von ${state.order.length} richtig`}</p><div class="reward-grid"><div><span>✨</span><b>+${earned}</b><small>XP</small></div><div><span>🐚</span><b>+${state.score===state.order.length?3:2}</b><small>Muscheln</small></div><div><span>⚡</span><b>${state.maxCombo}</b><small>Beste Combo</small></div></div><button class="primary-button" data-action="restart">${t('restart')}</button><button class="secondary-button" data-action="home">${t('home')}</button></section>`;speak(state.source==='de'?'Super gemacht!':'¡Muy bien!',state.source)}
+function openTreasure(){if(!state.treasureReady)return;state.treasureReady=false;state.missionProgress=0;state.shells+=8;state.xp+=25;persist();burst('shell');app.innerHTML=`${ambient()}${topbar(true)}<section class="treasure-open"><div class="open-chest">🎁</div><div class="treasure-glow"></div><h1>Ein besonderer Schatz!</h1><p>Du erhältst 8 Muscheln und 25 XP.</p><div class="reward-grid"><div><span>🐚</span><b>+8</b><small>Muscheln</small></div><div><span>✨</span><b>+25</b><small>XP</small></div></div><button class="primary-button" data-action="home">${t('home')}</button></section>`}
 
-function statsRow() {
-  return `<section class="stats-row">
-    <div class="stat-chip"><span>🔥</span><div><strong>${state.streak}</strong><small>${t('streak')}</small></div></div>
-    <div class="stat-chip"><span>✨</span><div><strong>${state.xp}</strong><small>${t('xp')}</small></div></div>
-    <div class="stat-chip"><span>🐚</span><div><strong>${state.shells}</strong><small>Muscheln</small></div></div>
-  </section>`;
-}
+app.addEventListener('click',e=>{const lessonId=e.target.closest('[data-lesson]')?.dataset.lesson;const mode=e.target.closest('[data-mode]')?.dataset.mode;const action=e.target.closest('[data-action]')?.dataset.action;const word=e.target.closest('[data-word]')?.dataset.word;const speakId=e.target.closest('[data-speak]')?.dataset.speak;const lang=e.target.closest('[data-language]')?.dataset.language;if(lessonId){state.lessonId=lessonId;persist();renderMenu()}if(mode)startMode(mode);if(word)answer(word);if(speakId){const w=lesson().words.find(x=>x.id===speakId);if(w)speak(w[targetLang()])}if(lang){state.source=lang;persist();renderSettings()}if(action==='home')renderHome();if(action==='settings')renderSettings();if(action==='mute'){state.muted=!state.muted;persist();renderSettings()}if(action==='calm'){state.calm=!state.calm;persist();renderSettings()}if(action==='speak')speak(current()?.[targetLang()]);if(action==='next')next();if(action==='restart')startMode(state.mode);if(action==='treasure')openTreasure()});
 
-function renderHome() {
-  state.screen = 'home';
-  const current = lesson();
-  app.innerHTML = `${topbar(false)}
-    <section class="welcome-panel">
-      <div class="welcome-copy"><span class="eyebrow">${t('level')} ${level()}</span><h1>${t('greeting')}</h1><p>${t('sub')}</p></div>
-      <div class="tula-scene"><div class="sun-orb"></div><div class="tula">🐢</div><span class="sparkle s1">✦</span><span class="sparkle s2">✧</span></div>
-    </section>
-    ${statsRow()}
-    <section class="goal-card">
-      <div class="goal-head"><div><span>${t('daily')}</span><strong>${Math.min(state.dailyProgress, 5)} / 5</strong></div><span class="goal-badge">+${Math.max(0, 5-state.dailyProgress)} Aufgaben</span></div>
-      <div class="progress-track"><div class="progress-bar" style="width:${Math.min(100,(state.dailyProgress/5)*100)}%"></div></div>
-    </section>
-    <section class="section-heading"><div><span class="eyebrow">${t('journey')}</span><h2>${t('choose')}</h2></div></section>
-    <div class="world-list">
-      ${lessons.map(item => {
-        const done = state.completed[item.id] || 0;
-        return `<button class="world-card ${item.accent}" data-lesson="${item.id}">
-          <div class="world-icon">${item.icon}</div>
-          <div class="world-copy"><strong>${item.title[state.source]}</strong><span>${item.subtitle[state.source]}</span><div class="mini-progress"><i style="width:${Math.min(100,done*25)}%"></i></div></div>
-          <div class="world-meta"><span>${done ? `${done}× ${t('done')}` : 'Neu'}</span><b>›</b></div>
-        </button>`;
-      }).join('')}
-    </div>
-    <button class="continue-card" data-lesson="${current.id}"><span class="continue-icon">▶</span><div><small>${t('continue')}</small><strong>${current.title[state.source]}</strong></div><span>→</span></button>
-    <p class="footer-note">Kostenlos · ohne Anmeldung · kindgerecht · lokal gespeichert</p>`;
-}
-
-function renderLessonMenu() {
-  state.screen = 'menu';
-  const current = lesson();
-  app.innerHTML = `${topbar(true)}
-    <section class="lesson-hero ${current.accent}">
-      <div><span class="eyebrow">Lernwelt</span><h1>${current.title[state.source]}</h1><p>${current.subtitle[state.source]}</p></div>
-      <div class="lesson-mascot">${current.icon}</div>
-    </section>
-    <section class="mode-grid">
-      <button class="mode-card" data-mode="learn"><span class="mode-icon mint">◉</span><div><strong>${t('explore')}</strong><small>${current.words.length} Wörter ansehen und anhören</small></div><b>›</b></button>
-      <button class="mode-card" data-mode="quiz"><span class="mode-icon blue">♫</span><div><strong>${t('quiz')}</strong><small>Hören, erkennen und Punkte sammeln</small></div><b>›</b></button>
-      <button class="mode-card" data-mode="match"><span class="mode-icon gold">◇</span><div><strong>${t('match')}</strong><small>Bild und Wort richtig verbinden</small></div><b>›</b></button>
-    </section>
-    <section class="word-preview"><h2>Wörter in dieser Welt</h2><div class="preview-row">${current.words.slice(0,6).map(w => `<div><span>${w.emoji}</span><small>${w[state.source]}</small></div>`).join('')}</div></section>`;
-}
-
-function startMode(mode) {
-  state.mode = mode;
-  state.step = 0;
-  state.score = 0;
-  state.missed = [];
-  state.locked = false;
-  state.order = mode === 'learn' ? [...lesson().words] : shuffle(lesson().words).slice(0, Math.min(6, lesson().words.length));
-  renderActivity();
-}
-
-function activityHeader() {
-  const total = state.order.length;
-  return `${topbar(true)}<section class="activity-head"><div class="progress-track"><div class="progress-bar" style="width:${(state.step/total)*100}%"></div></div><div><span>${t('question')} ${Math.min(state.step+1,total)} ${t('of')} ${total}</span><strong>⭐ ${state.score}</strong></div></section>`;
-}
-
-function renderActivity(feedback = null) {
-  if (state.step >= state.order.length) return finishLesson();
-  state.screen = 'activity';
-  state.locked = false;
-  const current = state.order[state.step];
-  if (state.mode === 'learn') return renderLearn(current);
-  if (state.mode === 'quiz') return renderQuiz(current, feedback);
-  return renderMatch(current, feedback);
-}
-
-function renderLearn(current) {
-  app.innerHTML = `${activityHeader()}
-    <section class="instruction"><span class="instruction-icon">👂</span><p>${t('instructionLearn')}</p></section>
-    <section class="flashcard">
-      <span class="card-kicker">${lesson().title[state.source]}</span>
-      <div class="flash-emoji">${current.emoji}</div>
-      <h1>${current[targetLang()]}</h1>
-      <p>${current[state.source]}</p>
-      <button class="speak-large" data-action="speak" aria-label="${t('hear')}">🔊 <span>${t('hear')}</span></button>
-    </section>
-    <button class="primary-button" data-action="next">${t('next')} <span>→</span></button>`;
-  setTimeout(() => speak(current[targetLang()]), 250);
-}
-
-function optionsFor(current) {
-  return shuffle([current, ...shuffle(lesson().words.filter(w => w.id !== current.id)).slice(0,3)]);
-}
-
-function renderQuiz(current, feedback) {
-  const options = optionsFor(current);
-  app.innerHTML = `${activityHeader()}
-    <section class="instruction"><span class="instruction-icon">🎧</span><p>${t('instructionQuiz')}</p></section>
-    <button class="audio-orb" data-action="speak" aria-label="${t('hear')}"><span>🔊</span><small>${t('hear')}</small></button>
-    <div class="answer-grid">${options.map(w => `<button class="answer-card ${feedback?.id===w.id ? feedback.type : ''}" data-word="${w.id}"><span>${w.emoji}</span><strong>${w[state.source]}</strong></button>`).join('')}</div>
-    ${feedback ? feedbackPanel(feedback) : ''}`;
-  if (!feedback) setTimeout(() => speak(current[targetLang()]), 250);
-}
-
-function renderMatch(current, feedback) {
-  const options = optionsFor(current);
-  app.innerHTML = `${activityHeader()}
-    <section class="instruction"><span class="instruction-icon">🧩</span><p>${t('instructionMatch')}</p></section>
-    <section class="match-focus"><span>${current.emoji}</span><small>${current[state.source]}</small></section>
-    <div class="word-options">${options.map(w => `<button class="word-button ${feedback?.id===w.id ? feedback.type : ''}" data-word="${w.id}">${w[targetLang()]}</button>`).join('')}</div>
-    ${feedback ? feedbackPanel(feedback) : ''}`;
-}
-
-function feedbackPanel(feedback) {
-  return `<section class="feedback-panel ${feedback.type}"><span>${feedback.type === 'correct' ? '✓' : '↻'}</span><div><strong>${feedback.type === 'correct' ? t('correct') : t('tryAgain')}</strong><small>${feedback.message}</small></div></section>`;
-}
-
-function answerWord(id) {
-  if (state.locked) return;
-  state.locked = true;
-  const current = state.order[state.step];
-  const correct = id === current.id;
-  if (correct) {
-    state.score += 1;
-    state.xp += 10;
-    state.dailyProgress += 1;
-    persist();
-    renderActivity({ id, type:'correct', message:`${current[state.source]} = ${current[targetLang()]}` });
-    speak(state.source === 'de' ? 'Großartig!' : '¡Genial!', state.source);
-    setTimeout(() => { state.step += 1; renderActivity(); }, 1050);
-  } else {
-    state.missed.push(current.id);
-    renderActivity({ id, type:'wrong', message:`${current[state.source]} = ${current[targetLang()]}` });
-    setTimeout(() => renderActivity(), 900);
-  }
-}
-
-function nextLearn() {
-  state.xp += 5;
-  state.dailyProgress += 1;
-  state.score += 1;
-  state.step += 1;
-  persist();
-  if (state.step < state.order.length) renderActivity(); else finishLesson();
-}
-
-function finishLesson() {
-  state.screen = 'reward';
-  const gainedShells = Math.max(1, Math.ceil(state.score / 3));
-  state.shells += gainedShells;
-  state.completed[state.lessonId] = (state.completed[state.lessonId] || 0) + 1;
-  persist();
-  const accuracy = Math.round((state.score / Math.max(1,state.order.length)) * 100);
-  app.innerHTML = `${topbar(false)}
-    <section class="reward-screen">
-      <div class="reward-halo"><span>🐢</span><i>✨</i></div>
-      <span class="eyebrow">${t('finish')}</span>
-      <h1>${accuracy >= 80 ? t('correct') : t('finish')}</h1>
-      <p>${t('earned')}</p>
-      <div class="reward-stats">
-        <div><span>⭐</span><strong>${state.score}/${state.order.length}</strong><small>Richtig</small></div>
-        <div><span>✨</span><strong>+${state.mode==='learn' ? state.score*5 : state.score*10}</strong><small>XP</small></div>
-        <div><span>🐚</span><strong>+${gainedShells}</strong><small>Muscheln</small></div>
-      </div>
-      <section class="level-card"><div><span>${t('level')} ${level()}</span><strong>${levelProgress()} / 100 XP</strong></div><div class="progress-track"><div class="progress-bar" style="width:${levelProgress()}%"></div></div></section>
-      <button class="primary-button" data-action="restart">${t('restart')} <span>↻</span></button>
-      <button class="secondary-button" data-action="home">${t('home')}</button>
-    </section>`;
-  speak(state.source === 'de' ? 'Super gemacht!' : '¡Muy bien!', state.source);
-}
-
-app.addEventListener('click', event => {
-  const action = event.target.closest('[data-action]')?.dataset.action;
-  const lessonId = event.target.closest('[data-lesson]')?.dataset.lesson;
-  const mode = event.target.closest('[data-mode]')?.dataset.mode;
-  const wordId = event.target.closest('[data-word]')?.dataset.word;
-
-  if (lessonId) { state.lessonId = lessonId; persist(); renderLessonMenu(); }
-  if (mode) startMode(mode);
-  if (wordId) answerWord(wordId);
-  if (action === 'home') renderHome();
-  if (action === 'mute') { state.muted = !state.muted; persist(); state.screen === 'home' ? renderHome() : state.screen === 'menu' ? renderLessonMenu() : renderActivity(); }
-  if (action === 'speak') { const current = state.order[state.step]; if (current) speak(current[targetLang()]); }
-  if (action === 'next') nextLearn();
-  if (action === 'restart') startMode(state.mode);
-});
-
-app.addEventListener('dblclick', event => {
-  if (event.target.closest('.brand')) {
-    state.source = state.source === 'de' ? 'es' : 'de';
-    persist();
-    renderHome();
-  }
-});
-
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 renderHome();
