@@ -1,0 +1,9 @@
+{
+  "name": "LinguaTurtle",
+  "short_name": "LinguaTurtle",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff7e8",
+  "theme_color": "#fff7e8",
+  "description": "Spielerische Sprachlern-App für Kinder"
+}
