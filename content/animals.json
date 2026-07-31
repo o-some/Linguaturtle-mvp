@@ -1,0 +1,10 @@
+[
+  {"id":"dog","emoji":"🐶","de":"Hund","es":"perro"},
+  {"id":"cat","emoji":"🐱","de":"Katze","es":"gato"},
+  {"id":"bird","emoji":"🐦","de":"Vogel","es":"pájaro"},
+  {"id":"fish","emoji":"🐟","de":"Fisch","es":"pez"},
+  {"id":"horse","emoji":"🐴","de":"Pferd","es":"caballo"},
+  {"id":"cow","emoji":"🐮","de":"Kuh","es":"vaca"},
+  {"id":"pig","emoji":"🐷","de":"Schwein","es":"cerdo"},
+  {"id":"rabbit","emoji":"🐰","de":"Kaninchen","es":"conejo"}
+]
