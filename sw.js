@@ -1,4 +1,4 @@
-const CACHE='linguaturtle-v4';
+const CACHE='linguaturtle-v5';
 const FILES=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest'];
 self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)))});
 self.addEventListener('activate',event=>{event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))),self.clients.claim()]))});
