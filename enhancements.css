@@ -1,0 +1,35 @@
+.language-switch{
+  border:1px solid rgba(10,69,105,.16);
+  background:rgba(255,255,255,.92);
+  color:#0a4569;
+  border-radius:999px;
+  padding:10px 13px;
+  font-weight:900;
+  letter-spacing:.03em;
+  box-shadow:0 8px 22px rgba(8,58,94,.12);
+  cursor:pointer;
+  white-space:nowrap;
+}
+.language-switch:active{transform:translateY(1px)}
+.mode-reward{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  margin-top:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#fff8dc,#f0d78d);
+  color:#6f4c00;
+  border:1px solid rgba(176,132,25,.24);
+  font-size:.78rem;
+  font-weight:900;
+  line-height:1;
+  box-shadow:0 4px 12px rgba(155,116,20,.1);
+}
+.mode-list button.locked .mode-reward{opacity:.72}
+@media(max-width:420px){
+  .topbar{gap:8px}
+  .language-switch{padding:9px 10px;font-size:.78rem}
+  .brand b{font-size:1rem}
+  .shell{padding:10px 12px}
+}
