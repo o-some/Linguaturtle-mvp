@@ -1,4 +1,4 @@
-const CACHE='linguaturtle-v2';
+const CACHE='linguaturtle-v3';
 const FILES=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest'];
 self.addEventListener('install',event=>{
   self.skipWaiting();
