@@ -17,16 +17,13 @@ function recoveryScreen(error) {
   document.querySelector('#retryV3')?.addEventListener('click', () => location.reload());
   document.querySelector('#repairV3')?.addEventListener('click', () => {
     localStorage.removeItem('linguaturtle-v3-preview');
+    localStorage.removeItem('linguaturtle-v3-mastery');
     location.reload();
   });
 }
 
-window.addEventListener('error', event => {
-  console.error('[V3 runtime error]', event.error || event.message);
-});
-window.addEventListener('unhandledrejection', event => {
-  console.error('[V3 rejected promise]', event.reason);
-});
+window.addEventListener('error', event => console.error('[V3 runtime error]', event.error || event.message));
+window.addEventListener('unhandledrejection', event => console.error('[V3 rejected promise]', event.reason));
 
 async function boot() {
   try {
@@ -40,6 +37,7 @@ async function boot() {
       './gamification.js',
       './island-expansion.js',
       './tula-home.js',
+      './adaptive-learning.js',
       './health-check.js'
     ];
     const results = await Promise.allSettled(optionalModules.map(path => import(path)));
