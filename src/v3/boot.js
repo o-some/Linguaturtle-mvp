@@ -39,13 +39,15 @@ async function boot() {
       './advanced-games.js',
       './gamification.js',
       './island-expansion.js',
-      './tula-home.js'
+      './tula-home.js',
+      './health-check.js'
     ];
     const results = await Promise.allSettled(optionalModules.map(path => import(path)));
     const failed = results.filter(result => result.status === 'rejected');
     if (failed.length) {
       console.warn(`[V3] ${failed.length} optionale Module konnten nicht geladen werden.`, failed);
-      document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;right:12px;top:12px;z-index:999;background:#fff4cf;color:#6b4d00;border:1px solid #e3c66b;border-radius:999px;padding:8px 12px;font:700 12px system-ui">V3-Vorschau: Teilmodule werden geprüft</div>');
+      document.body.insertAdjacentHTML('beforeend', '<button type="button" id="v3ModuleWarning" style="position:fixed;right:12px;top:12px;z-index:999;background:#fff4cf;color:#6b4d00;border:1px solid #e3c66b;border-radius:999px;padding:8px 12px;font:700 12px system-ui">V3-Vorschau: Teilmodule werden geprüft</button>');
+      document.querySelector('#v3ModuleWarning')?.addEventListener('click',()=>console.table(failed));
     }
   } catch (error) {
     console.error('[V3 boot failed]', error);
