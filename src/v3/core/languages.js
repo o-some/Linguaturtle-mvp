@@ -1,9 +1,11 @@
 import { getState, setState } from './store.js';
+import { englishUi } from '../ui-en.js';
 
 export const LANGUAGES = {
-  de: { code: 'de', flag: '🇩🇪', short: 'DE', name: 'Deutsch', nativeName: 'Deutsch', voice: 'de-DE' },
-  es: { code: 'es', flag: '🇪🇸', short: 'ES', name: 'Spanisch', nativeName: 'Español', voice: 'es-ES' },
-  el: { code: 'el', flag: '🇬🇷', short: 'EL', name: 'Griechisch', nativeName: 'Ελληνικά', voice: 'el-GR' },
+  de: { code: 'de', flag: '🇩🇪', short: 'DE', name: 'German', nativeName: 'Deutsch', voice: 'de-DE' },
+  es: { code: 'es', flag: '🇪🇸', short: 'ES', name: 'Spanish', nativeName: 'Español', voice: 'es-ES' },
+  el: { code: 'el', flag: '🇬🇷', short: 'EL', name: 'Greek', nativeName: 'Ελληνικά', voice: 'el-GR' },
+  en: { code: 'en', flag: '🇬🇧', short: 'EN', name: 'English', nativeName: 'English', voice: 'en-GB' },
 };
 
 export const LANGUAGE_CODES = Object.keys(LANGUAGES);
@@ -17,7 +19,7 @@ export function ensureLanguagePair() {
   if (state.languages?.source === source && state.languages?.target === target && state.language === source) return;
   setState(draft => {
     draft.languages = { source, target };
-    draft.language = source; // compatibility for older UI modules
+    draft.language = source;
     return draft;
   });
 }
@@ -28,8 +30,8 @@ export const uiLanguage = sourceLanguage;
 export const languageMeta = code => LANGUAGES[code] || LANGUAGES.de;
 export const languageValue = (item, code) => item?.[code] ?? item?.de ?? '';
 
-export function uiText(de, es, el = de) {
-  const values = { de, es, el };
+export function uiText(de, es, el = de, en = null) {
+  const values = { de, es, el, en: en ?? englishUi(de) };
   return values[uiLanguage()] ?? de;
 }
 
