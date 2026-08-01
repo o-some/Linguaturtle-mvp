@@ -3,6 +3,7 @@ import { getState, setState } from './store.js';
 const routes = new Map();
 let root = null;
 let notFound = null;
+let renderDepth = 0;
 
 export function createRouter(target) {
   root = target;
@@ -25,10 +26,13 @@ export function navigate(name, params = {}, options = {}) {
 
 export function renderCurrent() {
   if (!root) throw new Error('Router root is not configured');
-  const { route } = getState();
-  const renderer = routes.get(route.name) || notFound;
-  if (!renderer) throw new Error(`No renderer for route: ${route.name}`);
-  const output = renderer({ state: getState(), params: route.params, navigate });
-  root.innerHTML = typeof output === 'string' ? output : '';
-  root.dispatchEvent(new CustomEvent('linguaturtle:route-rendered', { bubbles: true, detail: route }));
+  const routeAtStart = getState().route;
+  const renderer = routes.get(routeAtStart.name) || notFound;
+  if (!renderer) throw new Error(`No renderer for route: ${routeAtStart.name}`);
+  renderDepth += 1;
+  const output = renderer({ state: getState(), params: routeAtStart.params, navigate });
+  renderDepth -= 1;
+  const routeAfterRender = getState().route;
+  if (typeof output === 'string' && routeAfterRender.name === routeAtStart.name) root.innerHTML = output;
+  if (renderDepth === 0) root.dispatchEvent(new CustomEvent('linguaturtle:route-rendered', { bubbles: true, detail: routeAfterRender }));
 }
