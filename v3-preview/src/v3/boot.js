@@ -1,0 +1,4 @@
+const app=document.querySelector('#app');
+const fail=(message)=>{app.innerHTML=`<main style="min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(180deg,#eaf8ff,#fffdf8);font-family:system-ui;color:#17354a"><section style="width:min(100%,520px);background:white;border:1px solid #cfe1ea;border-radius:28px;padding:28px;text-align:center"><div style="font-size:72px">🐢</div><h1 style="font-family:Georgia,serif;color:#073f67">Tula braucht kurz Hilfe</h1><p>${message}</p><button onclick="location.reload()" style="width:100%;border:0;border-radius:18px;padding:15px;background:#073f67;color:white;font-weight:900">Erneut starten</button></section></main>`};
+const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Der App-Start hat zu lange gedauert.')),8000));
+Promise.race([import('./app.js'),timeout]).catch(error=>{console.error(error);fail(error.message||'Startfehler')});
