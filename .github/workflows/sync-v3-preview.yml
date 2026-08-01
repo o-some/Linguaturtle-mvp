@@ -4,14 +4,13 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - '.github/workflows/sync-v3-preview.yml'
 
 permissions:
   contents: write
 
 jobs:
   build-test-publish:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
@@ -65,21 +64,11 @@ jobs:
 
       - name: JavaScript syntax checks
         run: |
-          for file in v3-preview/src/v3/*.js; do
-            node --check "$file"
-          done
+          for file in v3-preview/src/v3/*.js; do node --check "$file"; done
 
       - name: Verify required files
         run: |
-          test -f v3-preview/src/v3/app.js
-          test -f v3-preview/src/v3/boot.js
-          test -f v3-preview/src/v3/advanced-games.js
-          test -f v3-preview/src/v3/gamification.js
-          test -f v3-preview/src/v3/island-expansion.js
-          test -f v3-preview/src/v3/tula-home.js
-          test -f v3-preview/src/v3/adaptive-learning.js
-          test -f v3-preview/src/v3/speaking-stories.js
-          test -f v3-preview/src/v3/child-profiles.js
+          for file in app boot advanced-games gamification island-expansion tula-home adaptive-learning speaking-stories child-profiles health-check; do test -f "v3-preview/src/v3/$file.js"; done
           test -f v3-preview/assets/illustrations/tula-welcome.svg
           test -f v3-preview/assets/illustrations/turtle-island.svg
 
@@ -103,20 +92,23 @@ jobs:
           page.on('pageerror', e=>errors.push(String(e)));
           page.on('console', m=>{ if(m.type()==='error') errors.push(m.text()); });
           await page.goto('http://127.0.0.1:4173/v3-preview/', {waitUntil:'networkidle', timeout:30000});
-          await page.waitForTimeout(1500);
+          await page.waitForTimeout(1800);
           const body=(await page.locator('body').innerText()).trim();
           if(!body || body.includes('Turtle Island wird geladen')) throw new Error('V3 remained on loader');
           if(errors.length) throw new Error('Browser errors: '+errors.join(' | '));
-          const app=page.locator('#app');
-          if(await app.count()!==1) throw new Error('App container missing');
-          const buttons=page.locator('button');
-          if(await buttons.count()<2) throw new Error('Interactive controls missing');
-          const language=page.locator('[data-action="language"], button').filter({hasText:/DE|ES/}).first();
-          if(await language.count()) await language.click();
+          if(await page.locator('#app').count()!==1) throw new Error('App container missing');
+          if(await page.locator('button').count()<2) throw new Error('Interactive controls missing');
+          const profileModal=page.locator('.profile-modal,.modal,.sheet').first();
+          if(await profileModal.count()) {
+            const save=page.getByRole('button',{name:/speichern|starten|guardar|comenzar/i}).first();
+            if(await save.count()) await save.click();
+          }
+          const lang=page.locator('[data-action="language"]').first();
+          if(await lang.count()) await lang.click();
           const garden=page.getByText(/Garten|Jardín/).first();
           if(await garden.count()) await garden.click();
-          await page.waitForTimeout(400);
-          if((await page.locator('button').count())<2) throw new Error('Navigation to learning world failed');
+          await page.waitForTimeout(500);
+          if((await page.locator('button').count())<2) throw new Error('Learning world navigation failed');
           await browser.close();
           console.log('V3 browser smoke test passed');
           JS
