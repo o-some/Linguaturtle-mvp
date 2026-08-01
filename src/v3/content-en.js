@@ -21,26 +21,13 @@ export const englishWords = {
 };
 
 export const englishValues = {
-  'Tula sucht einen Apfel':'Tula looks for an apple',
-  'Tula geht in den Garten.':'Tula goes to the garden.',
-  'Sie sieht einen roten Apfel.':'She sees a red apple.',
-  'Tula teilt den Apfel mit einem Freund.':'Tula shares the apple with a friend.',
-  'Ein Tag am Hafen':'A day at the harbor',
-  'Tula hört die Möwen.':'Tula hears the seagulls.',
-  'Ein kleines Schiff kommt an.':'A small ship arrives.',
-  'Tula sagt freundlich Hallo.':'Tula says hello kindly.',
-  'Ein gemütlicher Abend':'A cozy evening',
-  'Tula liest ein Buch.':'Tula reads a book.',
-  'Die Lampe leuchtet warm.':'The lamp glows warmly.',
-  'Dann schläft Tula ein.':'Then Tula falls asleep.',
-  'Guten Morgen':'Good morning',
-  'Wo ist der Hafen?':'Where is the harbor?',
-  'Ich möchte eine Fahrkarte':'I would like a ticket',
-  'Wann fährt das Schiff?':'When does the ship leave?',
-  'Danke':'Thank you',
-  'Auf Wiedersehen':'Goodbye',
+  'Tula sucht einen Apfel':'Tula looks for an apple','Tula geht in den Garten.':'Tula goes to the garden.','Sie sieht einen roten Apfel.':'She sees a red apple.','Tula teilt den Apfel mit einem Freund.':'Tula shares the apple with a friend.',
+  'Ein Tag am Hafen':'A day at the harbor','Tula hört die Möwen.':'Tula hears the seagulls.','Ein kleines Schiff kommt an.':'A small ship arrives.','Tula sagt freundlich Hallo.':'Tula says hello kindly.',
+  'Ein gemütlicher Abend':'A cozy evening','Tula liest ein Buch.':'Tula reads a book.','Die Lampe leuchtet warm.':'The lamp glows warmly.','Dann schläft Tula ein.':'Then Tula falls asleep.',
+  'Guten Morgen':'Good morning','Wo ist der Hafen?':'Where is the harbor?','Ich möchte eine Fahrkarte':'I would like a ticket','Wann fährt das Schiff?':'When does the ship leave?','Danke':'Thank you','Auf Wiedersehen':'Goodbye',
   'Olivenbaum':'Olive tree','Wolkenbett':'Cloud bed','Goldene Lampe':'Golden lamp','Bücherregal':'Bookshelf','Aquarium':'Aquarium','Goldene Krone':'Golden crown',
-  'Satzwerkstatt':'Sentence Workshop','Palast-Memory':'Palace Memory','Goldene Minute':'Golden Minute','Doppel-XP':'Double XP','Hinweis':'Hint','Startsprung':'Head start'
+  'Satzwerkstatt':'Sentence Workshop','Palast-Memory':'Palace Memory','Goldene Minute':'Golden Minute','Doppel-XP':'Double XP','Hinweis':'Hint','Startsprung':'Head start',
+  'Kleine Entdecker':'Little Explorers','Vorschul-Abenteuer':'Preschool Adventure','Schulstarter':'School Starters','Sprachentdecker':'Language Explorers'
 };
 
 export const englishValue = value => englishValues[value] || value || '';
