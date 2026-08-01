@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 760" role="img" aria-labelledby="title desc">
+<title id="title">Tula Anime-Maskottchen</title><desc id="desc">Fröhliche grüne Schildkröte mit Strohhut und Rucksack</desc>
+<defs>
+ <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c9f46a"/><stop offset=".5" stop-color="#74c74d"/><stop offset="1" stop-color="#2d7f52"/></linearGradient>
+ <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#386f5c"/><stop offset="1" stop-color="#153f42"/></linearGradient>
+ <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffe7a6"/><stop offset="1" stop-color="#d7a84f"/></linearGradient>
+ <linearGradient id="hat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe596"/><stop offset="1" stop-color="#c8872d"/></linearGradient>
+ <radialGradient id="eye" cx="45%" cy="35%"><stop stop-color="#fff"/><stop offset=".12" stop-color="#fff"/><stop offset=".13" stop-color="#9a611f"/><stop offset=".55" stop-color="#47280f"/><stop offset="1" stop-color="#0b1520"/></radialGradient>
+ <filter id="shadow"><feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#002b46" flood-opacity=".3"/></filter>
+ <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="323" cy="704" rx="190" ry="35" fill="#002c46" opacity=".18"/>
+<g filter="url(#shadow)">
+ <path d="M180 344c-66-4-105 29-114 89-7 50 8 110 53 126 41 15 74-10 84-59 12-57 25-98 52-134z" fill="url(#skin)"/>
+ <path d="M117 365c-37-56-31-113-4-142 11-12 27-4 25 14-2 23 5 43 18 56 7-45 33-84 54-81 15 2 15 20 4 34-18 23-24 51-17 78 14-31 35-49 50-41 13 7 5 27-7 41-18 21-30 50-33 78z" fill="url(#skin)"/>
+ <path d="M179 474c-14-103 31-208 135-253 88-39 193-18 250 54 63 78 67 194 13 286-49 82-142 129-240 117-98-12-145-91-158-204z" fill="url(#skin)"/>
+ <path d="M399 257c88 4 157 62 170 145 15 96-38 190-127 226-8-84-17-209-43-371z" fill="url(#shell)"/>
+ <path d="M438 287l56 45-18 70-67 23-55-49 18-69zM494 419l58 37-26 67-71 9-43-56 30-60zM372 436l66-11 38 57-34 65-71-2-34-61z" fill="none" stroke="#6bb57b" stroke-width="12" opacity=".9"/>
+ <path d="M267 399c18-70 70-112 126-106 55 6 94 56 102 125 7 65-5 157-35 207-28 47-105 60-145 17-44-47-70-162-48-243z" fill="url(#belly)" stroke="#b88337" stroke-width="7"/>
+ <path d="M288 455h184M278 515h195M298 579h159" stroke="#bf8b43" stroke-width="5" opacity=".65"/>
+ <ellipse cx="277" cy="669" rx="72" ry="48" fill="url(#skin)"/><ellipse cx="470" cy="666" rx="72" ry="48" fill="url(#skin)"/>
+ <path d="M228 658c14-16 31-19 51-5M412 653c21-13 42-10 57 8" fill="none" stroke="#dff995" stroke-width="9" stroke-linecap="round"/>
+ <path d="M190 263c14-79 83-137 169-137 92 0 165 67 170 158 4 72-32 132-91 158-70 31-161 10-207-47-30-37-49-82-41-132z" fill="url(#skin)"/>
+ <ellipse cx="289" cy="282" rx="54" ry="70" fill="url(#eye)"/><ellipse cx="416" cy="282" rx="54" ry="70" fill="url(#eye)"/>
+ <ellipse cx="269" cy="255" rx="16" ry="24" fill="#fff"/><ellipse cx="396" cy="255" rx="16" ry="24" fill="#fff"/>
+ <circle cx="302" cy="308" r="8" fill="#fff" opacity=".8"/><circle cx="429" cy="308" r="8" fill="#fff" opacity=".8"/>
+ <path d="M303 359c31 28 74 29 107 0-4 48-29 75-54 75-27 0-50-28-53-75z" fill="#7d2a2c" stroke="#56302a" stroke-width="5"/>
+ <path d="M319 399c25-19 52-19 76 0-20 21-57 22-76 0z" fill="#ff8588"/>
+ <ellipse cx="229" cy="344" rx="26" ry="14" fill="#ff9b84" opacity=".55"/><ellipse cx="476" cy="344" rx="26" ry="14" fill="#ff9b84" opacity=".55"/>
+ <path d="M270 205c20-18 45-25 71-22M387 184c28-4 54 6 71 27" stroke="#2f7047" stroke-width="12" stroke-linecap="round"/>
+ <path d="M161 187c55-95 257-125 382-21 26 22 22 44-7 48-126 18-243 16-353 0-29-4-36-11-22-27z" fill="url(#hat)" stroke="#aa6e23" stroke-width="7"/>
+ <path d="M250 106c45-52 154-62 224-11 29 21 45 54 46 88-92-21-203-21-297 0 0-29 9-55 27-77z" fill="url(#hat)" stroke="#aa6e23" stroke-width="7"/>
+ <path d="M223 174c95-24 201-23 298 0" stroke="#0c5c90" stroke-width="20"/>
+ <path d="M236 139c-28-29-42-52-24-65 17-12 35 9 49 30 4-31 14-54 34-51 18 3 17 31 12 57 22-20 43-31 56-16 14 16-7 40-30 55-29-7-64-10-97-10z" fill="#fff5d6" stroke="#e3b85f" stroke-width="5"/>
+ <path d="M306 466c-21 17-38 43-49 73" stroke="#0f5f8c" stroke-width="24" stroke-linecap="round"/><path d="M444 453c26 18 45 45 55 77" stroke="#0f5f8c" stroke-width="24" stroke-linecap="round"/>
+ <circle cx="375" cy="461" r="32" fill="#56d8f0" stroke="#0f5f8c" stroke-width="8" filter="url(#glow)"/><path d="M374 445c-18 14-17 31 0 36 18 5 28-11 16-21-11-9-24-3-22 10" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+ <circle cx="229" cy="317" r="8" fill="#2a814f"/><circle cx="470" cy="310" r="7" fill="#2a814f"/><circle cx="210" cy="279" r="6" fill="#2a814f"/><circle cx="493" cy="275" r="6" fill="#2a814f"/>
+</g>
+<g fill="#fff6b7" filter="url(#glow)"><circle cx="96" cy="151" r="5"/><circle cx="562" cy="130" r="6"/><circle cx="555" cy="588" r="5"/><path d="M83 259l6 14 14 6-14 6-6 14-6-14-14-6 14-6z"/><path d="M575 247l5 11 11 5-11 5-5 11-5-11-11-5 11-5z"/></g>
+</svg>
