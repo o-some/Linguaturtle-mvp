@@ -1,5 +1,5 @@
 const app = document.querySelector('#app');
-const BUILD='v3.0.3-qa';
+const BUILD='v3.0.4-navigation';
 const params=new URLSearchParams(location.search);
 
 function recoveryScreen(error) {
@@ -45,6 +45,7 @@ async function boot() {
     await load('./app.js');
 
     const optionalModules = [
+      './navigation-architecture.js',
       './child-profiles.js',
       './advanced-games.js',
       './gamification.js',
