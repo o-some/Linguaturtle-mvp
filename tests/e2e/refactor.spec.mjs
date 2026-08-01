@@ -23,6 +23,13 @@ async function openLanguageSelector(page) {
   await expect(page.locator('.language-pair-summary')).toBeVisible();
 }
 
+async function setPair(page, source, target) {
+  await openLanguageSelector(page);
+  await page.locator(`[data-action="select-source-language"][data-language="${source}"]`).click();
+  await page.locator(`[data-action="select-target-language"][data-language="${target}"]`).click();
+  await page.locator('[data-action="confirm-language-pair"]').click();
+}
+
 test.beforeEach(async ({ page }) => {
   await seed(page);
   await page.goto(preview);
@@ -85,33 +92,61 @@ test('memory and speed mode start from learning world', async ({ page }) => {
 });
 
 test('Deutsch to Greek changes learning content and persists the pair', async ({ page }) => {
-  await openLanguageSelector(page);
-  await page.locator('[data-action="select-target-language"][data-language="el"]').click();
-  await page.locator('[data-action="confirm-language-pair"]').click();
+  await setPair(page, 'de', 'el');
   await expect(page.locator('.language-pair-chip')).toContainText('DE → 🇬🇷 EL');
-
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
   const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
   await expect(apple).toContainText('μήλο');
   await expect(apple).toContainText('Apfel');
-
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).languages);
   expect(stored).toEqual({ source: 'de', target: 'el' });
 });
 
 test('Greek to Spanish updates the full interface and learning direction', async ({ page }) => {
-  await openLanguageSelector(page);
-  await page.locator('[data-action="select-source-language"][data-language="el"]').click();
-  await page.locator('[data-action="select-target-language"][data-language="es"]').click();
-  await page.locator('[data-action="confirm-language-pair"]').click();
-
+  await setPair(page, 'el', 'es');
   await expect(page.getByText('Έλα μαζί μας στο νησί!')).toBeVisible();
   await expect(page.locator('.language-pair-chip')).toContainText('EL → 🇪🇸 ES');
-
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
   const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
   await expect(apple).toContainText('manzana');
   await expect(apple).toContainText('μήλο');
+});
+
+test('Deutsch to English shows English words and stores the pair', async ({ page }) => {
+  await setPair(page, 'de', 'en');
+  await expect(page.locator('.language-pair-chip')).toContainText('DE → 🇬🇧 EN');
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.locator('[data-route="explore"]').click();
+  const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
+  await expect(apple).toContainText('apple');
+  await expect(apple).toContainText('Apfel');
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).languages);
+  expect(stored).toEqual({ source: 'de', target: 'en' });
+});
+
+test('English to Greek translates interface, places and learning direction', async ({ page }) => {
+  await setPair(page, 'en', 'el');
+  await expect(page.getByText('Come to the island!')).toBeVisible();
+  await expect(page.locator('.language-pair-chip')).toContainText('EN → 🇬🇷 EL');
+  await page.getByRole('button', { name: /Explore the island/i }).click();
+  await expect(page.getByRole('heading', { name: /Where would you like to go/i })).toBeVisible();
+  await expect(page.getByText('Garden', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Fruit, vegetables and nature')).toBeVisible();
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.locator('[data-route="explore"]').click();
+  const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
+  await expect(apple).toContainText('μήλο');
+  await expect(apple).toContainText('apple');
+});
+
+test('English sentence workshop renders English sentence tiles without crashing', async ({ page }) => {
+  await setPair(page, 'de', 'en');
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.locator('[data-route="sentence"]').click();
+  await expect(page.getByRole('heading', { name: 'Baue den Satz' })).toBeVisible();
+  const sentenceTiles = page.locator('.sentence-bank .sentence-tile');
+  await expect(sentenceTiles.first()).toBeVisible();
+  expect(await sentenceTiles.count()).toBeGreaterThan(0);
 });

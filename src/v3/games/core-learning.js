@@ -9,12 +9,12 @@ const tr=(de,es,el=de)=>uiText(de,es,el);
 const collection=()=>collections.find(item=>item.id===getState().session.collectionId)||collections[0];
 
 const sentences=[
-  {de:['Der','Hund','rennt','.'],es:['El','perro','corre','.'],el:['Ο','σκύλος','τρέχει','.']},
-  {de:['Die','Katze','schläft','.'],es:['El','gato','duerme','.'],el:['Η','γάτα','κοιμάται','.']},
-  {de:['Ich','esse','einen','Apfel','.'],es:['Yo','como','una','manzana','.'],el:['Εγώ','τρώω','ένα','μήλο','.']},
-  {de:['Das','Wasser','ist','kalt','.'],es:['El','agua','está','fría','.'],el:['Το','νερό','είναι','κρύο','.']},
-  {de:['Wo','ist','mein','Buch','?'],es:['¿','Dónde','está','mi','libro','?'],el:['Πού','είναι','το','βιβλίο','μου',';']},
-  {de:['Die','Blume','ist','gelb','.'],es:['La','flor','es','amarilla','.'],el:['Το','λουλούδι','είναι','κίτρινο','.']}
+  {de:['Der','Hund','rennt','.'],es:['El','perro','corre','.'],el:['Ο','σκύλος','τρέχει','.'],en:['The','dog','runs','.']},
+  {de:['Die','Katze','schläft','.'],es:['El','gato','duerme','.'],el:['Η','γάτα','κοιμάται','.'],en:['The','cat','sleeps','.']},
+  {de:['Ich','esse','einen','Apfel','.'],es:['Yo','como','una','manzana','.'],el:['Εγώ','τρώω','ένα','μήλο','.'],en:['I','eat','an','apple','.']},
+  {de:['Das','Wasser','ist','kalt','.'],es:['El','agua','está','fría','.'],el:['Το','νερό','είναι','κρύο','.'],en:['The','water','is','cold','.']},
+  {de:['Wo','ist','mein','Buch','?'],es:['¿','Dónde','está','mi','libro','?'],el:['Πού','είναι','το','βιβλίο','μου',';'],en:['Where','is','my','book','?']},
+  {de:['Die','Blume','ist','gelb','.'],es:['La','flor','es','amarilla','.'],el:['Το','λουλούδι','είναι','κίτρινο','.'],en:['The','flower','is','yellow','.']}
 ];
 
 const game={listening:{items:[],step:0,score:0,current:null},sentence:{rounds:[],step:0,score:0,bank:[],built:[]},lastReward:null,lastTitle:''};
