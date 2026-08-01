@@ -19,3 +19,28 @@ export const englishWords = {
   'travel-car':'car','travel-bus':'bus','travel-train':'train','travel-ship':'ship','travel-airplane':'airplane','travel-bicycle':'bicycle','travel-station':'station','travel-airport':'airport','travel-ticket':'ticket','travel-suitcase':'suitcase','travel-hotel':'hotel','travel-street':'street','travel-bridge':'bridge','travel-city':'city','travel-village':'village','travel-map':'map',
   'actions-run':'run','actions-walk':'walk','actions-sleep':'sleep','actions-eat':'eat','actions-drink':'drink','actions-read':'read','actions-write':'write','actions-sing':'sing','actions-dance':'dance','actions-paint':'paint','actions-play':'play','actions-listen':'listen','actions-speak':'speak','actions-open':'open','actions-close':'close','actions-help':'help','actions-laugh':'laugh','actions-learn':'learn'
 };
+
+export const englishValues = {
+  'Tula sucht einen Apfel':'Tula looks for an apple',
+  'Tula geht in den Garten.':'Tula goes to the garden.',
+  'Sie sieht einen roten Apfel.':'She sees a red apple.',
+  'Tula teilt den Apfel mit einem Freund.':'Tula shares the apple with a friend.',
+  'Ein Tag am Hafen':'A day at the harbor',
+  'Tula hört die Möwen.':'Tula hears the seagulls.',
+  'Ein kleines Schiff kommt an.':'A small ship arrives.',
+  'Tula sagt freundlich Hallo.':'Tula says hello kindly.',
+  'Ein gemütlicher Abend':'A cozy evening',
+  'Tula liest ein Buch.':'Tula reads a book.',
+  'Die Lampe leuchtet warm.':'The lamp glows warmly.',
+  'Dann schläft Tula ein.':'Then Tula falls asleep.',
+  'Guten Morgen':'Good morning',
+  'Wo ist der Hafen?':'Where is the harbor?',
+  'Ich möchte eine Fahrkarte':'I would like a ticket',
+  'Wann fährt das Schiff?':'When does the ship leave?',
+  'Danke':'Thank you',
+  'Auf Wiedersehen':'Goodbye',
+  'Olivenbaum':'Olive tree','Wolkenbett':'Cloud bed','Goldene Lampe':'Golden lamp','Bücherregal':'Bookshelf','Aquarium':'Aquarium','Goldene Krone':'Golden crown',
+  'Satzwerkstatt':'Sentence Workshop','Palast-Memory':'Palace Memory','Goldene Minute':'Golden Minute','Doppel-XP':'Double XP','Hinweis':'Hint','Startsprung':'Head start'
+};
+
+export const englishValue = value => englishValues[value] || value || '';
