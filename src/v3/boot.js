@@ -1,5 +1,5 @@
 const app = document.querySelector('#app');
-const BUILD='v3.0.1-buttons';
+const BUILD='v3.0.2-qa';
 
 function recoveryScreen(error) {
   const message = error instanceof Error ? error.message : String(error || 'Unbekannter Fehler');
@@ -44,7 +44,8 @@ async function boot() {
       './tula-home.js',
       './adaptive-learning.js',
       './speaking-stories.js',
-      './health-check.js'
+      './health-check.js',
+      './qa-smoke.js'
     ];
     const results = await Promise.allSettled(optionalModules.map(load));
     const failed = results.filter(result => result.status === 'rejected');
