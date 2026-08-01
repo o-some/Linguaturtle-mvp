@@ -1,4 +1,4 @@
-export const STORAGE_VERSION = 1;
+export const STORAGE_VERSION = 2;
 export const STORAGE_KEY = 'linguaturtle-v3-core';
 
 const safeParse = value => {
@@ -20,13 +20,21 @@ export function writeStorage(state) {
 }
 
 export function migrateStorage(input, fallback) {
+  const legacySource = ['de','es','el'].includes(input.language) ? input.language : fallback.languages.source;
+  const source = ['de','es','el'].includes(input.languages?.source) ? input.languages.source : legacySource;
+  let target = ['de','es','el'].includes(input.languages?.target) ? input.languages.target : (source === 'de' ? 'es' : 'de');
+  if (source === target) target = ['de','es','el'].find(code => code !== source) || 'es';
+
   const merged = {
     ...structuredClone(fallback),
     ...input,
+    language: source,
+    languages: { source, target },
     profile: { ...fallback.profile, ...(input.profile || {}) },
     progress: { ...fallback.progress, ...(input.progress || {}) },
     settings: { ...fallback.settings, ...(input.settings || {}) },
     inventory: { ...fallback.inventory, ...(input.inventory || {}) },
+    session: { ...fallback.session, ...(input.session || {}) },
   };
   merged.storageVersion = STORAGE_VERSION;
   return merged;
