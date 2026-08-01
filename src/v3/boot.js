@@ -1,5 +1,6 @@
 const app = document.querySelector('#app');
-const BUILD='v3.0.2-qa';
+const BUILD='v3.0.3-qa';
+const params=new URLSearchParams(location.search);
 
 function recoveryScreen(error) {
   const message = error instanceof Error ? error.message : String(error || 'Unbekannter Fehler');
@@ -29,6 +30,13 @@ window.addEventListener('unhandledrejection', event => console.error('[V3 reject
 
 async function load(path){return import(`${path}?build=${encodeURIComponent(BUILD)}`)}
 
+function showQaLauncher(){
+  if(params.get('qa')!=='1') return;
+  document.querySelector('#qaLauncher')?.remove();
+  document.body.insertAdjacentHTML('beforeend',`<button id="qaLauncher" style="position:fixed;right:14px;top:max(14px,env(safe-area-inset-top));z-index:99998;border:0;border-radius:999px;background:#073f67;color:white;padding:12px 16px;font:800 13px system-ui;box-shadow:0 12px 28px rgba(7,63,103,.28)">QA-Test starten</button>`);
+  document.querySelector('#qaLauncher')?.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('linguaturtle:run-qa')));
+}
+
 async function boot() {
   try {
     if (!app) throw new Error('App-Container fehlt.');
@@ -54,6 +62,7 @@ async function boot() {
       document.body.insertAdjacentHTML('beforeend', '<button type="button" id="v3ModuleWarning" style="position:fixed;right:12px;top:12px;z-index:999;background:#fff4cf;color:#6b4d00;border:1px solid #e3c66b;border-radius:999px;padding:8px 12px;font:700 12px system-ui">V3: Teilmodule werden geprüft</button>');
       document.querySelector('#v3ModuleWarning')?.addEventListener('click',()=>console.table(failed));
     }
+    showQaLauncher();
   } catch (error) {
     console.error('[V3 boot failed]', error);
     recoveryScreen(error);
