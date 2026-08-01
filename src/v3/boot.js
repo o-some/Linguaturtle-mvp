@@ -18,6 +18,7 @@ function recoveryScreen(error) {
   document.querySelector('#repairV3')?.addEventListener('click', () => {
     localStorage.removeItem('linguaturtle-v3-preview');
     localStorage.removeItem('linguaturtle-v3-mastery');
+    localStorage.removeItem('linguaturtle-v3-child-profile');
     location.reload();
   });
 }
@@ -33,6 +34,7 @@ async function boot() {
     await import('./app.js');
 
     const optionalModules = [
+      './child-profiles.js',
       './advanced-games.js',
       './gamification.js',
       './island-expansion.js',
