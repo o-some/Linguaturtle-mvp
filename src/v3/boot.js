@@ -38,6 +38,7 @@ async function boot() {
       './island-expansion.js',
       './tula-home.js',
       './adaptive-learning.js',
+      './speaking-stories.js',
       './health-check.js'
     ];
     const results = await Promise.allSettled(optionalModules.map(path => import(path)));
