@@ -9,6 +9,8 @@ const profiles={
 };
 
 let profile=load();
+let decorateQueued=false;
+
 function load(){try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')}catch{return null}}
 function save(next){profile={...profile,...next,updatedAt:Date.now()};localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));applyProfile();window.dispatchEvent(new CustomEvent('linguaturtle:profile',{detail:profile}))}
 function t(de,es){const base=readBase();return base.lang==='es'?es:de}
@@ -17,6 +19,7 @@ function config(){const mode=profiles[profile?.stage]||profiles.preschool;return
 function applyProfile(){const cfg=config();document.documentElement.dataset.childStage=cfg.id;document.documentElement.dataset.childSupport=cfg.support;document.documentElement.style.setProperty('--child-scale',cfg.id==='toddler'?'1.08':cfg.id==='preschool'?'1.03':'1');window.LinguaTurtleProfile={get:()=>profile,getConfig:config,profiles,open:openWizard};}
 
 function card(stage){const p=profiles[stage];return `<button class="age-card ${profile?.stage===stage?'active':''}" data-profile-stage="${stage}"><span>${p.icon}</span><strong>${p.de}</strong><small>${p.age} Jahre</small><em>${p.id==='toddler'?'2 Antworten · viel Audio':p.id==='preschool'?'3 Antworten · kurze Sätze':p.id==='school'?'4 Antworten · Lesen & Hören':'längere Sätze · mehr Tempo'}</em></button>`}
+
 function openWizard(){
   const current=profile||{name:'',stage:'preschool',goal:'balanced',support:'normal'};
   document.querySelector('#childProfileModal')?.remove();
@@ -24,19 +27,45 @@ function openWizard(){
   const draft={...current};
   const modal=document.querySelector('#childProfileModal');
   const refresh=()=>{const p=profiles[draft.stage];document.querySelectorAll('[data-profile-stage]').forEach(x=>x.classList.toggle('active',x.dataset.profileStage===draft.stage));document.querySelectorAll('[data-profile-goal]').forEach(x=>x.classList.toggle('active',x.dataset.profileGoal===draft.goal));document.querySelectorAll('[data-profile-support]').forEach(x=>x.classList.toggle('active',x.dataset.profileSupport===draft.support));modal.querySelector('#profilePreview').innerHTML=`<span>${p.icon}</span><div><strong>${p.de}</strong><small>${p.answers} ${t('Antwortmöglichkeiten','opciones')} · ${p.wordLimit} ${t('Wörter pro Lernpool','palabras por grupo')} · ${p.sentenceMax} ${t('Wörter pro Satz','palabras por frase')}</small></div>`};
-  modal.addEventListener('click',e=>{const stage=e.target.closest('[data-profile-stage]')?.dataset.profileStage;const goal=e.target.closest('[data-profile-goal]')?.dataset.profileGoal;const support=e.target.closest('[data-profile-support]')?.dataset.profileSupport;if(stage)draft.stage=stage;if(goal)draft.goal=goal;if(support)draft.support=support;if(stage||goal||support)refresh();if(e.target.closest('[data-profile-close]'))modal.remove();if(e.target.closest('[data-profile-save]')){draft.name=modal.querySelector('#profileName').value.trim()||t('Kind','Niño');save(draft);modal.remove();decorate()}});refresh();
+  modal.addEventListener('click',e=>{const stage=e.target.closest('[data-profile-stage]')?.dataset.profileStage;const goal=e.target.closest('[data-profile-goal]')?.dataset.profileGoal;const support=e.target.closest('[data-profile-support]')?.dataset.profileSupport;if(stage)draft.stage=stage;if(goal)draft.goal=goal;if(support)draft.support=support;if(stage||goal||support)refresh();if(e.target.closest('[data-profile-close]'))modal.remove();if(e.target.closest('[data-profile-save]')){draft.name=modal.querySelector('#profileName').value.trim()||t('Kind','Niño');save(draft);modal.remove();scheduleDecorate()}});refresh();
 }
+
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+
 function decorate(){
-  document.querySelectorAll('.child-profile-chip').forEach(x=>x.remove());
   const top=document.querySelector('.v3-top');
-  if(top){const cfg=config();const button=document.createElement('button');button.className='child-profile-chip';button.innerHTML=`<span>${cfg.icon}</span><small>${escapeHtml(cfg.name)}</small>`;button.addEventListener('click',openWizard);top.insertAdjacentElement('afterend',button)}
+  const existing=document.querySelector('.child-profile-chip');
+  if(top&&!existing){
+    const cfg=config();
+    const button=document.createElement('button');
+    button.className='child-profile-chip';
+    button.innerHTML=`<span>${cfg.icon}</span><small>${escapeHtml(cfg.name)}</small>`;
+    button.addEventListener('click',openWizard);
+    top.insertAdjacentElement('afterend',button);
+  }
   const profileHero=document.querySelector('.profile-hero-v3');
-  if(profileHero&&!profileHero.querySelector('.profile-settings-link')){const b=document.createElement('button');b.className='profile-settings-link';b.textContent=t('Kinderprofil anpassen','Ajustar perfil infantil');b.addEventListener('click',openWizard);profileHero.appendChild(b)}
+  if(profileHero&&!profileHero.querySelector('.profile-settings-link')){
+    const b=document.createElement('button');
+    b.className='profile-settings-link';
+    b.textContent=t('Kinderprofil anpassen','Ajustar perfil infantil');
+    b.addEventListener('click',openWizard);
+    profileHero.appendChild(b);
+  }
+}
+
+function scheduleDecorate(){
+  if(decorateQueued)return;
+  decorateQueued=true;
+  requestAnimationFrame(()=>{decorateQueued=false;decorate()});
 }
 
 applyProfile();
-const observer=new MutationObserver(()=>decorate());
+const observer=new MutationObserver(mutations=>{
+  const relevant=mutations.some(m=>[...m.addedNodes].some(node=>node.nodeType===1&&(
+    node.matches?.('.v3-top,.profile-hero-v3,.v3-shell')||node.querySelector?.('.v3-top,.profile-hero-v3')
+  )));
+  if(relevant)scheduleDecorate();
+});
 if(app)observer.observe(app,{childList:true,subtree:true});
-decorate();
+scheduleDecorate();
 if(!profile)setTimeout(openWizard,700);
