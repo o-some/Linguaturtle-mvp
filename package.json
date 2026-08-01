@@ -1,0 +1,14 @@
+{
+  "name": "linguaturtle-mvp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:syntax": "find src/v3/core src/v3/games src/v3/screens -name '*.js' -print0 | xargs -0 -n1 node --check && node --check src/v3/refactor-app.js",
+    "check:architecture": "node tests/architecture-check.mjs",
+    "test:e2e": "playwright test",
+    "test": "npm run check:syntax && npm run check:architecture && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0"
+  }
+}
