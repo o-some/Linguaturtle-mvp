@@ -1,10 +1,11 @@
 import { getState, setState } from './store.js';
 import { englishUi } from '../ui-en.js';
+import { englishValue } from '../content-en.js';
 
 export const LANGUAGES = {
-  de: { code: 'de', flag: '🇩🇪', short: 'DE', name: 'German', nativeName: 'Deutsch', voice: 'de-DE' },
-  es: { code: 'es', flag: '🇪🇸', short: 'ES', name: 'Spanish', nativeName: 'Español', voice: 'es-ES' },
-  el: { code: 'el', flag: '🇬🇷', short: 'EL', name: 'Greek', nativeName: 'Ελληνικά', voice: 'el-GR' },
+  de: { code: 'de', flag: '🇩🇪', short: 'DE', name: 'Deutsch', nativeName: 'Deutsch', voice: 'de-DE' },
+  es: { code: 'es', flag: '🇪🇸', short: 'ES', name: 'Español', nativeName: 'Español', voice: 'es-ES' },
+  el: { code: 'el', flag: '🇬🇷', short: 'EL', name: 'Ελληνικά', nativeName: 'Ελληνικά', voice: 'el-GR' },
   en: { code: 'en', flag: '🇬🇧', short: 'EN', name: 'English', nativeName: 'English', voice: 'en-GB' },
 };
 
@@ -28,7 +29,12 @@ export const sourceLanguage = () => getState().languages?.source || getState().l
 export const targetLanguage = () => getState().languages?.target || (sourceLanguage() === 'de' ? 'es' : 'de');
 export const uiLanguage = sourceLanguage;
 export const languageMeta = code => LANGUAGES[code] || LANGUAGES.de;
-export const languageValue = (item, code) => item?.[code] ?? item?.de ?? '';
+export const languageValue = (item, code) => {
+  if (!item) return '';
+  if (item[code] != null) return item[code];
+  if (code === 'en') return englishValue(item.de);
+  return item.de ?? '';
+};
 
 export function uiText(de, es, el = de, en = null) {
   const values = { de, es, el, en: en ?? englishUi(de) };
