@@ -1,9 +1,10 @@
 import { readStorage, writeStorage } from './storage.js';
 
 export const initialState = {
-  storageVersion: 1,
+  storageVersion: 2,
   route: { name: 'home', params: {} },
   language: 'de',
+  languages: { source: 'de', target: 'es' },
   profile: { id: 'default', name: 'Kind', stage: 'preschool', goal: 'balanced', support: 'normal' },
   progress: { xp: 0, shells: 0, streak: 0, daily: 0, learned: {}, mastery: {} },
   settings: { sound: true, motion: true, music: false },
