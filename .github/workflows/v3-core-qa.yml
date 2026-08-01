@@ -3,6 +3,7 @@ name: V3 Core QA
 on:
   push:
     branches:
+      - main
       - refactor/v3-core
   pull_request:
     branches:
