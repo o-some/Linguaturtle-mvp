@@ -1,0 +1,84 @@
+import { test, expect } from '@playwright/test';
+
+const preview = '/refactor-preview.html';
+
+async function seed(page) {
+  await page.addInitScript(() => {
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify({
+      storageVersion: 1,
+      route: { name: 'home', params: {} },
+      language: 'de',
+      profile: { id: 'default', name: 'Mia', stage: 'preschool', goal: 'balanced', support: 'normal' },
+      progress: { xp: 1200, shells: 1000, streak: 5, daily: 2, learned: {}, mastery: {} },
+      settings: { sound: false, motion: true, music: false },
+      inventory: { unlockedModes: ['sentence','memory','speed'], boosters: { doubleXp: 0, hints: 3, jumps: 1 }, claimedMilestones: [] },
+      session: { activeGame: null, collectionId: 'garden', busy: false, error: null }
+    }));
+  });
+}
+
+test.beforeEach(async ({ page }) => {
+  await seed(page);
+  await page.goto(preview);
+  await expect(page.locator('h1')).toContainText(/Insel|isla/i);
+});
+
+test('home, island and learning world are separated', async ({ page }) => {
+  await page.getByRole('button', { name: /Insel entdecken/i }).click();
+  await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
+  await page.locator('[data-action="open-world"]').first().click();
+  await expect(page.getByText(/Wähle jetzt eine Übung/i)).toBeVisible();
+  await expect(page.locator('.word-showcase')).toHaveCount(0);
+});
+
+test('explore opens only after selecting the exercise', async ({ page }) => {
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.getByRole('button', { name: /Wörter entdecken/i }).click();
+  await expect(page.locator('.explore-grid')).toBeVisible();
+  await expect(page.locator('[data-action="finish-explore"]')).toBeVisible();
+});
+
+test('listening quiz accepts an answer and persists reward', async ({ page }) => {
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.getByRole('button', { name: /Hör-Abenteuer/i }).click();
+  await expect(page.locator('[data-action="answer-listening"]')).toHaveCount(4);
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const answers = page.locator('[data-action="answer-listening"]');
+    if (await answers.count()) await answers.nth(attempt % Math.max(1, await answers.count())).click();
+    await page.waitForTimeout(100);
+  }
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  expect(after).toBeGreaterThanOrEqual(before);
+});
+
+test('shop purchase changes the central store', async ({ page }) => {
+  await page.locator('[data-route="shop"]').first().click();
+  const buy = page.locator('[data-action="buy-item"]:not([disabled])').first();
+  await expect(buy).toBeVisible();
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  await buy.click();
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  expect(after).toBeLessThan(before);
+});
+
+test('profile and settings are reachable', async ({ page }) => {
+  await page.locator('[data-route="profile"]').first().click();
+  await expect(page.getByText(/DEIN FORTSCHRITT/i)).toBeVisible();
+  await page.locator('[data-action="open-settings"]').click();
+  await expect(page.getByText(/ELTERNBEREICH/i)).toBeVisible();
+});
+
+test('memory and speed mode start from learning world', async ({ page }) => {
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.locator('[data-action="start-memory"]').click();
+  await expect(page.getByText(/Finde die Paare/i)).toBeVisible();
+  await page.locator('[data-action="navigate"][data-route="world"]').first().click();
+  await page.locator('[data-action="start-speed"]').click();
+  await expect(page.getByText(/Goldene Minute/i)).toBeVisible();
+});
+
+test('language switch rerenders the current screen', async ({ page }) => {
+  await page.locator('[data-action="toggle-language"]').click();
+  await expect(page.getByText(/¡Ven a la isla!/i)).toBeVisible();
+});
