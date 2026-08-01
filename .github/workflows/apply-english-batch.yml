@@ -1,0 +1,36 @@
+name: Apply English Batch
+
+on:
+  push:
+    branches: [feature/english-main-batch]
+    paths:
+      - 'scripts/apply-english-batch.mjs'
+      - '.github/workflows/apply-english-batch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, '[english-batch-applied]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/english-main-batch
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/apply-english-batch.mjs
+      - name: Commit generated English integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/v3/refactor-app.js src/v3/games/core-learning.js src/v3/games/experiences.js index.html
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+          else
+            git commit -m "Apply English language integration [english-batch-applied]"
+            git push origin HEAD:feature/english-main-batch
+          fi
