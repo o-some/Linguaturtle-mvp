@@ -7,7 +7,7 @@
   <meta name="description" content="LinguaTurtle 3.0 – Kinderprofile und adaptive Lernstufen." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <base href="https://cdn.jsdelivr.net/gh/o-some/Linguaturtle-mvp@a35be5eeaaec75ae8ce26a776fa81fdea981959d/" />
+  <base href="https://cdn.jsdelivr.net/gh/o-some/Linguaturtle-mvp@v3-preview/" />
   <link rel="stylesheet" href="src/v3/styles.css" />
   <link rel="stylesheet" href="src/v3/features.css" />
   <link rel="stylesheet" href="src/v3/advanced-games.css" />
@@ -20,8 +20,12 @@
   <title>LinguaTurtle 3.0 – V3 Vorschau</title>
 </head>
 <body>
-  <main id="app" aria-live="polite"></main>
-  <div style="position:fixed;left:12px;top:max(12px,env(safe-area-inset-top));z-index:998;border:1px solid rgba(207,225,234,.9);border-radius:999px;background:rgba(255,255,255,.88);padding:7px 10px;font:800 10px system-ui;color:#073f67;backdrop-filter:blur(12px)">V3 TEST · CHILD PROFILE</div>
+  <main id="app" aria-live="polite">
+    <div style="min-height:100vh;display:grid;place-items:center;background:linear-gradient(180deg,#eaf8ff,#fffdf8);font:700 18px system-ui;color:#073f67">
+      <div style="text-align:center"><div style="font-size:76px">🐢</div><p>Turtle Island wird geladen …</p></div>
+    </div>
+  </main>
+  <div style="position:fixed;left:12px;top:max(12px,env(safe-area-inset-top));z-index:998;border:1px solid rgba(207,225,234,.9);border-radius:999px;background:rgba(255,255,255,.88);padding:7px 10px;font:800 10px system-ui;color:#073f67;backdrop-filter:blur(12px)">V3 TEST · FIXED PREVIEW</div>
   <script type="module" src="src/v3/boot.js"></script>
 </body>
 </html>
