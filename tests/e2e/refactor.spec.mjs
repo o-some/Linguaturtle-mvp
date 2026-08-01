@@ -5,9 +5,10 @@ const preview = '/refactor-preview.html';
 async function seed(page) {
   await page.addInitScript(() => {
     localStorage.setItem('linguaturtle-v3-core', JSON.stringify({
-      storageVersion: 1,
+      storageVersion: 2,
       route: { name: 'home', params: {} },
       language: 'de',
+      languages: { source: 'de', target: 'es' },
       profile: { id: 'default', name: 'Mia', stage: 'preschool', goal: 'balanced', support: 'normal' },
       progress: { xp: 1200, shells: 1000, streak: 5, daily: 2, learned: {}, mastery: {} },
       settings: { sound: false, motion: true, music: false },
@@ -15,6 +16,11 @@ async function seed(page) {
       session: { activeGame: null, collectionId: 'garden', busy: false, error: null }
     }));
   });
+}
+
+async function openLanguageSelector(page) {
+  await page.locator('[data-route="language-select"]').first().click();
+  await expect(page.locator('.language-pair-summary')).toBeVisible();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -78,7 +84,34 @@ test('memory and speed mode start from learning world', async ({ page }) => {
   await expect(page.getByText(/Goldene Minute/i)).toBeVisible();
 });
 
-test('language switch rerenders the current screen', async ({ page }) => {
-  await page.locator('[data-action="toggle-language"]').click();
-  await expect(page.getByText(/¡Ven a la isla!/i)).toBeVisible();
+test('Deutsch to Greek changes learning content and persists the pair', async ({ page }) => {
+  await openLanguageSelector(page);
+  await page.locator('[data-action="select-target-language"][data-language="el"]').click();
+  await page.locator('[data-action="confirm-language-pair"]').click();
+  await expect(page.locator('.language-pair-chip')).toContainText('DE → 🇬🇷 EL');
+
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.locator('[data-route="explore"]').click();
+  const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
+  await expect(apple).toContainText('μήλο');
+  await expect(apple).toContainText('Apfel');
+
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).languages);
+  expect(stored).toEqual({ source: 'de', target: 'el' });
+});
+
+test('Greek to Spanish updates the full interface and learning direction', async ({ page }) => {
+  await openLanguageSelector(page);
+  await page.locator('[data-action="select-source-language"][data-language="el"]').click();
+  await page.locator('[data-action="select-target-language"][data-language="es"]').click();
+  await page.locator('[data-action="confirm-language-pair"]').click();
+
+  await expect(page.getByText('Έλα μαζί μας στο νησί!')).toBeVisible();
+  await expect(page.locator('.language-pair-chip')).toContainText('EL → 🇪🇸 ES');
+
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.locator('[data-route="explore"]').click();
+  const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
+  await expect(apple).toContainText('manzana');
+  await expect(apple).toContainText('μήλο');
 });
