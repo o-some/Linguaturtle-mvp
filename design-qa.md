@@ -1,58 +1,74 @@
-# Design QA — Startseiten-Hero
+# Design QA — Interaktive Inselkarte
 
 ## Vergleichsziel
 
-- Source visual truth: `/Users/eleftheriossamouladas/Desktop/Bildschirmfoto 2026-08-02 um 23.05.39.png`
-- Browser-rendered implementation: `/tmp/chelonaki-hero-after-desktop-final.png`
-- Mobile implementation: `/tmp/chelonaki-hero-after-mobile-final.png`
-- Full-view comparison: `/tmp/chelonaki-hero-comparison-full.png`
-- Focused hero comparison: `/tmp/chelonaki-hero-comparison-focus.png`
-- State: deutsche Startseite, Tula-Hero sichtbar
-- Desktop CSS viewport: 1217 × 1019 px at device scale factor 1
-- Source pixels: 1199 × 1019 px
-- Implementation pixels: 1202 × 1006 px
-- Normalization: implementation full view was scaled to 1199 × 1019 px for the side-by-side comparison. The source hero crop (1128 × 397 px) was compared with the implementation hero crop (1116 × 400 px), normalized to 1128 × 397 px.
+- Source visual truth Karte: `/Users/eleftheriossamouladas/Desktop/Bildschirmfoto 2026-08-02 um 23.06.18.png`
+- Source visual truth Kartenraster: `/var/folders/dt/7lh1fq_d15d6httm8k_rgkk80000gn/T/TemporaryItems/NSIRD_screencaptureui_v7A5s3/Bildschirmfoto 2026-08-02 um 23.07.21.png`
+- Browser-Implementation Karte: `/tmp/chelonaki-island-map-source-size-final.png`
+- Browser-Implementation Kartenraster: `/tmp/chelonaki-island-cards-source-size-final.png`
+- Mobile Implementation: `/tmp/chelonaki-island-map-mobile-top-final.png`
+- Mobile Lernwelt: `/tmp/chelonaki-garden-world-mobile-final.png`
+- Full-view comparison Karte: `/tmp/chelonaki-island-map-comparison.png`
+- Focused comparison Kartenraster: `/tmp/chelonaki-island-cards-comparison.png`
+- State: deutsche Inselansicht auf Level 1; Garten freigeschaltet, Lernwelten 2–8 gesperrt
+- Source Karte: 1391 × 1214 px
+- Implementation Karte: 1391 × 1201 px bei CSS-Viewport 1406 × 1214 px und DPR 1; für den Vergleich unten um 13 px weiß aufgefüllt
+- Source Kartenraster: 1420 × 822 px
+- Implementation Kartenraster: 1420 × 813 px bei CSS-Viewport 1435 × 822 px und DPR 1; für den Vergleich unten um 9 px weiß aufgefüllt
+- Mobile CSS-Viewport: 390 × 844 px
 
 ## Comparison history
 
 ### Iteration 1
 
-- [P1] Tula was visibly stretched horizontally from her natural 2:3 aspect ratio into an approximately 540 × 440 px box.
-- [P2] The oversized character obscured most of the house and dominated the text/image balance.
-- [P2] On narrow screens, the oversized character collided with the copy and primary button.
+- [P1] Die große Inselgrafik war statisch und gab keine direkte Navigation zu Garten, Bibliothek, Tierwelt oder den weiteren Lernwelten.
+- [P1] Die Levelanforderungen der Lernwelten waren nicht sichtbar und wurden beim Öffnen nicht durchgesetzt.
+- [P2] In mehreren Ortskarten kollidierten Titel, Beschreibung, Nummer und Bildfläche.
+- [P2] Auf dem mobilen Viewport waren Karteninformation und Navigationsziele zu dicht und schwer erfassbar.
 
 Fixes:
 
-- Replaced conflicting width and max-height constraints with proportional auto width and breakpoint-specific height.
-- Reduced and repositioned Tula on desktop and mobile.
-- Shifted the background crop upward and softened the dark overlay while preserving text contrast.
-- Added a cache-version bump so the corrected CSS is loaded after deployment.
+- Acht echte, fokussierbare Karten-Hotspots auf der gelieferten Inselgrafik positioniert.
+- Die Lernwelten werden fortlaufend auf Level 1–8 freigeschaltet; gesperrte Ziele zeigen die konkrete Levelanforderung und einen erklärenden Hinweis beim Antippen.
+- Der Garten öffnet direkt aus der Karte; die geöffnete Lernwelt bestätigt das Freischaltlevel.
+- Kartenmarkup und Typografie in eigene Bereiche für Titel, Untertitel, Nummer und Levelhinweis getrennt.
+- Kompakte mobile Hotspots und responsive Kartenabstände ergänzt.
+- Cache-Versionen erhöht, damit Browser und Service Worker die neue Darstellung zuverlässig laden.
 
 Post-fix evidence:
 
-- Desktop Tula renders at approximately 301 × 451 px, matching the source asset’s 2:3 aspect ratio.
-- The house, coastline, heading, paragraph, and CTA remain clearly visible.
-- At 390 × 844 px, Tula stays below the heading and does not obscure the CTA.
+- Die acht Lernwelten sind auf Desktop und Mobile direkt auf der Karte auswählbar.
+- Auf Level 1 öffnet Garten; Tierwelt bleibt gesperrt und zeigt „Diese Lernwelt öffnet sich ab Level 3.“
+- Die Garten-Lernwelt zeigt „Freigeschaltet ab Level 1“.
+- Nummern, Titel, Untertitel und Levelhinweise überlappen nicht mehr.
+- Bei 390 × 844 px entsteht kein horizontaler Überlauf.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: existing display and UI font families, weights, sizes, wrapping, and hierarchy are preserved. No truncation or overlap is visible.
-- Spacing and layout rhythm: hero dimensions, radii, padding, and surrounding stat-card rhythm are preserved. Character placement now leaves intentional negative space.
-- Colors and visual tokens: navy, gold, white, borders, and shadows remain aligned with the existing theme. The lighter overlay still provides sufficient white-text contrast.
-- Image quality and asset fidelity: supplied background and transparent Tula WebP assets remain sharp and are no longer distorted. Crop and focal point are appropriate on desktop and mobile.
-- Copy and content: all product copy and language labels are unchanged.
+- Fonts und Typografie: bestehende Display- und UI-Fonts, Gewichtungen und Farbwerte bleiben erhalten; Titel, Untertitel, Nummer und Freischaltlevel besitzen jetzt eine klare Hierarchie.
+- Spacing und Layout-Rhythmus: Inselbild, Zuhause-Feature und Raster behalten Breite, Rundungen und Abstände der Referenz; die neuen Bedienelemente sind in die Grafik eingebettet.
+- Farben und visuelle Tokens: Navy, Gold, Creme, weiße Karten und bestehende Schatten folgen dem vorhandenen Premium-Theme.
+- Bildqualität und Asset-Fidelity: die vorhandene hochauflösende Inselgrafik und Weltbilder werden unverändert verwendet; kein Asset ist verzerrt oder durch Platzhalter ersetzt.
+- Copy und Content: Ortsnamen und Beschreibungen bleiben erhalten; Leveltexte wurden als notwendige Produktinformation ergänzt und übersetzt.
 
-## Interaction and runtime checks
+## Primäre Interaktionen
 
-- Primary “Insel entdecken” action opened the island route successfully.
-- Browser console errors: none.
-- Horizontal overflow: none.
-- Full automated suite: passed, with one transient asset-route timeout passing on retry; the isolated mobile Safari rerun passed.
+- Garten-Hotspot öffnet die Garten-Lernwelt.
+- Gesperrter Tierwelt-Hotspot bleibt auf der Inselansicht und zeigt die Level-3-Erklärung.
+- Die Ortskarten unterhalb der Karte verwenden dieselbe Freischaltlogik.
+- Die Garten-Lernwelt zeigt das benötigte Freischaltlevel.
+- Browser-Konsole: keine Fehler.
+- Horizontaler Überlauf: Desktop und Mobile 0 px.
+
+## Automatisierte Prüfung
+
+- Neuer E2E-Test für acht Insel-Hotspots, Levelhinweise, gesperrte Navigation und Garten-Navigation: Mobile Chrome und Mobile Safari bestanden.
+- Gesamtlauf: 27 von 28 Tests bestanden; ein bestehender Tula-Outfit-Test war in Mobile Safari transient.
+- Direkter Wiederholungslauf des betroffenen Tula-Outfit-Tests: Mobile Chrome und Mobile Safari bestanden (2/2).
+- Syntax- und Architekturprüfung: bestanden.
 
 ## Findings
 
-No actionable P0, P1, or P2 findings remain. The difference in XP and shell values between source and implementation is expected local state and does not affect the visual correction.
-
-Focused-region comparison was required because the problem concerned character proportions, crop, and overlap within the hero. The focused comparison confirms the asset now retains its intended aspect ratio and visual hierarchy.
+Keine verbleibenden P0-, P1- oder P2-Befunde. Die kombinierten Vergleichsbilder bestätigen, dass die Navigation ergänzt wurde, ohne die bestehende Bildkomposition zu beschädigen, und dass die problematischen Textüberlagerungen im Kartenraster behoben sind.
 
 final result: passed

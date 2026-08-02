@@ -46,6 +46,25 @@ test('home, island and learning world are separated', async ({ page }) => {
   await expect(page.locator('.word-showcase')).toHaveCount(0);
 });
 
+test('interactive island map shows level requirements and blocks locked worlds', async ({ page }) => {
+  await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.progress.xp = 0;
+    state.route = { name: 'island', params: {} };
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+  await expect(page.locator('.island-hotspot')).toHaveCount(8);
+  await expect(page.locator('.island-hotspot[data-collection="garden"]')).toContainText('Ab Level 1');
+  await expect(page.locator('.island-hotspot[data-collection="animals"]')).toContainText('Ab Level 3');
+  await page.locator('.island-hotspot[data-collection="animals"]').click();
+  await expect(page.locator('.v3-toast')).toContainText(/ab Level 3/i);
+  await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
+  await page.locator('.island-hotspot[data-collection="garden"]').click();
+  await expect(page.getByRole('heading', { name: 'Garten' })).toBeVisible();
+  await expect(page.locator('.world-unlock-note')).toContainText('Level 1');
+});
+
 test('all finished Creative Production assets are visible in their intended routes', async ({ page }) => {
   await expect(page.locator('.hero-scene[src$="home_tropical_bay.webp"]')).toBeVisible();
   await expect(page.locator('.tula-art[src$="tula_waving.webp"]')).toBeVisible();

@@ -18,15 +18,53 @@ const router=createRouter(app);
 migrateLegacyState();
 ensureLanguagePair();
 
-const tr=(de,es,el=de)=>uiText(de,es,el);
+const tr=(de,es,el=de,en=null)=>uiText(de,es,el,en);
 const currentCollection=()=>collections.find(c=>c.id===getState().session.collectionId)||collections[0];
 const collectionName=c=>languageValue(c,sourceLanguage());
 const collectionSubtitle=c=>c[`subtitle${sourceLanguage()==='de'?'De':sourceLanguage()==='es'?'Es':'El'}`]||c.subtitleDe;
 const worldArtwork=id=>assets.backgrounds.worlds[id]||null;
+const WORLD_LEVELS=Object.freeze(Object.fromEntries(collections.map((c,i)=>[c.id,i+1])));
+const worldLevel=id=>WORLD_LEVELS[id]||1;
+const levelLabel=level=>`${tr('Ab Level','Desde el nivel','Από το επίπεδο')} ${level}`;
+const mapSpotClass=id=>`map-spot-${id}`;
 const placeArtwork=c=>{
   const image=worldArtwork(c.id);
-  return image?`<img class="place-scene" src="${image}" alt="">`:`<span>${c.icon}</span>`;
+  return image?`<img class="place-scene" src="${image}" alt="">`:`<span class="place-icon">${c.icon}</span>`;
 };
+const islandHotspot=(c,lv)=>{
+  const required=worldLevel(c.id),locked=lv<required;
+  return `<button class="island-hotspot ${mapSpotClass(c.id)} ${locked?'locked':''}" data-action="open-world" data-collection="${c.id}" ${locked?'data-locked="true"':''} aria-label="${collectionName(c)} · ${levelLabel(required)}">
+    <span class="hotspot-pin" aria-hidden="true">${locked?'🔒':c.icon}</span>
+    <span class="hotspot-copy"><strong>${collectionName(c)}</strong><small>${levelLabel(required)}</small></span>
+  </button>`;
+};
+const islandPlaceCard=(c,i,lv)=>{
+  const required=worldLevel(c.id),locked=lv<required;
+  return `<button class="place ${worldArtwork(c.id)?'place-has-scene':''} ${locked?'locked':''}" data-action="open-world" data-collection="${c.id}" ${locked?'data-locked="true"':''}>
+    ${placeArtwork(c)}
+    <div class="place-copy"><strong>${collectionName(c)}</strong><small>${collectionSubtitle(c)}</small></div>
+    <span class="place-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span>
+    <em class="unlock-level">${locked?'🔒 ':''}${levelLabel(required)}</em>
+  </button>`;
+};
+const homeWorldButton=(c,s,lv)=>{
+  const required=worldLevel(c.id),locked=lv<required;
+  return `<button class="${locked?'world-locked':''}" data-action="open-world" data-collection="${c.id}" ${locked?'data-locked="true"':''}><span>${c.icon}</span><div><strong>${collectionName(c)}</strong><small>${locked?`🔒 ${levelLabel(required)}`:`${s.progress.learned[c.id]||0}/${c.words.length} ${tr('Wörter entdeckt','palabras descubiertas','λέξεις ανακαλύφθηκαν')}`}</small></div><b>${locked?'🔒':'→'}</b></button>`;
+};
+
+let toastTimer=null;
+function showToast(message){
+  let toast=document.querySelector('.v3-toast');
+  if(!toast){
+    toast=document.createElement('div');
+    toast.className='v3-toast';
+    toast.setAttribute('role','status');
+    document.body.append(toast);
+  }
+  toast.textContent=message;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.remove(),2600);
+}
 
 function top(backRoute=null){
   const s=getState();
@@ -77,19 +115,19 @@ router.register('language-select',()=>{
 });
 
 router.register('home',()=>{
-  const s=getState();
-  return `<div class="v3-shell page">${top()}<section class="hero-v3"><img class="hero-scene" src="${assets.backgrounds.home.tropicalBay}" alt=""><div class="hero-copy"><span class="eyebrow">TURTLE ISLAND</span><h1>${tr('Komm mit auf die Insel!','¡Ven a la isla!','Έλα μαζί μας στο νησί!')}</h1><p>${tr('Tula wartet auf dein nächstes Sprachabenteuer.','Tula espera tu próxima aventura lingüística.','Η Τούλα περιμένει την επόμενη γλωσσική σου περιπέτεια.')}</p><button class="chip" data-action="navigate" data-route="island">${tr('Insel entdecken','Descubrir la isla','Ανακάλυψε το νησί')} →</button></div><img class="tula-art" src="${assets.characters.tula.poses.waving}" alt="Tula"></section><section class="stats-v3"><div><span>✨</span><strong>${s.progress.xp}</strong><small>XP</small></div><div><span>🐚</span><strong>${s.progress.shells}</strong><small>${tr('Muscheln','Conchas','Κοχύλια')}</small></div><div><span>🔥</span><strong>${s.progress.streak}</strong><small>${tr('Lerntage','Días','Ημέρες')}</small></div></section>${progressCard()}<section class="journey-grid">${collections.map(c=>`<button data-action="open-world" data-collection="${c.id}"><span>${c.icon}</span><div><strong>${collectionName(c)}</strong><small>${s.progress.learned[c.id]||0}/${c.words.length} ${tr('Wörter entdeckt','palabras descubiertas','λέξεις ανακαλύφθηκαν')}</small></div><b>→</b></button>`).join('')}<button data-action="start-adaptive"><span>🧠</span><div><strong>${tr('Schlaue Wiederholung','Repaso inteligente','Έξυπνη επανάληψη')}</strong><small>${tr('Persönliche Übungsrunde','Ronda personalizada','Προσωπική εξάσκηση')}</small></div><b>→</b></button><button data-action="navigate" data-route="speaking"><span>🎙️</span><div><strong>${tr('Sprechtrainer','Entrenador de voz','Εξάσκηση ομιλίας')}</strong><small>${tr('Anhören und nachsprechen','Escuchar y repetir','Άκου και επανάλαβε')}</small></div><b>→</b></button><button data-action="navigate" data-route="stories"><span>📖</span><div><strong>${tr('Mini-Geschichten','Mini historias','Μικρές ιστορίες')}</strong><small>${tr('Lesen, hören und entdecken','Leer, escuchar y descubrir','Διάβασε, άκου και ανακάλυψε')}</small></div><b>→</b></button></section></div>${nav('home')}`;
+  const s=getState(),lv=levelFromXp(s.progress.xp);
+  return `<div class="v3-shell page">${top()}<section class="hero-v3"><img class="hero-scene" src="${assets.backgrounds.home.tropicalBay}" alt=""><div class="hero-copy"><span class="eyebrow">TURTLE ISLAND</span><h1>${tr('Komm mit auf die Insel!','¡Ven a la isla!','Έλα μαζί μας στο νησί!')}</h1><p>${tr('Tula wartet auf dein nächstes Sprachabenteuer.','Tula espera tu próxima aventura lingüística.','Η Τούλα περιμένει την επόμενη γλωσσική σου περιπέτεια.')}</p><button class="chip" data-action="navigate" data-route="island">${tr('Insel entdecken','Descubrir la isla','Ανακάλυψε το νησί')} →</button></div><img class="tula-art" src="${assets.characters.tula.poses.waving}" alt="Tula"></section><section class="stats-v3"><div><span>✨</span><strong>${s.progress.xp}</strong><small>XP</small></div><div><span>🐚</span><strong>${s.progress.shells}</strong><small>${tr('Muscheln','Conchas','Κοχύλια')}</small></div><div><span>🔥</span><strong>${s.progress.streak}</strong><small>${tr('Lerntage','Días','Ημέρες')}</small></div></section>${progressCard()}<section class="journey-grid">${collections.map(c=>homeWorldButton(c,s,lv)).join('')}<button data-action="start-adaptive"><span>🧠</span><div><strong>${tr('Schlaue Wiederholung','Repaso inteligente','Έξυπνη επανάληψη')}</strong><small>${tr('Persönliche Übungsrunde','Ronda personalizada','Προσωπική εξάσκηση')}</small></div><b>→</b></button><button data-action="navigate" data-route="speaking"><span>🎙️</span><div><strong>${tr('Sprechtrainer','Entrenador de voz','Εξάσκηση ομιλίας')}</strong><small>${tr('Anhören und nachsprechen','Escuchar y repetir','Άκου και επανάλαβε')}</small></div><b>→</b></button><button data-action="navigate" data-route="stories"><span>📖</span><div><strong>${tr('Mini-Geschichten','Mini historias','Μικρές ιστορίες')}</strong><small>${tr('Lesen, hören und entdecken','Leer, escuchar y descubrir','Διάβασε, άκου και ανακάλυψε')}</small></div><b>→</b></button></section></div>${nav('home')}`;
 });
 
 router.register('island',()=>{
   const s=getState(),lv=levelFromXp(s.progress.xp);
-  return `<div class="v3-shell page">${top()}<section class="page-title"><span class="eyebrow">TURTLE ISLAND</span><h1>${tr('Wohin möchtest du?','¿Adónde quieres ir?','Πού θέλεις να πας;')}</h1></section><button class="island-card"><img src="${assets.island.overview}" alt="Turtle Island"></button><button class="tula-home-feature" data-action="navigate" data-route="tula-home"><img src="${assets.backgrounds.home.tropicalBay}" alt=""><span><small>${tr('TULAS ZUHAUSE','CASA DE TULA','ΤΟ ΣΠΙΤΙ ΤΗΣ ΤΟΥΛΑ')}</small><strong>${tr('Tulas Zuhause','Casa de Tula','Το σπίτι της Τούλα')}</strong><em>${tr('Einrichten & dekorieren','Decorar y organizar','Διακόσμηση')}</em></span><b>→</b></button><section class="places island-place-grid">${collections.map((c,i)=>`<button class="place ${worldArtwork(c.id)?'place-has-scene':''}" data-action="open-world" data-collection="${c.id}">${placeArtwork(c)}<strong>${collectionName(c)}</strong><small>${collectionSubtitle(c)}</small><span class="place-number">${String(i+1).padStart(2,'0')}</span></button>`).join('')}<button class="place ${lv<7?'locked':''}" data-action="open-harbor"><span>⚓</span><strong>${tr('Hafen','Puerto','Λιμάνι')}</strong><small>${lv>=7?tr('Reise & Dialoge','Viajes y diálogos','Ταξίδια και διάλογοι'):tr('Ab Level 7','Desde nivel 7','Από επίπεδο 7')}</small></button><button class="place ${lv<10?'locked':''}" data-action="open-castle"><span>🏰</span><strong>${tr('Schloss','Castillo','Κάστρο')}</strong><small>${lv>=10?tr('Goldene Sprachprüfung','Prueba dorada','Χρυσή δοκιμασία'):tr('Ab Level 10','Desde nivel 10','Από επίπεδο 10')}</small></button></section></div>${nav('island')}`;
+  return `<div class="v3-shell page">${top()}<section class="page-title"><span class="eyebrow">TURTLE ISLAND</span><h1>${tr('Wohin möchtest du?','¿Adónde quieres ir?','Πού θέλεις να πας;')}</h1><p>${tr('Tippe einen Ort auf der Karte an.','Toca un lugar en el mapa.','Πάτησε ένα μέρος στον χάρτη.')}</p></section><section class="island-card island-map" aria-label="${tr('Interaktive Inselkarte','Mapa interactivo','Διαδραστικός χάρτης')}"><img src="${assets.island.overview}" alt="Turtle Island">${collections.map(c=>islandHotspot(c,lv)).join('')}</section><button class="tula-home-feature" data-action="navigate" data-route="tula-home"><img src="${assets.backgrounds.home.tropicalBay}" alt=""><span><small>${tr('TULAS ZUHAUSE','CASA DE TULA','ΤΟ ΣΠΙΤΙ ΤΗΣ ΤΟΥΛΑ')}</small><strong>${tr('Tulas Zuhause','Casa de Tula','Το σπίτι της Τούλα')}</strong><em>${tr('Einrichten & dekorieren','Decorar y organizar','Διακόσμηση')}</em></span><b>→</b></button><section class="places island-place-grid">${collections.map((c,i)=>islandPlaceCard(c,i,lv)).join('')}<button class="place special-place ${lv<7?'locked':''}" data-action="open-harbor"><span class="place-icon">⚓</span><div class="place-copy"><strong>${tr('Hafen','Puerto','Λιμάνι')}</strong><small>${tr('Reise & Dialoge','Viajes y diálogos','Ταξίδια και διάλογοι')}</small></div><em class="unlock-level">${lv<7?'🔒 ':''}${levelLabel(7)}</em></button><button class="place special-place ${lv<10?'locked':''}" data-action="open-castle"><span class="place-icon">🏰</span><div class="place-copy"><strong>${tr('Schloss','Castillo','Κάστρο')}</strong><small>${tr('Goldene Sprachprüfung','Prueba dorada','Χρυσή δοκιμασία')}</small></div><em class="unlock-level">${lv<10?'🔒 ':''}${levelLabel(10)}</em></button></section></div>${nav('island')}`;
 });
 
 router.register('world',()=>{
   const s=getState(),c=currentCollection(),unlocked=s.inventory.unlockedModes;
-  const artwork=worldArtwork(c.id);
-  return `<div class="v3-shell page">${top('island')}<section class="place-hero ${artwork?'place-hero-art':''}">${artwork?`<img class="world-scene" src="${artwork}" alt="">`:`<span>${c.icon}</span>`}<div><span class="eyebrow">${tr('LERNWELT','MUNDO DE APRENDIZAJE','ΚΟΣΜΟΣ ΜΑΘΗΣΗΣ')}</span><h1>${collectionName(c)}</h1><p>${collectionSubtitle(c)}</p></div></section><section class="world-instruction"><span class="world-step">1</span><div><strong>${tr('Wähle jetzt eine Übung','Elige ahora un ejercicio','Διάλεξε μια άσκηση')}</strong><small>${languageMeta(sourceLanguage()).flag} ${languageMeta(sourceLanguage()).short} → ${languageMeta(targetLanguage()).flag} ${languageMeta(targetLanguage()).short}</small></div></section><section class="mode-picker"><button data-action="navigate" data-route="explore"><span>👀</span><div><strong>${tr('Wörter entdecken','Descubrir palabras','Ανακάλυψε λέξεις')}</strong><small>${tr('Ansehen, hören und merken','Ver, escuchar y recordar','Δες, άκου και θυμήσου')}</small></div><b>→</b></button><button data-action="navigate" data-route="listening"><span>🎧</span><div><strong>${tr('Hör-Abenteuer','Aventura auditiva','Ακουστική περιπέτεια')}</strong><small>${tr('Hören und auswählen','Escuchar y elegir','Άκου και διάλεξε')}</small></div><b>→</b></button><button data-action="navigate" data-route="sentence"><span>✒️</span><div><strong>${tr('Satzwerkstatt','Taller de frases','Εργαστήριο προτάσεων')}</strong><small>${tr('Sätze in Reihenfolge bringen','Ordenar frases','Βάλε τις λέξεις στη σειρά')}</small></div><b>→</b></button><button data-action="${unlocked.includes('memory')?'start-memory':'navigate'}" ${unlocked.includes('memory')?'':'data-route="shop"'}><span>🏛️</span><div><strong>${tr('Palast-Memory','Memoria del palacio','Μνήμη του παλατιού')}</strong><small>${unlocked.includes('memory')?tr('Bild und Wort verbinden','Unir imagen y palabra','Ταίριαξε εικόνα και λέξη'):tr('In der Boutique freischalten','Desbloquear en boutique','Ξεκλείδωσε στο κατάστημα')}</small></div><b>${unlocked.includes('memory')?'→':'🔒'}</b></button><button data-action="${unlocked.includes('speed')?'start-speed':'navigate'}" ${unlocked.includes('speed')?'':'data-route="shop"'}><span>⏱️</span><div><strong>${tr('Goldene Minute','Minuto dorado','Χρυσό λεπτό')}</strong><small>${unlocked.includes('speed')?tr('45 Sekunden Sprachtempo','45 segundos de velocidad','45 δευτερόλεπτα ταχύτητας'):tr('In der Boutique freischalten','Desbloquear en boutique','Ξεκλείδωσε στο κατάστημα')}</small></div><b>${unlocked.includes('speed')?'→':'🔒'}</b></button></section></div>${nav(c.id==='library'?'words':'island')}`;
+  const artwork=worldArtwork(c.id),required=worldLevel(c.id);
+  return `<div class="v3-shell page">${top('island')}<section class="place-hero ${artwork?'place-hero-art':''}">${artwork?`<img class="world-scene" src="${artwork}" alt="">`:`<span>${c.icon}</span>`}<div><span class="eyebrow">${tr('LERNWELT','MUNDO DE APRENDIZAJE','ΚΟΣΜΟΣ ΜΑΘΗΣΗΣ')}</span><h1>${collectionName(c)}</h1><p>${collectionSubtitle(c)}</p><span class="world-unlock-note">✓ ${tr('Freigeschaltet ab Level','Disponible desde el nivel','Διαθέσιμο από το επίπεδο')} ${required}</span></div></section><section class="world-instruction"><span class="world-step">1</span><div><strong>${tr('Wähle jetzt eine Übung','Elige ahora un ejercicio','Διάλεξε μια άσκηση')}</strong><small>${languageMeta(sourceLanguage()).flag} ${languageMeta(sourceLanguage()).short} → ${languageMeta(targetLanguage()).flag} ${languageMeta(targetLanguage()).short}</small></div></section><section class="mode-picker"><button data-action="navigate" data-route="explore"><span>👀</span><div><strong>${tr('Wörter entdecken','Descubrir palabras','Ανακάλυψε λέξεις')}</strong><small>${tr('Ansehen, hören und merken','Ver, escuchar y recordar','Δες, άκου και θυμήσου')}</small></div><b>→</b></button><button data-action="navigate" data-route="listening"><span>🎧</span><div><strong>${tr('Hör-Abenteuer','Aventura auditiva','Ακουστική περιπέτεια')}</strong><small>${tr('Hören und auswählen','Escuchar y elegir','Άκου και διάλεξε')}</small></div><b>→</b></button><button data-action="navigate" data-route="sentence"><span>✒️</span><div><strong>${tr('Satzwerkstatt','Taller de frases','Εργαστήριο προτάσεων')}</strong><small>${tr('Sätze in Reihenfolge bringen','Ordenar frases','Βάλε τις λέξεις στη σειρά')}</small></div><b>→</b></button><button data-action="${unlocked.includes('memory')?'start-memory':'navigate'}" ${unlocked.includes('memory')?'':'data-route="shop"'}><span>🏛️</span><div><strong>${tr('Palast-Memory','Memoria del palacio','Μνήμη του παλατιού')}</strong><small>${unlocked.includes('memory')?tr('Bild und Wort verbinden','Unir imagen y palabra','Ταίριαξε εικόνα και λέξη'):tr('In der Boutique freischalten','Desbloquear en boutique','Ξεκλείδωσε στο κατάστημα')}</small></div><b>${unlocked.includes('memory')?'→':'🔒'}</b></button><button data-action="${unlocked.includes('speed')?'start-speed':'navigate'}" ${unlocked.includes('speed')?'':'data-route="shop"'}><span>⏱️</span><div><strong>${tr('Goldene Minute','Minuto dorado','Χρυσό λεπτό')}</strong><small>${unlocked.includes('speed')?tr('45 Sekunden Sprachtempo','45 segundos de velocidad','45 δευτερόλεπτα ταχύτητας'):tr('In der Boutique freischalten','Desbloquear en boutique','Ξεκλείδωσε στο κατάστημα')}</small></div><b>${unlocked.includes('speed')?'→':'🔒'}</b></button></section></div>${nav(c.id==='library'?'words':'island')}`;
 });
 
 router.register('words',()=>{setState(d=>{d.session.collectionId='library';d.route={name:'world',params:{}};return d});return router.renderCurrent()});
@@ -104,7 +142,15 @@ registerExperienceRoutes(router,{top,nav});
 router.setNotFound(()=>`<div class="v3-shell page">${top('home')}<section class="page-title"><h1>${tr('Seite nicht gefunden','Página no encontrada','Η σελίδα δεν βρέθηκε')}</h1></section></div>`);
 
 registerAction('navigate',({data})=>router.navigate(data.route));
-registerAction('open-world',({data})=>{setState(d=>{d.session.collectionId=data.collection;return d});router.navigate('world')});
+registerAction('open-world',({data})=>{
+  const required=worldLevel(data.collection),current=levelFromXp();
+  if(current<required){
+    showToast(`🔒 ${tr(`Diese Lernwelt öffnet sich ab Level ${required}.`,`Este mundo se abre en el nivel ${required}.`,`Αυτός ο κόσμος ανοίγει στο επίπεδο ${required}.`,`This learning world opens at level ${required}.`)}`);
+    return;
+  }
+  setState(d=>{d.session.collectionId=data.collection;return d});
+  router.navigate('world');
+});
 registerAction('menu',()=>router.navigate('settings'));
 registerAction('select-source-language',({data})=>{setSourceLanguage(data.language);router.renderCurrent()});
 registerAction('select-target-language',({data})=>{setTargetLanguage(data.language);router.renderCurrent()});
