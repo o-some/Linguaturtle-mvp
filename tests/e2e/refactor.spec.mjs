@@ -46,26 +46,36 @@ test('home, island and learning world are separated', async ({ page }) => {
   await expect(page.locator('.word-showcase')).toHaveCount(0);
 });
 
-test('all bundled illustrations are visible in their intended routes', async ({ page }) => {
-  await expect(page.locator('.tula-art[src$="tula-anime.svg"]')).toBeVisible();
+test('all finished Creative Production assets are visible in their intended routes', async ({ page }) => {
+  await expect(page.locator('.hero-scene[src$="home_tropical_bay.webp"]')).toBeVisible();
+  await expect(page.locator('.tula-art[src$="tula_waving.webp"]')).toBeVisible();
   await page.locator('[data-route="island"]').first().click();
-  await expect(page.locator('.island-card img[src$="turtle-island.svg"]')).toBeVisible();
+  await expect(page.locator('.island-card img[src$="map_turtle_island_overview.webp"]')).toBeVisible();
   const homeFeature = page.locator('.tula-home-feature');
-  await expect(homeFeature.locator('img[src$="tula-home-anime.svg"]')).toBeVisible();
+  await expect(homeFeature.locator('img[src$="home_tropical_bay.webp"]')).toBeVisible();
+  await expect(page.locator('.place-scene[src$="world_sun_bay.webp"]')).toBeVisible();
+  await expect(page.locator('.place-scene[src$="world_jungle_trail.webp"]')).toBeVisible();
   await homeFeature.click();
-  await expect(page.locator('.room-tula img[src$="tula-welcome.svg"]')).toBeVisible();
+  await expect(page.locator('.home-room-scene[src$="home_tula_house_interior.webp"]')).toBeVisible();
+  await expect(page.locator('.room-tula img[src$="tula_neutral_front.webp"]')).toBeVisible();
+  await page.locator('[data-route="profile"]').first().click();
+  await expect(page.locator('.profile-hero-v3 img[src$="tula_profile.webp"]')).toBeVisible();
 });
 
 test('explore opens only after selecting the exercise', async ({ page }) => {
   await page.locator('[data-action="open-world"]').first().click();
+  await expect(page.locator('.world-scene[src$="world_sun_bay.webp"]')).toBeVisible();
   await page.getByRole('button', { name: /Wörter entdecken/i }).click();
   await expect(page.locator('.explore-grid')).toBeVisible();
   await expect(page.locator('[data-action="finish-explore"]')).toBeVisible();
+  await page.locator('[data-action="finish-explore"]').click();
+  await expect(page.locator('.celebration img[src$="tula_happy.webp"]')).toBeVisible();
 });
 
 test('listening quiz accepts an answer and persists reward', async ({ page }) => {
   await page.locator('[data-action="open-world"]').first().click();
   await page.getByRole('button', { name: /Hör-Abenteuer/i }).click();
+  await expect(page.locator('.lesson-tula[src$="tula_listening.webp"]')).toBeVisible();
   await expect(page.locator('[data-action="answer-listening"]')).toHaveCount(4);
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
   for (let attempt = 0; attempt < 4; attempt += 1) {
@@ -130,6 +140,7 @@ test('memory and speed mode start from learning world', async ({ page }) => {
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-action="start-memory"]').click();
   await expect(page.getByText(/Finde die Paare/i)).toBeVisible();
+  await expect(page.locator('.memory-card-back[src$="card_back_neutral.webp"]').first()).toBeVisible();
   await page.locator('[data-action="navigate"][data-route="world"]').first().click();
   await page.locator('[data-action="start-speed"]').click();
   await expect(page.getByText(/Goldene Minute/i)).toBeVisible();
@@ -190,6 +201,7 @@ test('English sentence workshop renders English sentence tiles without crashing'
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="sentence"]').click();
   await expect(page.getByRole('heading', { name: 'Baue den Satz' })).toBeVisible();
+  await expect(page.locator('.sentence-guide-v3 img[src$="tula_thinking.webp"]')).toBeVisible();
   const sentenceTiles = page.locator('.sentence-bank .sentence-tile');
   await expect(sentenceTiles.first()).toBeVisible();
   expect(await sentenceTiles.count()).toBeGreaterThan(0);

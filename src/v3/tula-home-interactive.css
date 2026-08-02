@@ -4,9 +4,9 @@
 .home-room-toolbar>div{display:flex;align-items:center;gap:10px}.home-room-toolbar>div>span{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;background:#e7f8fa;font-size:1.2rem}
 .home-room-toolbar p{margin:0}.home-room-toolbar strong,.home-room-toolbar small{display:block}.home-room-toolbar small{margin-top:2px;color:var(--muted)}
 .home-room-toolbar button{border:1px solid rgba(201,156,50,.5);border-radius:13px;padding:9px 12px;background:#fff;color:var(--navy);font-weight:900}
-.tula-home-page .tula-room{position:relative!important;height:auto!important;min-height:390px!important;margin:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;isolation:isolate;touch-action:none;background:linear-gradient(180deg,#fbf5e8 0 63%,#dfbd8f 63% 65%,#b97848 65% 100%)!important}
-.tula-home-page .tula-room:before{content:"";position:absolute;z-index:0;left:7%;right:auto;top:9%;width:28%;height:36%;border:9px solid #fffaf0;border-radius:90px 90px 18px 18px;background:linear-gradient(90deg,transparent 47%,#fffaf0 47% 53%,transparent 53%),linear-gradient(180deg,transparent 47%,#fffaf0 47% 53%,transparent 53%),linear-gradient(180deg,#81d2ef,#eafaff);box-shadow:0 10px 24px rgba(77,84,74,.15),inset 0 0 0 2px rgba(7,63,103,.12);pointer-events:none}
-.tula-home-page .tula-room:after{content:"";position:absolute;z-index:1;left:50%;bottom:3%;width:48%;height:17%;border:4px solid rgba(255,246,221,.72);border-radius:50%;background:repeating-radial-gradient(ellipse at center,#e9cb72 0 14px,#f7e8b3 15px 27px,#79a99b 28px 39px);box-shadow:0 10px 14px rgba(79,46,26,.2);transform:translateX(-50%);pointer-events:none}
+.tula-home-page .tula-room{position:relative!important;height:auto!important;min-height:520px!important;margin:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;isolation:isolate;touch-action:none;background:#8b5b31!important}
+.tula-home-page .tula-room:before,.tula-home-page .tula-room:after{display:none!important}
+.home-room-scene{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center 64%;pointer-events:none;user-select:none}
 .tula-home-page .tula-room .room-items{position:absolute!important;inset:0!important;display:block!important}
 .home-room-object{position:absolute!important;z-index:5;transform:translate(-50%,-50%);display:grid!important;place-items:center;margin:0;padding:0;border:0;background:transparent!important;box-shadow:none!important;line-height:1;cursor:grab;touch-action:none;user-select:none;filter:drop-shadow(0 9px 6px rgba(0,35,50,.3));transition:filter .16s ease,transform .16s ease}
 .home-room-object:hover,.home-room-object:focus-visible{outline:3px dashed #ffe58d;outline-offset:5px;border-radius:17px}.home-room-object.dragging{z-index:30;cursor:grabbing;transform:translate(-50%,-50%) scale(1.08);filter:drop-shadow(0 15px 10px rgba(0,30,45,.4));transition:none}
@@ -21,6 +21,6 @@
 .home-shop-section .shop-card-v3 small{display:block;color:var(--muted)}.home-shop-section .shop-card-v3.home-active small{color:#84601d;font-weight:800}
 @media(max-width:430px){
  .home-room-toolbar{align-items:flex-start}.home-room-toolbar>div>span,.home-room-toolbar small{display:none}.home-room-toolbar strong{font-size:.82rem}.home-room-toolbar button{padding:8px 10px;font-size:.78rem}
- .tula-home-page .tula-room{min-height:330px!important}.home-room-status{max-width:calc(100% - 20px)}
+ .tula-home-page .tula-room{min-height:430px!important}.home-room-status{max-width:calc(100% - 20px)}
 }
 @media(prefers-reduced-motion:reduce){.home-room-object{transition:none}}

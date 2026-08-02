@@ -3,6 +3,7 @@ import {
   getState, setState, registerAction, grantReward,
   sourceLanguage, targetLanguage, languageValue, uiText
 } from '../core/index.js';
+import { assets } from '../../config/assets.js';
 
 const tr=(de,es,el=de)=>uiText(de,es,el);
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
@@ -27,7 +28,7 @@ export function registerAdvancedRoutes(router,{top,nav,renderComplete}){
   router.register('memory',()=>{
     if(!memory.cards.length)startMemory();
     if(memory.matched.length===memory.cards.length){const reward=grantReward({xp:50,shells:18});memory={cards:[],open:[],matched:[]};return renderComplete(tr('Palast-Memory geschafft!','¡Memoria del palacio completada!','Η μνήμη του παλατιού ολοκληρώθηκε!'),reward,'world')}
-    return `<div class="v3-shell page">${top('world')}<section class="page-title"><span class="eyebrow">${tr('PALAST-MEMORY','MEMORIA DEL PALACIO','ΜΝΗΜΗ ΤΟΥ ΠΑΛΑΤΙΟΥ')}</span><h1>${tr('Finde die Paare','Encuentra las parejas','Βρες τα ζευγάρια')}</h1><p>${tr('Verbinde Bild und passendes Wort.','Une la imagen con la palabra correcta.','Ταίριαξε την εικόνα με τη σωστή λέξη.')}</p></section><section class="advanced-memory-grid">${memory.cards.map(c=>{const open=memory.open.includes(c.id)||memory.matched.includes(c.id);return `<button class="${open?'open':''}" data-action="memory-card" data-card="${c.id}"><span>${open?c.label:'⚓'}</span></button>`}).join('')}</section></div>${nav('island')}`;
+    return `<div class="v3-shell page">${top('world')}<section class="page-title"><span class="eyebrow">${tr('PALAST-MEMORY','MEMORIA DEL PALACIO','ΜΝΗΜΗ ΤΟΥ ΠΑΛΑΤΙΟΥ')}</span><h1>${tr('Finde die Paare','Encuentra las parejas','Βρες τα ζευγάρια')}</h1><p>${tr('Verbinde Bild und passendes Wort.','Une la imagen con la palabra correcta.','Ταίριαξε την εικόνα με τη σωστή λέξη.')}</p></section><section class="advanced-memory-grid">${memory.cards.map(c=>{const open=memory.open.includes(c.id)||memory.matched.includes(c.id);return `<button class="${open?'open':''}" data-action="memory-card" data-card="${c.id}">${open?`<span>${c.label}</span>`:`<img class="memory-card-back" src="${assets.cards.neutralBack}" alt="">`}</button>`}).join('')}</section></div>${nav('island')}`;
   });
 
   router.register('speed',()=>{

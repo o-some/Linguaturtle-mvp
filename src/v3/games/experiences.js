@@ -4,6 +4,7 @@ import {
   sourceLanguage,targetLanguage,languageMeta,languageValue,uiText
 } from '../core/index.js';
 import { profileConfig } from '../screens/child-profile.js';
+import { assets } from '../../config/assets.js';
 
 const tr=(de,es,el=de)=>uiText(de,es,el);
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
@@ -107,8 +108,9 @@ function homeRoute({top,nav}){
  <section class="home-room-card">
   <header class="home-room-toolbar"><div><span>☝️</span><p><strong>${tr('Ziehen & abstellen','Arrastra y coloca','Σύρε και τοποθέτησε')}</strong><small>${tr('Die Positionen bleiben gespeichert','Las posiciones se guardan','Οι θέσεις αποθηκεύονται')}</small></p></div><button data-action="home-reset">${tr('Aufräumen','Ordenar','Τακτοποίηση')}</button></header>
   <div class="tula-room" data-home-room>
+   <img class="home-room-scene" src="${assets.backgrounds.home.interior}" alt="">
    <div class="room-items">${homeCatalog.filter(i=>i.type==='decor'&&home.placed.includes(i.id)).map(i=>roomObject(i,home.positions)).join('')}</div>
-   <button class="room-tula home-room-object" data-home-object="tula" style="left:${tula.x}%;top:${tula.y}%" aria-label="Tula ${tr('verschieben','mover','μετακίνηση')}"><img src="assets/illustrations/tula-welcome.svg" alt=""><span class="tula-outfit" aria-hidden="true">${homeCatalog.find(i=>i.id===home.outfit)?.icon||''}</span></button>
+   <button class="room-tula home-room-object" data-home-object="tula" style="left:${tula.x}%;top:${tula.y}%" aria-label="Tula ${tr('verschieben','mover','μετακίνηση')}"><img src="${assets.characters.tula.poses.neutral}" alt=""><span class="tula-outfit" aria-hidden="true">${homeCatalog.find(i=>i.id===home.outfit)?.icon||''}</span></button>
    <span class="home-room-status">${home.outfit?`${tr('Tula trägt','Tula lleva','Η Τούλα φοράει')}: ${languageValue(homeCatalog.find(i=>i.id===home.outfit),source)}`:tr('Wähle ein Outfit für Tula','Elige un atuendo para Tula','Διάλεξε ρούχο για την Τούλα')}</span>
   </div>
  </section>

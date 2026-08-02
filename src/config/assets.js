@@ -3,28 +3,30 @@ export const assets = Object.freeze({
     tula: {
       fallback: '🐢',
       poses: {
-        welcome: './assets/illustrations/tula/welcome.webp',
-        learning: './assets/illustrations/tula/learning.webp',
-        celebrating: './assets/illustrations/tula/celebrating.webp',
-        thinking: './assets/illustrations/tula/thinking.webp',
-        sleeping: './assets/illustrations/tula/sleeping.webp'
+        waving: 'assets/creative/tula_waving.webp',
+        profile: 'assets/creative/tula_profile.webp',
+        neutral: 'assets/creative/tula_neutral_front.webp',
+        happy: 'assets/creative/tula_happy.webp',
+        thinking: 'assets/creative/tula_thinking.webp',
+        listening: 'assets/creative/tula_listening.webp'
       }
     }
   },
-  island: {
-    overview: './assets/illustrations/island/turtle-island.webp',
-    library: './assets/illustrations/island/library.webp',
-    forest: './assets/illustrations/island/forest.webp',
-    garden: './assets/illustrations/island/garden.webp',
-    harbour: './assets/illustrations/island/harbour.webp',
-    boutique: './assets/illustrations/island/boutique.webp',
-    home: './assets/illustrations/island/home.webp',
-    castle: './assets/illustrations/island/castle.webp'
+  backgrounds: {
+    home: {
+      tropicalBay: 'assets/creative/home_tropical_bay.webp',
+      interior: 'assets/creative/home_tula_house_interior.webp'
+    },
+    worlds: {
+      garden: 'assets/creative/world_sun_bay.webp',
+      animals: 'assets/creative/world_jungle_trail.webp'
+    }
   },
-  rewards: {
-    shell: './assets/illustrations/rewards/shell.webp',
-    chest: './assets/illustrations/rewards/chest.webp',
-    star: './assets/illustrations/rewards/star.webp'
+  island: {
+    overview: 'assets/creative/map_turtle_island_overview.webp'
+  },
+  cards: {
+    neutralBack: 'assets/creative/card_back_neutral.webp'
   }
 });
 
