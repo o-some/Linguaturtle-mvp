@@ -1,4 +1,4 @@
-const CACHE='linguaturtle-v11-creative-assets';
+const CACHE='linguaturtle-v12-hero-balance';
 const FILES=['./','./index.html','./styles.css','./enhancements.css','./app.js','./enhancements.js','./manifest.webmanifest','./src/data/content.js','./src/core/store.js'];
 self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)))});
 self.addEventListener('activate',event=>{event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))),self.clients.claim()]))});
