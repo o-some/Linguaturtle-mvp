@@ -12,7 +12,16 @@ export const initialState = {
   profile: { id: 'default', name: 'Kind', stage: 'preschool', goal: 'balanced', support: 'normal' },
   progress: { xp: 0, shells: TEST_STARTING_SHELLS, streak: 0, daily: 0, learned: {}, mastery: {} },
   settings: { sound: true, motion: true, music: false },
-  inventory: { unlockedModes: [], boosters: { doubleXp: 0, hints: 0, jumps: 0 }, claimedMilestones: [] },
+  inventory: {
+    unlockedModes: [],
+    boosters: { doubleXp: 0, hints: 0, jumps: 0 },
+    claimedMilestones: [],
+    homeOwned: ['plant'],
+    homePlaced: ['plant'],
+    homeOutfit: null,
+    homePositions: { plant: { x: 18, y: 74 } },
+    tulaHomePosition: { x: 50, y: 70 },
+  },
   session: { activeGame: null, collectionId: 'garden', busy: false, error: null },
 };
 

@@ -4,6 +4,7 @@ const preview = '/refactor-preview.html';
 
 async function seed(page) {
   await page.addInitScript(() => {
+    if (localStorage.getItem('linguaturtle-v3-core')) return;
     localStorage.setItem('linguaturtle-v3-core', JSON.stringify({
       storageVersion: 2,
       route: { name: 'home', params: {} },
@@ -73,6 +74,38 @@ test('shop purchase changes the central store', async ({ page }) => {
   await buy.click();
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
   expect(after).toBeLessThan(before);
+});
+
+test('Tula home purchase, placement, movement and outfit persist', async ({ page }) => {
+  await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.route = { name: 'tula-home', params: {} };
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+  await expect(page.getByRole('heading', { name: /Mach es dir gemütlich/i })).toBeVisible();
+
+  const bedCard = page.locator('.shop-card-v3').filter({ hasText: 'Wolkenbett' });
+  const shellsBefore = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  const buyBed = bedCard.getByRole('button', { name: 'Kaufen' });
+  await expect(buyBed).toBeVisible();
+  await buyBed.scrollIntoViewIfNeeded();
+  await buyBed.click();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).inventory.homeOwned)).toContain('bed');
+  await expect(page.locator('[data-home-object="bed"]')).toBeVisible();
+  const shellsAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  expect(shellsAfter).toBe(shellsBefore - 60);
+
+  await page.locator('[data-home-object="bed"]').press('ArrowLeft');
+  const movedX = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).inventory.homePositions.bed.x);
+  expect(movedX).toBe(75);
+
+  const crownCard = page.locator('.shop-card-v3').filter({ hasText: 'Goldene Krone' });
+  await crownCard.getByRole('button', { name: 'Kaufen' }).click();
+  await expect(page.locator('.tula-outfit')).toContainText('👑');
+  await page.reload();
+  await expect(page.locator('[data-home-object="bed"]')).toBeVisible();
+  await expect(page.locator('.tula-outfit')).toContainText('👑');
 });
 
 test('profile and settings are reachable', async ({ page }) => {

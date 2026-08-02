@@ -37,13 +37,36 @@ const phrases=[
 ];
 
 const homeCatalog=[
- {id:'plant',icon:'🪴',cost:25,de:'Olivenbaum',es:'Olivo',el:'Ελιά'},
- {id:'bed',icon:'🛏️',cost:60,de:'Wolkenbett',es:'Cama nube',el:'Κρεβάτι σύννεφο'},
- {id:'lamp',icon:'🪔',cost:35,de:'Goldene Lampe',es:'Lámpara dorada',el:'Χρυσή λάμπα'},
- {id:'books',icon:'📚',cost:40,de:'Bücherregal',es:'Estantería',el:'Βιβλιοθήκη'},
- {id:'aquarium',icon:'🐠',cost:90,de:'Aquarium',es:'Acuario',el:'Ενυδρείο'},
- {id:'crown',icon:'👑',cost:110,de:'Goldene Krone',es:'Corona dorada',el:'Χρυσό στέμμα'}
+ {id:'plant',icon:'🪴',cost:25,type:'decor',de:'Olivenbaum',es:'Olivo',el:'Ελιά',position:{x:18,y:74}},
+ {id:'bed',icon:'🛏️',cost:60,type:'decor',de:'Wolkenbett',es:'Cama nube',el:'Κρεβάτι σύννεφο',position:{x:77,y:77}},
+ {id:'lamp',icon:'🪔',cost:35,type:'decor',de:'Goldene Lampe',es:'Lámpara dorada',el:'Χρυσή λάμπα',position:{x:82,y:43}},
+ {id:'books',icon:'📚',cost:40,type:'decor',de:'Bücherregal',es:'Estantería',el:'Βιβλιοθήκη',position:{x:25,y:48}},
+ {id:'aquarium',icon:'🐠',cost:90,type:'decor',de:'Aquarium',es:'Acuario',el:'Ενυδρείο',position:{x:20,y:81}},
+ {id:'crown',icon:'👑',cost:110,type:'outfit',de:'Goldene Krone',es:'Corona dorada',el:'Χρυσό στέμμα'}
 ];
+const defaultTulaPosition={x:50,y:70};
+const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
+const safePoint=(point,fallback)=>({
+ x:clamp(Number(point?.x)||fallback.x,7,93),
+ y:clamp(Number(point?.y)||fallback.y,15,88)
+});
+function homeViewState(state){
+ const legacy=Array.isArray(state.inventory.homeEquipped)?state.inventory.homeEquipped:[];
+ const owned=Array.isArray(state.inventory.homeOwned)?state.inventory.homeOwned:['plant'];
+ const placed=Array.isArray(state.inventory.homePlaced)?state.inventory.homePlaced:(legacy.length?legacy.filter(id=>homeCatalog.find(item=>item.id===id)?.type==='decor'):['plant']);
+ const legacyOutfit=legacy.find(id=>homeCatalog.find(item=>item.id===id)?.type==='outfit')||null;
+ return {
+  owned,
+  placed,
+  outfit:state.inventory.homeOutfit||legacyOutfit,
+  positions:state.inventory.homePositions||{},
+  tulaPosition:safePoint(state.inventory.tulaHomePosition,defaultTulaPosition)
+ };
+}
+function roomObject(item,positions){
+ const point=safePoint(positions[item.id],item.position);
+ return `<button class="home-room-object home-object-${item.id}" data-home-object="${item.id}" style="left:${point.x}%;top:${point.y}%" aria-label="${languageValue(item,sourceLanguage())} ${tr('verschieben','mover','μετακίνηση')}"><span aria-hidden="true">${item.icon}</span></button>`;
+}
 
 function adaptivePool(){const s=getState(),mastery=s.progress.mastery||{};return shuffle(allWords()).sort((a,b)=>(mastery[a.id]?.right||0)-(mastery[b.id]?.right||0)).slice(0,10)}
 function adaptiveRoute({top,nav}){
@@ -55,7 +78,31 @@ function storiesRoute({top,nav}){const source=sourceLanguage();return `<div clas
 function storyRoute({top,nav}){const s=stories[story.index],p=s.pages[story.step],source=sourceLanguage(),target=targetLanguage();if(!p){const r=grantReward({xp:30,shells:10,countDaily:true});story={index:0,step:0,score:0};return `<div class="v3-shell page">${top()}<section class="celebration"><div style="font-size:72px">📖✨</div><h1>${tr('Geschichte geschafft!','¡Historia completada!','Η ιστορία ολοκληρώθηκε!')}</h1><div class="reward-row"><div>✨<strong>+${r.xp}</strong></div><div>🐚<strong>+${r.shells}</strong></div></div><button class="primary" data-action="navigate" data-route="stories">${tr('Weitere Geschichte','Otra historia','Άλλη ιστορία')}</button></section></div>`}return `<div class="v3-shell page">${top('stories')}<section class="story-card"><span>${s.icon}</span><small>${story.step+1}/3</small><h1>${languageValue(s,source)}</h1><p>${languageValue(p,target)}</p><small>${languageValue(p,source)}</small><button data-action="story-speak">🔊 ${tr('Vorlesen','Leer en voz alta','Ανάγνωση')}</button><button class="primary" data-action="story-next">${tr('Weiter','Continuar','Συνέχεια')} →</button></section></div>${nav('home')}`}
 function travelRoute({top,nav}){if(travel.step>=travel.items.length){const mode=travel.mode,base=mode==='castle'?{xp:60,shells:25}:{xp:40,shells:14};const r=grantReward({...base,countDaily:true});travel={mode:'harbor',items:[],step:0,score:0,current:null};return `<div class="v3-shell page">${top()}<section class="celebration"><div style="font-size:72px">${mode==='castle'?'🏰':'⚓'}✨</div><h1>${tr('Abenteuer geschafft!','¡Aventura completada!','Η περιπέτεια ολοκληρώθηκε!')}</h1><div class="reward-row"><div>✨<strong>+${r.xp}</strong></div><div>🐚<strong>+${r.shells}</strong></div></div><button class="primary" data-action="navigate" data-route="island">${tr('Zur Insel','Volver a la isla','Πίσω στο νησί')}</button></section></div>`}
  const x=travel.items[travel.step];travel.current=x;const source=sourceLanguage(),target=targetLanguage();const opts=shuffle([x,...shuffle(phrases.filter(p=>p!==x)).slice(0,travel.mode==='castle'?3:2)]);return `<div class="v3-shell page expansion-page">${top('island')}<section class="${travel.mode==='castle'?'castle-hero':'harbor-hero'}"><span>${travel.mode==='castle'?'🏰':'⚓'}</span><div><small>${travel.mode==='castle'?tr('BOSS-LEVEL','NIVEL JEFE','ΤΕΛΙΚΟ ΕΠΙΠΕΔΟ'):tr('REISE & DIALOGE','VIAJES Y DIÁLOGOS','ΤΑΞΙΔΙΑ ΚΑΙ ΔΙΑΛΟΓΟΙ')}</small><h1>${languageValue(x,source)}</h1></div></section><div class="dialog-options">${opts.map(o=>`<button data-action="travel-answer" data-value="${languageValue(o,target)}">${languageValue(o,target)}</button>`).join('')}</div></div>${nav('island')}`}
-function homeRoute({top,nav}){const s=getState(),owned=s.inventory.homeOwned||['plant'],equipped=s.inventory.homeEquipped||['plant'],source=sourceLanguage();return `<div class="v3-shell page">${top('island')}<section class="page-title"><span class="eyebrow">${tr('TULAS ZUHAUSE','CASA DE TULA','ΤΟ ΣΠΙΤΙ ΤΗΣ ΤΟΥΛΑ')}</span><h1>${tr('Mach es dir gemütlich','Ponte cómodo','Νιώσε σαν στο σπίτι σου')}</h1></section><section class="tula-room"><div class="room-items">${homeCatalog.filter(i=>equipped.includes(i.id)).map(i=>`<span>${i.icon}</span>`).join('')}</div><div class="room-tula"><img src="assets/illustrations/tula-welcome.svg" alt="Tula"></div></section><section class="shop-section">${homeCatalog.map(i=>`<article class="shop-card-v3"><span>${i.icon}</span><div><strong>${languageValue(i,source)}</strong><small>${owned.includes(i.id)?tr('Gekauft','Comprado','Αγορασμένο'):`🐚 ${i.cost}`}</small></div><button data-action="home-item" data-id="${i.id}">${equipped.includes(i.id)?'✓':owned.includes(i.id)?tr('Aufstellen','Colocar','Τοποθέτηση'):tr('Kaufen','Comprar','Αγορά')}</button></article>`).join('')}</section></div>${nav('island')}`}
+function homeRoute({top,nav}){
+ const s=getState(),home=homeViewState(s),source=sourceLanguage(),tula=home.tulaPosition;
+ const status=item=>{
+  if(!home.owned.includes(item.id))return `🐚 ${item.cost}`;
+  if(item.type==='outfit')return home.outfit===item.id?tr('Tula trägt es','Tula lo lleva','Η Τούλα το φοράει'):tr('Gekauft','Comprado','Αγορασμένο');
+  return home.placed.includes(item.id)?tr('Aufgestellt','Colocado','Τοποθετημένο'):tr('Im Inventar','En el inventario','Στο απόθεμα');
+ };
+ const action=item=>{
+  if(!home.owned.includes(item.id))return tr('Kaufen','Comprar','Αγορά');
+  if(item.type==='outfit')return home.outfit===item.id?tr('Ausziehen','Quitar','Αφαίρεση'):tr('Anziehen','Poner','Φόρεμα');
+  return home.placed.includes(item.id)?'✓':tr('Aufstellen','Colocar','Τοποθέτηση');
+ };
+ return `<div class="v3-shell page tula-home-page">${top('island')}
+ <section class="page-title"><span class="eyebrow">${tr('TULAS ZUHAUSE','CASA DE TULA','ΤΟ ΣΠΙΤΙ ΤΗΣ ΤΟΥΛΑ')}</span><h1>${tr('Mach es dir gemütlich','Ponte cómodo','Νιώσε σαν στο σπίτι σου')}</h1></section>
+ <section class="home-room-card">
+  <header class="home-room-toolbar"><div><span>☝️</span><p><strong>${tr('Ziehen & abstellen','Arrastra y coloca','Σύρε και τοποθέτησε')}</strong><small>${tr('Die Positionen bleiben gespeichert','Las posiciones se guardan','Οι θέσεις αποθηκεύονται')}</small></p></div><button data-action="home-reset">${tr('Aufräumen','Ordenar','Τακτοποίηση')}</button></header>
+  <div class="tula-room" data-home-room>
+   <div class="room-items">${homeCatalog.filter(i=>i.type==='decor'&&home.placed.includes(i.id)).map(i=>roomObject(i,home.positions)).join('')}</div>
+   <button class="room-tula home-room-object" data-home-object="tula" style="left:${tula.x}%;top:${tula.y}%" aria-label="Tula ${tr('verschieben','mover','μετακίνηση')}"><img src="assets/illustrations/tula-welcome.svg" alt=""><span class="tula-outfit" aria-hidden="true">${homeCatalog.find(i=>i.id===home.outfit)?.icon||''}</span></button>
+   <span class="home-room-status">${home.outfit?`${tr('Tula trägt','Tula lleva','Η Τούλα φοράει')}: ${languageValue(homeCatalog.find(i=>i.id===home.outfit),source)}`:tr('Wähle ein Outfit für Tula','Elige un atuendo para Tula','Διάλεξε ρούχο για την Τούλα')}</span>
+  </div>
+ </section>
+ <section class="shop-section home-shop-section">${homeCatalog.map(i=>`<article class="shop-card-v3 ${home.placed.includes(i.id)||home.outfit===i.id?'home-active':''}"><span>${i.icon}</span><div><strong>${languageValue(i,source)}</strong><small>${status(i)}</small></div><button data-action="home-item" data-id="${i.id}">${action(i)}</button></article>`).join('')}</section>
+ </div>${nav('island')}`;
+}
 
 export function registerExperienceRoutes(router,ui){router.register('adaptive',()=>adaptiveRoute(ui));router.register('speaking',()=>speakingRoute(ui));router.register('stories',()=>storiesRoute(ui));router.register('story',()=>storyRoute(ui));router.register('harbor',()=>travelRoute(ui));router.register('castle',()=>travelRoute(ui));router.register('tula-home',()=>homeRoute(ui))}
 export function registerExperienceActions(router){
@@ -69,5 +116,82 @@ export function registerExperienceActions(router){
  registerAction('open-harbor',()=>{if(levelFromXp()<7)return alert(tr('Der Hafen öffnet ab Level 7.','El puerto se abre en nivel 7.','Το λιμάνι ανοίγει στο επίπεδο 7.'));travel={mode:'harbor',items:[...phrases],step:0,score:0,current:null};router.navigate('harbor')});
  registerAction('open-castle',()=>{if(levelFromXp()<10)return alert(tr('Das Schloss öffnet ab Level 10.','El castillo se abre en nivel 10.','Το κάστρο ανοίγει στο επίπεδο 10.'));travel={mode:'castle',items:shuffle(phrases).slice(0,5),step:0,score:0,current:null};router.navigate('castle')});
  registerAction('travel-answer',({data})=>{if(data.value===languageValue(travel.current,targetLanguage()))travel.score++;travel.step++;router.renderCurrent()});
- registerAction('home-item',({data})=>{const item=homeCatalog.find(i=>i.id===data.id);if(!item)return;const s=getState(),owned=s.inventory.homeOwned||['plant'];if(!owned.includes(item.id)&&!spendShells(item.cost))return alert(tr('Nicht genug Muscheln.','No hay suficientes conchas.','Δεν έχεις αρκετά κοχύλια.'));setState(d=>{d.inventory.homeOwned=[...new Set([...(d.inventory.homeOwned||['plant']),item.id])];const current=d.inventory.homeEquipped||['plant'];d.inventory.homeEquipped=current.includes(item.id)?current.filter(x=>x!==item.id):[...current,item.id].slice(-6);return d});router.renderCurrent()});
+ registerAction('home-item',({data})=>{
+  const item=homeCatalog.find(i=>i.id===data.id);if(!item)return;
+  const before=homeViewState(getState()),isNew=!before.owned.includes(item.id);
+  if(isNew&&!spendShells(item.cost))return alert(tr('Nicht genug Muscheln.','No hay suficientes conchas.','Δεν έχεις αρκετά κοχύλια.'));
+  setState(d=>{
+   const current=homeViewState(d);
+   d.inventory.homeOwned=[...new Set([...current.owned,item.id])];
+   d.inventory.homePlaced=item.type==='decor'
+    ?current.placed.includes(item.id)?current.placed.filter(id=>id!==item.id):[...current.placed,item.id]
+    :current.placed;
+   if(item.type==='outfit')d.inventory.homeOutfit=current.outfit===item.id?null:item.id;
+   if(item.type==='decor'&&isNew){
+    d.inventory.homePlaced=[...new Set([...current.placed,item.id])];
+    d.inventory.homePositions={...current.positions,[item.id]:item.position};
+   }
+   return d;
+  });
+  router.renderCurrent();
+ });
+ registerAction('home-reset',()=>{
+  setState(d=>{
+   d.inventory.homePositions=Object.fromEntries(homeCatalog.filter(item=>item.type==='decor').map(item=>[item.id,item.position]));
+   d.inventory.tulaHomePosition=defaultTulaPosition;
+   return d;
+  });
+  router.renderCurrent();
+ });
+ installHomeDragging();
+}
+
+let homeDraggingInstalled=false;
+let homeDrag=null;
+function installHomeDragging(){
+ if(homeDraggingInstalled)return;homeDraggingInstalled=true;
+ document.addEventListener('pointerdown',event=>{
+  const object=event.target.closest('[data-home-object]'),room=object?.closest('[data-home-room]');
+  if(!object||!room)return;
+  event.preventDefault();
+  const rect=room.getBoundingClientRect();
+  homeDrag={id:object.dataset.homeObject,pointerId:event.pointerId,object,rect,moved:false,startX:event.clientX,startY:event.clientY};
+  object.classList.add('dragging');
+  object.setPointerCapture?.(event.pointerId);
+ });
+ document.addEventListener('pointermove',event=>{
+  if(!homeDrag||event.pointerId!==homeDrag.pointerId)return;
+  if(Math.hypot(event.clientX-homeDrag.startX,event.clientY-homeDrag.startY)>4)homeDrag.moved=true;
+  if(!homeDrag.moved)return;
+  const x=clamp((event.clientX-homeDrag.rect.left)/homeDrag.rect.width*100,homeDrag.id==='tula'?11:7,homeDrag.id==='tula'?89:93);
+  const y=clamp((event.clientY-homeDrag.rect.top)/homeDrag.rect.height*100,homeDrag.id==='tula'?25:15,homeDrag.id==='tula'?84:88);
+  homeDrag.object.style.left=`${x}%`;homeDrag.object.style.top=`${y}%`;
+ });
+ document.addEventListener('pointerup',event=>{
+  if(!homeDrag||event.pointerId!==homeDrag.pointerId)return;
+  const {id,object,moved}=homeDrag;object.classList.remove('dragging');homeDrag=null;
+  if(!moved)return;
+  const point={x:Number.parseFloat(object.style.left),y:Number.parseFloat(object.style.top)};
+  setState(d=>{
+   if(id==='tula')d.inventory.tulaHomePosition=point;
+   else d.inventory.homePositions={...(d.inventory.homePositions||{}),[id]:point};
+   return d;
+  });
+ });
+ document.addEventListener('keydown',event=>{
+  const object=event.target.closest('[data-home-object]');
+  const moves={ArrowLeft:[-2,0],ArrowRight:[2,0],ArrowUp:[0,-2],ArrowDown:[0,2]};
+  if(!object||!moves[event.key])return;
+  event.preventDefault();
+  const id=object.dataset.homeObject,current=homeViewState(getState());
+  const fallback=id==='tula'?current.tulaPosition:homeCatalog.find(item=>item.id===id)?.position;
+  const point=safePoint(id==='tula'?current.tulaPosition:current.positions[id],fallback);
+  const next={x:point.x+moves[event.key][0],y:point.y+moves[event.key][1]};
+  object.style.left=`${next.x}%`;object.style.top=`${next.y}%`;
+  setState(d=>{
+   if(id==='tula')d.inventory.tulaHomePosition=next;
+   else d.inventory.homePositions={...(d.inventory.homePositions||{}),[id]:next};
+   return d;
+  });
+ });
 }
