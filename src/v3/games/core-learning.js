@@ -21,7 +21,7 @@ const game={listening:{items:[],step:0,score:0,current:null},sentence:{rounds:[]
 
 function top(backRoute='world'){
   const state=getState();
-  return `<header class="v3-top"><button class="icon" data-action="navigate" data-route="${backRoute}">←</button><div class="v3-brand"><i>🐢</i><strong>Chelonaki - Language</strong></div><div class="top-actions"><button class="chip language-pair-chip" data-action="navigate" data-route="language-select">${pairBadge()}</button><span class="wallet-mini">🐚 ${state.progress.shells}</span></div></header>`;
+  return `<header class="v3-top"><button class="icon" data-action="navigate" data-route="${backRoute}">←</button><div class="v3-brand"><i>🐢</i><strong>Chelonaki - Toulas Island</strong></div><div class="top-actions"><button class="chip language-pair-chip" data-action="navigate" data-route="language-select">${pairBadge()}</button><span class="wallet-mini">🐚 ${state.progress.shells}</span></div></header>`;
 }
 function nav(active){const items=[['home','⌂',tr('Home','Inicio','Αρχική')],['island','◉',tr('Insel','Isla','Νησί')],['words','▤',tr('Wörter','Palabras','Λέξεις')],['shop','♛',tr('Shop','Tienda','Κατάστημα')],['profile','♙',tr('Profil','Perfil','Προφίλ')]];return `<nav class="v3-nav">${items.map(([route,icon,label])=>`<button class="${active===route?'active':''}" data-action="navigate" data-route="${route}"><span>${icon}</span><small>${label}</small></button>`).join('')}</nav>`}
 function markLearned(id,count){setState(d=>{d.progress.learned[id]=Math.max(Number(d.progress.learned[id]||0),count);return d})}

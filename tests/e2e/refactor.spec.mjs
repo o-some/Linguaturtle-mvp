@@ -38,7 +38,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('home, island and learning world are separated', async ({ page }) => {
-  await expect(page.locator('.v3-brand').first()).toContainText('Chelonaki - Language');
+  await expect(page.locator('.v3-brand').first()).toContainText('Chelonaki - Toulas Island');
   await page.getByRole('button', { name: /Insel entdecken/i }).click();
   await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
   await page.locator('[data-action="open-world"]').first().click();
