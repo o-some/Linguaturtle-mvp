@@ -46,6 +46,16 @@ test('home, island and learning world are separated', async ({ page }) => {
   await expect(page.locator('.word-showcase')).toHaveCount(0);
 });
 
+test('all bundled illustrations are visible in their intended routes', async ({ page }) => {
+  await expect(page.locator('.tula-art[src$="tula-anime.svg"]')).toBeVisible();
+  await page.locator('[data-route="island"]').first().click();
+  await expect(page.locator('.island-card img[src$="turtle-island.svg"]')).toBeVisible();
+  const homeFeature = page.locator('.tula-home-feature');
+  await expect(homeFeature.locator('img[src$="tula-home-anime.svg"]')).toBeVisible();
+  await homeFeature.click();
+  await expect(page.locator('.room-tula img[src$="tula-welcome.svg"]')).toBeVisible();
+});
+
 test('explore opens only after selecting the exercise', async ({ page }) => {
   await page.locator('[data-action="open-world"]').first().click();
   await page.getByRole('button', { name: /Wörter entdecken/i }).click();
