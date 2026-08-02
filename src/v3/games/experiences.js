@@ -37,13 +37,14 @@ const phrases=[
 ];
 
 const homeCatalog=[
- {id:'plant',icon:'🪴',cost:25,type:'decor',de:'Olivenbaum',es:'Olivo',el:'Ελιά',position:{x:18,y:74}},
+ {id:'plant',icon:'🪴',cost:25,type:'decor',de:'Olivenbaum',es:'Olivo',el:'Ελιά',position:{x:68,y:22}},
  {id:'bed',icon:'🛏️',cost:60,type:'decor',de:'Wolkenbett',es:'Cama nube',el:'Κρεβάτι σύννεφο',position:{x:77,y:77}},
  {id:'lamp',icon:'🪔',cost:35,type:'decor',de:'Goldene Lampe',es:'Lámpara dorada',el:'Χρυσή λάμπα',position:{x:82,y:43}},
- {id:'books',icon:'📚',cost:40,type:'decor',de:'Bücherregal',es:'Estantería',el:'Βιβλιοθήκη',position:{x:25,y:48}},
- {id:'aquarium',icon:'🐠',cost:90,type:'decor',de:'Aquarium',es:'Acuario',el:'Ενυδρείο',position:{x:20,y:81}},
+ {id:'books',icon:'📚',cost:40,type:'decor',de:'Bücherregal',es:'Estantería',el:'Βιβλιοθήκη',position:{x:43,y:24}},
+ {id:'aquarium',icon:'🐠',cost:90,type:'decor',de:'Aquarium',es:'Acuario',el:'Ενυδρείο',position:{x:18,y:54}},
  {id:'crown',icon:'👑',cost:110,type:'outfit',de:'Goldene Krone',es:'Corona dorada',el:'Χρυσό στέμμα'}
 ];
+const HOME_LAYOUT_VERSION=2;
 const defaultTulaPosition={x:50,y:70};
 const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
 const safePoint=(point,fallback)=>({
@@ -67,6 +68,16 @@ function roomObject(item,positions){
  const point=safePoint(positions[item.id],item.position);
  return `<button class="home-room-object home-object-${item.id}" data-home-object="${item.id}" style="left:${point.x}%;top:${point.y}%" aria-label="${languageValue(item,sourceLanguage())} ${tr('verschieben','mover','μετακίνηση')}"><span aria-hidden="true">${item.icon}</span></button>`;
 }
+function migrateHomeLayout(){
+ const state=getState();
+ if(Number(state.inventory.homeLayoutVersion||0)>=HOME_LAYOUT_VERSION)return;
+ setState(d=>{
+  const home=homeViewState(d);
+  d.inventory.homePositions={...home.positions,...Object.fromEntries(homeCatalog.filter(item=>item.type==='decor'&&home.placed.includes(item.id)).map(item=>[item.id,item.position]))};
+  d.inventory.homeLayoutVersion=HOME_LAYOUT_VERSION;
+  return d;
+ });
+}
 
 function adaptivePool(){const s=getState(),mastery=s.progress.mastery||{};return shuffle(allWords()).sort((a,b)=>(mastery[a.id]?.right||0)-(mastery[b.id]?.right||0)).slice(0,10)}
 function adaptiveRoute({top,nav}){
@@ -79,6 +90,7 @@ function storyRoute({top,nav}){const s=stories[story.index],p=s.pages[story.step
 function travelRoute({top,nav}){if(travel.step>=travel.items.length){const mode=travel.mode,base=mode==='castle'?{xp:60,shells:25}:{xp:40,shells:14};const r=grantReward({...base,countDaily:true});travel={mode:'harbor',items:[],step:0,score:0,current:null};return `<div class="v3-shell page">${top()}<section class="celebration"><div style="font-size:72px">${mode==='castle'?'🏰':'⚓'}✨</div><h1>${tr('Abenteuer geschafft!','¡Aventura completada!','Η περιπέτεια ολοκληρώθηκε!')}</h1><div class="reward-row"><div>✨<strong>+${r.xp}</strong></div><div>🐚<strong>+${r.shells}</strong></div></div><button class="primary" data-action="navigate" data-route="island">${tr('Zur Insel','Volver a la isla','Πίσω στο νησί')}</button></section></div>`}
  const x=travel.items[travel.step];travel.current=x;const source=sourceLanguage(),target=targetLanguage();const opts=shuffle([x,...shuffle(phrases.filter(p=>p!==x)).slice(0,travel.mode==='castle'?3:2)]);return `<div class="v3-shell page expansion-page">${top('island')}<section class="${travel.mode==='castle'?'castle-hero':'harbor-hero'}"><span>${travel.mode==='castle'?'🏰':'⚓'}</span><div><small>${travel.mode==='castle'?tr('BOSS-LEVEL','NIVEL JEFE','ΤΕΛΙΚΟ ΕΠΙΠΕΔΟ'):tr('REISE & DIALOGE','VIAJES Y DIÁLOGOS','ΤΑΞΙΔΙΑ ΚΑΙ ΔΙΑΛΟΓΟΙ')}</small><h1>${languageValue(x,source)}</h1></div></section><div class="dialog-options">${opts.map(o=>`<button data-action="travel-answer" data-value="${languageValue(o,target)}">${languageValue(o,target)}</button>`).join('')}</div></div>${nav('island')}`}
 function homeRoute({top,nav}){
+ migrateHomeLayout();
  const s=getState(),home=homeViewState(s),source=sourceLanguage(),tula=home.tulaPosition;
  const status=item=>{
   if(!home.owned.includes(item.id))return `🐚 ${item.cost}`;
@@ -106,6 +118,7 @@ function homeRoute({top,nav}){
 
 export function registerExperienceRoutes(router,ui){router.register('adaptive',()=>adaptiveRoute(ui));router.register('speaking',()=>speakingRoute(ui));router.register('stories',()=>storiesRoute(ui));router.register('story',()=>storyRoute(ui));router.register('harbor',()=>travelRoute(ui));router.register('castle',()=>travelRoute(ui));router.register('tula-home',()=>homeRoute(ui))}
 export function registerExperienceActions(router){
+ migrateHomeLayout();
  registerAction('start-adaptive',()=>{adaptive={items:[],step:0,score:0,current:null};router.navigate('adaptive')});
  registerAction('adaptive-speak',()=>{const target=targetLanguage();speak(languageValue(adaptive.current,target),languageMeta(target).voice)});
  registerAction('adaptive-answer',({data})=>{const ok=data.id===adaptive.current.id;setState(d=>{const m=d.progress.mastery[adaptive.current.id]||{right:0,wrong:0};ok?m.right++:m.wrong++;d.progress.mastery[adaptive.current.id]=m;return d});if(ok)adaptive.score++;adaptive.step++;router.renderCurrent()});
@@ -122,6 +135,7 @@ export function registerExperienceActions(router){
   if(isNew&&!spendShells(item.cost))return alert(tr('Nicht genug Muscheln.','No hay suficientes conchas.','Δεν έχεις αρκετά κοχύλια.'));
   setState(d=>{
    const current=homeViewState(d);
+   d.inventory.homeLayoutVersion=HOME_LAYOUT_VERSION;
    d.inventory.homeOwned=[...new Set([...current.owned,item.id])];
    d.inventory.homePlaced=item.type==='decor'
     ?current.placed.includes(item.id)?current.placed.filter(id=>id!==item.id):[...current.placed,item.id]
@@ -137,6 +151,7 @@ export function registerExperienceActions(router){
  });
  registerAction('home-reset',()=>{
   setState(d=>{
+   d.inventory.homeLayoutVersion=HOME_LAYOUT_VERSION;
    d.inventory.homePositions=Object.fromEntries(homeCatalog.filter(item=>item.type==='decor').map(item=>[item.id,item.position]));
    d.inventory.tulaHomePosition=defaultTulaPosition;
    return d;
@@ -173,6 +188,7 @@ function installHomeDragging(){
   if(!moved)return;
   const point={x:Number.parseFloat(object.style.left),y:Number.parseFloat(object.style.top)};
   setState(d=>{
+   d.inventory.homeLayoutVersion=HOME_LAYOUT_VERSION;
    if(id==='tula')d.inventory.tulaHomePosition=point;
    else d.inventory.homePositions={...(d.inventory.homePositions||{}),[id]:point};
    return d;
@@ -189,6 +205,7 @@ function installHomeDragging(){
   const next={x:point.x+moves[event.key][0],y:point.y+moves[event.key][1]};
   object.style.left=`${next.x}%`;object.style.top=`${next.y}%`;
   setState(d=>{
+   d.inventory.homeLayoutVersion=HOME_LAYOUT_VERSION;
    if(id==='tula')d.inventory.tulaHomePosition=next;
    else d.inventory.homePositions={...(d.inventory.homePositions||{}),[id]:next};
    return d;

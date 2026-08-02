@@ -26,7 +26,7 @@ function top(backRoute=null){
   const s=getState();
   return `<header class="v3-top">
     <button class="icon" data-action="${backRoute?'navigate':'menu'}" ${backRoute?`data-route="${backRoute}"`:''}>${backRoute?'←':'☰'}</button>
-    <div class="v3-brand"><i>🐢</i><strong>LinguaTurtle</strong></div>
+    <div class="v3-brand"><i>🐢</i><strong>Chelonaki - Language</strong></div>
     <div class="top-actions">
       <button class="chip language-pair-chip" data-action="navigate" data-route="language-select">${pairBadge()}</button>
       <span class="wallet-mini">🐚 ${s.progress.shells}</span>
