@@ -11,7 +11,7 @@ import { registerAdvancedRoutes, registerAdvancedActions } from './games/advance
 import { registerExperienceRoutes, registerExperienceActions } from './games/experiences.js';
 import { renderShop, renderProfile, renderSettings, registerProgressionActions } from './screens/progression.js';
 import { renderChildProfile, registerChildProfileActions } from './screens/child-profile.js';
-import { assets } from '../config/assets.js';
+import { assets } from '../config/assets.js?build=cinematic-home-2';
 
 const app=document.querySelector('#app');
 const router=createRouter(app);
