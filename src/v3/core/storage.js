@@ -1,5 +1,6 @@
 export const STORAGE_VERSION = 2;
 export const STORAGE_KEY = 'linguaturtle-v3-core';
+const LANGUAGE_CODES = ['de','es','el','en'];
 
 const safeParse = value => {
   try { return JSON.parse(value); } catch { return null; }
@@ -20,10 +21,10 @@ export function writeStorage(state) {
 }
 
 export function migrateStorage(input, fallback) {
-  const legacySource = ['de','es','el'].includes(input.language) ? input.language : fallback.languages.source;
-  const source = ['de','es','el'].includes(input.languages?.source) ? input.languages.source : legacySource;
-  let target = ['de','es','el'].includes(input.languages?.target) ? input.languages.target : (source === 'de' ? 'es' : 'de');
-  if (source === target) target = ['de','es','el'].find(code => code !== source) || 'es';
+  const legacySource = LANGUAGE_CODES.includes(input.language) ? input.language : fallback.languages.source;
+  const source = LANGUAGE_CODES.includes(input.languages?.source) ? input.languages.source : legacySource;
+  let target = LANGUAGE_CODES.includes(input.languages?.target) ? input.languages.target : (source === 'de' ? 'es' : 'de');
+  if (source === target) target = LANGUAGE_CODES.find(code => code !== source) || 'es';
 
   const merged = {
     ...structuredClone(fallback),

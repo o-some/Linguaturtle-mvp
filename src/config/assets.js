@@ -50,8 +50,7 @@ export const assets = Object.freeze({
     }
   },
   rewards: {
-    shellGold: 'assets/creative/reward_shell_gold.webp',
-    shellPearl: 'assets/creative/reward_shell_pearl.webp',
+    currencyShell: 'assets/creative/reward_shell_pearl.webp',
     xpStar: 'assets/creative/reward_star_xp.webp',
     streak: 'assets/creative/reward_streak_flame.webp',
     chests: {

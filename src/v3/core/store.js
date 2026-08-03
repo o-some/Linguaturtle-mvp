@@ -14,6 +14,7 @@ export const initialState = {
   settings: { sound: true, motion: true, music: false },
   inventory: {
     unlockedModes: [],
+    unlockedWords: [],
     boosters: { doubleXp: 0, hints: 0, jumps: 0 },
     claimedMilestones: [],
     homeLayoutVersion: 0,

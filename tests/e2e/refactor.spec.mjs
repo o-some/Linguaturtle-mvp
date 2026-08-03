@@ -110,7 +110,32 @@ test('explore opens only after selecting the exercise', async ({ page }) => {
   await expect(page.locator('[data-action="finish-explore"]')).toBeVisible();
   await page.locator('[data-action="finish-explore"]').click();
   await expect(page.locator('.celebration img[src$="tula_celebrating.webp"]')).toBeVisible();
-  await expect(page.locator('.reward-row img[src$="reward_shell_gold.webp"]')).toBeVisible();
+  await expect(page.locator('.reward-row img[src$="reward_shell_pearl.webp"]')).toBeVisible();
+});
+
+test('words area lists real words and unlocks one with the shared shell currency', async ({ page }) => {
+  await page.locator('[data-route="words"]').first().click();
+  await expect(page.getByRole('heading', { name: /Neue Wörter lernen/i })).toBeVisible();
+  await expect(page.locator('.word-shop-card')).toHaveCount(18);
+  await expect(page.locator('.word-shop-card').first()).toContainText(/manzana|Apfel/i);
+  await expect(page.locator('.word-shop-card .word-buy').first().locator('img[src$="reward_shell_pearl.webp"]')).toBeVisible();
+
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  const lockedCard = page.locator('.word-shop-card.locked').first();
+  const wordId = await lockedCard.getAttribute('data-word-card');
+  await lockedCard.locator('[data-action="buy-word"]').click();
+  await expect(page.locator(`[data-word-card="${wordId}"]`)).toHaveClass(/owned/);
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(stored.progress.shells).toBe(before - 10);
+  expect(stored.inventory.unlockedWords).toContain(wordId);
+  await expect(page.locator('.wallet-mini img[src$="reward_shell_pearl.webp"]')).toBeVisible();
+});
+
+test('language selector shows a flag for every available language', async ({ page }) => {
+  await openLanguageSelector(page);
+  for (const flag of ['🇩🇪', '🇪🇸', '🇬🇷', '🇬🇧']) {
+    await expect(page.locator('.language-flag').filter({ hasText: flag }).first()).toBeVisible();
+  }
 });
 
 test('listening quiz accepts an answer and persists reward', async ({ page }) => {
