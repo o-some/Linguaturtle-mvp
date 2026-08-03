@@ -2,7 +2,7 @@ import { collections } from '../content-multilingual.js';
 import {
   getState, setState, registerAction, speak, grantReward,
   sourceLanguage, targetLanguage, languageMeta, languageValue, uiText, pairBadge
-} from '../core/index.js';
+} from '../core/index.js?build=word-price-1';
 import { assets } from '../../config/assets.js';
 
 const shuffle=list=>[...list].sort(()=>Math.random()-.5);

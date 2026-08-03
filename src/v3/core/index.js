@@ -8,4 +8,4 @@ export {
   LANGUAGES, LANGUAGE_CODES, ensureLanguagePair, sourceLanguage, targetLanguage,
   uiLanguage, languageMeta, languageValue, uiText, pairBadge,
   setSourceLanguage, setTargetLanguage, swapLanguages
-} from './languages.js';
+} from './languages.js?build=word-price-1';

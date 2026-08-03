@@ -5,8 +5,8 @@ import {
   LANGUAGES, LANGUAGE_CODES, ensureLanguagePair, sourceLanguage, targetLanguage,
   languageMeta, languageValue, uiText, pairBadge,
   setSourceLanguage, setTargetLanguage, swapLanguages
-} from './core/index.js';
-import { installCoreLearningGames } from './games/core-learning.js';
+} from './core/index.js?build=word-price-1';
+import { installCoreLearningGames } from './games/core-learning.js?build=word-price-1';
 import { registerAdvancedRoutes, registerAdvancedActions } from './games/advanced.js';
 import { registerExperienceRoutes, registerExperienceActions } from './games/experiences.js';
 import { renderShop, renderProfile, renderSettings, registerProgressionActions } from './screens/progression.js';
