@@ -1,9 +1,9 @@
 {
-  "name": "Chelonaki - Toulas Island",
-  "short_name": "Chelonaki",
+  "name": "LinguaTurtle – Toulas Island",
+  "short_name": "LinguaTurtle",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#fff7e8",
-  "theme_color": "#fff7e8",
+  "background_color": "#031e35",
+  "theme_color": "#031e35",
   "description": "Spielerische Sprachlern-App für Kinder"
 }

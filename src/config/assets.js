@@ -18,6 +18,7 @@ export const assets = Object.freeze({
   },
   backgrounds: {
     home: {
+      cinematic: 'assets/creative-v2/home_cinematic_island.webp',
       tropicalBay: 'assets/creative/home_tropical_bay.webp',
       interior: 'assets/creative/home_tula_house_interior.webp'
     },

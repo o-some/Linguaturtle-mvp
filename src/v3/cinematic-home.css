@@ -1,0 +1,363 @@
+/* Cinematic Island Welcome — selected Product Design direction */
+body:has(.cinematic-home){background:#021a2e}
+
+.cinematic-home{
+  isolation:isolate;
+  width:min(100%,620px);
+  min-height:100svh;
+  padding:max(12px,env(safe-area-inset-top)) 14px calc(112px + env(safe-area-inset-bottom));
+  overflow:hidden;
+  color:#fff8e7;
+  background:#031e35;
+  box-shadow:0 0 80px rgba(0,10,22,.58);
+}
+.cinematic-home:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(1,20,39,.66) 0,rgba(1,28,50,.14) 28%,rgba(1,22,39,.12) 58%,rgba(1,20,37,.8) 100%),
+    linear-gradient(90deg,rgba(1,20,38,.72) 0,rgba(1,29,50,.26) 54%,rgba(1,18,31,.05) 78%);
+}
+.cinematic-home-bg{
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 44%;
+  filter:saturate(1.02) contrast(1.02);
+}
+
+.cinematic-home .v3-top{
+  position:relative;
+  top:auto;
+  z-index:20;
+  min-height:62px;
+  padding:4px 0 8px;
+  background:transparent;
+  backdrop-filter:none;
+}
+.v3-top-cinematic .v3-brand{
+  gap:8px;
+  min-width:0;
+  color:#fff1c1;
+  text-shadow:0 3px 12px rgba(0,15,27,.82);
+}
+.v3-top-cinematic .v3-brand strong{
+  max-width:none;
+  font-size:clamp(.94rem,4vw,1.26rem);
+  line-height:1;
+  white-space:nowrap;
+}
+.home-avatar-button{
+  display:grid;
+  place-items:center;
+  flex:0 0 48px;
+  width:48px;
+  height:48px;
+  padding:0;
+  overflow:hidden;
+  border:2px solid #efc867;
+  border-radius:50%;
+  background:#063752;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.16),0 8px 20px rgba(0,18,33,.36);
+}
+.home-avatar-button img,.brand-avatar{width:100%;height:100%;object-fit:cover}
+.brand-avatar{
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  border:2px solid #e9c361;
+  border-radius:50%;
+  background:#063752;
+}
+.v3-top-cinematic .top-actions{gap:7px}
+.v3-top-cinematic .chip,.v3-top-cinematic .wallet-mini{
+  min-height:43px;
+  border-color:rgba(236,193,83,.72)!important;
+  background:rgba(2,31,53,.72)!important;
+  color:#fff7df!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 8px 20px rgba(0,16,29,.34)!important;
+  backdrop-filter:blur(12px);
+}
+.v3-top-cinematic .wallet-mini{padding:8px 11px}
+.v3-top-cinematic .wallet-mini .currency-shell{width:27px;height:27px}
+
+.cinematic-home-stage{
+  position:relative;
+  z-index:1;
+  min-height:calc(100svh - 184px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+.cinematic-home-copy{
+  position:relative;
+  z-index:7;
+  width:min(72%,390px);
+  padding:clamp(48px,8vh,84px) 2px 0;
+}
+.home-kicker,.home-next-label{
+  display:block;
+  color:#f4cc69;
+  font-size:clamp(.61rem,2.5vw,.75rem);
+  font-weight:950;
+  letter-spacing:.16em;
+  line-height:1.35;
+  text-shadow:0 2px 8px rgba(0,20,35,.85);
+}
+.cinematic-home-copy h1{
+  max-width:7ch;
+  margin:12px 0 8px;
+  color:#fff1c7;
+  font:900 clamp(2.65rem,12vw,4.65rem)/.88 "Palatino Linotype",Palatino,Georgia,serif;
+  letter-spacing:-.045em;
+  text-wrap:balance;
+  text-shadow:0 5px 18px rgba(0,21,38,.9);
+}
+.cinematic-home-copy p{
+  max-width:25ch;
+  margin:0 0 25px;
+  color:#fff;
+  font-size:clamp(.96rem,3.8vw,1.18rem);
+  font-weight:750;
+  line-height:1.4;
+  text-shadow:0 3px 12px rgba(0,20,36,.92);
+}
+.home-next-label{
+  max-width:33ch;
+  margin-bottom:8px;
+  color:#ffe8a4;
+  font-size:clamp(.56rem,2.2vw,.68rem);
+  letter-spacing:.12em;
+}
+.home-primary{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  min-width:min(100%,310px);
+  min-height:64px;
+  padding:14px 24px 16px;
+  border:1px solid #fff0a8;
+  border-radius:999px;
+  background:linear-gradient(180deg,#ffe18a 0,#dfaa39 52%,#bd7a1e 100%);
+  color:#092f4b;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.72),inset 0 -2px 0 rgba(91,48,6,.22),0 7px 0 #7d4b11,0 18px 30px rgba(0,18,31,.38);
+  font-size:clamp(1.12rem,4.5vw,1.35rem);
+  font-weight:1000;
+  text-shadow:0 1px rgba(255,255,255,.58);
+}
+.home-primary i{font-size:1.45em}
+.home-primary:focus-visible,.home-avatar-button:focus-visible,.home-island-preview:focus-visible{
+  outline:3px solid #fff7d8;
+  outline-offset:4px;
+}
+
+.cinematic-home-tula{
+  position:absolute;
+  z-index:5;
+  right:clamp(-60px,-8vw,-20px);
+  bottom:clamp(102px,15vh,152px);
+  width:auto;
+  height:clamp(330px,50svh,520px);
+  max-width:72%;
+  object-fit:contain;
+  object-position:right bottom;
+  filter:drop-shadow(0 24px 20px rgba(0,14,26,.52));
+  pointer-events:none;
+  animation:cinematic-tula-float 4.8s ease-in-out infinite;
+}
+
+.home-goal-panel{
+  position:absolute;
+  z-index:10;
+  left:0;
+  right:0;
+  bottom:5px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto 72px;
+  grid-template-rows:auto 7px auto;
+  align-items:center;
+  gap:7px 10px;
+  min-height:106px;
+  padding:13px 14px 12px;
+  border:1px solid rgba(235,190,76,.92);
+  border-radius:28px;
+  background:linear-gradient(145deg,rgba(2,41,69,.94),rgba(1,27,49,.96));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 18px 38px rgba(0,14,27,.46);
+  backdrop-filter:blur(14px);
+}
+.home-goal-badge{
+  display:grid;
+  place-items:center;
+  grid-column:1;
+  grid-row:1 / span 3;
+  width:54px;
+  height:54px;
+  border:1px solid rgba(244,205,103,.7);
+  border-radius:50%;
+  background:rgba(5,68,99,.72);
+}
+.home-goal-badge .reward-art{width:43px;height:43px;margin:0}
+.home-goal-copy{grid-column:2;grid-row:1;min-width:0}
+.home-goal-copy small,.home-goal-copy strong,.home-goal-copy span{display:block}
+.home-goal-copy small{color:#ffe49a;font-size:.72rem;font-weight:900}
+.home-goal-copy strong{
+  color:#fff2c7;
+  font:900 1.6rem/1 "Palatino Linotype",Palatino,Georgia,serif;
+}
+.home-goal-copy span{
+  overflow:hidden;
+  color:#d9f8f5;
+  font-size:.68rem;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.home-goal-meta{
+  grid-column:3;
+  grid-row:1;
+  display:grid;
+  justify-items:end;
+  gap:4px;
+  color:#dff8f7;
+  font-size:.66rem;
+  font-weight:900;
+}
+.home-goal-meta span{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.home-goal-meta img{width:19px;height:19px;object-fit:contain}
+.home-island-preview{
+  position:relative;
+  grid-column:4;
+  grid-row:1 / span 3;
+  width:72px;
+  height:58px;
+  padding:0;
+  overflow:hidden;
+  border:1px solid rgba(246,214,126,.82);
+  border-radius:18px;
+  background:#07537b;
+  box-shadow:0 6px 15px rgba(0,16,29,.32);
+}
+.home-island-preview img{width:100%;height:100%;object-fit:cover}
+.home-island-preview i{
+  position:absolute;
+  right:4px;
+  bottom:4px;
+  display:grid;
+  place-items:center;
+  width:23px;
+  height:23px;
+  border-radius:50%;
+  background:#e8b94d;
+  color:#092f4b;
+  box-shadow:0 2px 6px rgba(0,15,26,.38);
+}
+.home-goal-bar{
+  grid-column:2 / 4;
+  grid-row:2;
+  height:7px;
+  overflow:hidden;
+  border:1px solid rgba(129,190,205,.34);
+  border-radius:999px;
+  background:rgba(0,17,31,.6);
+}
+.home-goal-bar i{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#2fc1c6,#f4ca62);
+  box-shadow:0 0 11px rgba(66,210,208,.55);
+}
+.home-level-note{grid-column:2 / 4;grid-row:3;color:#bce9ed;font-size:.59rem;text-align:right}
+
+.v3-nav{
+  background:linear-gradient(180deg,rgba(3,48,79,.97),rgba(1,29,52,.98))!important;
+  border-color:rgba(229,184,72,.78)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 18px 45px rgba(0,18,32,.48)!important;
+  backdrop-filter:blur(18px);
+}
+.v3-nav button{min-height:54px;color:#d9c689}
+.v3-nav button .nav-icon{
+  display:grid;
+  place-items:center;
+  min-height:25px;
+  font-size:1.5rem;
+}
+.v3-nav button small{
+  display:block;
+  margin-top:3px;
+  color:inherit;
+  font-size:.65rem;
+  font-weight:800;
+}
+.v3-nav button.active{
+  background:linear-gradient(180deg,#ffe18a,#c98b27)!important;
+  color:#092f4b!important;
+  box-shadow:inset 0 1px 0 #fff2b7,0 6px 15px rgba(0,15,27,.42)!important;
+}
+.v3-nav button:focus-visible{outline:3px solid #fff0b4;outline-offset:2px}
+
+.island-adventures-head{margin-bottom:10px}
+.island-adventure-grid{
+  grid-template-columns:repeat(3,minmax(180px,1fr));
+  overflow-x:auto;
+  padding:2px 2px 12px;
+  scroll-snap-type:x proximity;
+  scrollbar-width:none;
+}
+.island-adventure-grid::-webkit-scrollbar{display:none}
+.island-adventure-grid button{
+  min-height:98px;
+  scroll-snap-align:start;
+}
+.island-adventure-grid .mode-art{
+  flex-basis:58px;
+  width:58px;
+  height:66px;
+}
+
+@media(max-width:430px){
+  .cinematic-home{padding-inline:12px}
+  .home-avatar-button{flex-basis:43px;width:43px;height:43px}
+  .v3-top-cinematic .v3-brand strong{max-width:none;font-size:.9rem}
+  .v3-top-cinematic .chip{min-height:39px;padding:8px 9px;font-size:.72rem}
+  .v3-top-cinematic .wallet-mini{min-height:39px;padding:7px 9px;font-size:.8rem}
+  .v3-top-cinematic .wallet-mini .currency-shell{width:24px;height:24px}
+  .cinematic-home-copy{width:76%;padding-top:clamp(45px,7vh,68px)}
+  .cinematic-home-copy h1{font-size:clamp(2.6rem,13vw,3.4rem)}
+  .cinematic-home-copy p{font-size:.98rem}
+  .home-primary{min-height:58px;padding-inline:20px}
+  .cinematic-home-tula{right:-46px;bottom:48px;height:clamp(300px,44svh,390px);max-width:76%}
+  .home-goal-panel{
+    grid-template-columns:auto minmax(0,1fr) auto 61px;
+    gap:6px 8px;
+    padding:11px 11px 10px;
+    border-radius:24px;
+  }
+  .home-goal-badge{width:46px;height:46px}
+  .home-goal-badge .reward-art{width:38px;height:38px}
+  .home-goal-copy strong{font-size:1.35rem}
+  .home-goal-copy span{max-width:19ch}
+  .home-island-preview{width:61px;height:52px;border-radius:15px}
+  .island-adventure-grid{
+    grid-template-columns:none;
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(245px,84%);
+  }
+}
+@media(max-width:365px){
+  .v3-top-cinematic .v3-brand strong{display:none}
+  .cinematic-home-copy{width:79%;padding-top:36px}
+  .cinematic-home-copy h1{font-size:2.55rem}
+  .cinematic-home-copy p{font-size:.9rem}
+  .home-goal-meta{display:none}
+  .home-goal-bar,.home-level-note{grid-column:2 / 3}
+}
+@media(min-width:700px){
+  .cinematic-home-copy{padding-top:80px}
+  .cinematic-home-tula{right:-30px;height:min(58svh,560px)}
+}
+@media(prefers-reduced-motion:reduce){.cinematic-home-tula{animation:none}}
+@keyframes cinematic-tula-float{50%{transform:translateY(-7px)}}

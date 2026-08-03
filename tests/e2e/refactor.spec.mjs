@@ -34,12 +34,12 @@ async function setPair(page, source, target) {
 test.beforeEach(async ({ page }) => {
   await seed(page);
   await page.goto(preview);
-  await expect(page.locator('h1')).toContainText(/Insel|isla/i);
+  await expect(page.locator('h1')).toContainText(/Hallo|Hola|Γεια/i);
 });
 
 test('home, island and learning world are separated', async ({ page }) => {
-  await expect(page.locator('.v3-brand').first()).toContainText('Chelonaki - Toulas Island');
-  await page.getByRole('button', { name: /Insel entdecken/i }).click();
+  await expect(page.locator('.v3-brand').first()).toContainText('LinguaTurtle');
+  await page.locator('[data-route="island"]').first().click();
   await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
   await page.locator('[data-action="open-world"]').first().click();
   await expect(page.getByText(/Wähle jetzt eine Übung/i)).toBeVisible();
@@ -66,14 +66,14 @@ test('interactive island map shows level requirements and blocks locked worlds',
 });
 
 test('all finished Creative Production assets are visible in their intended routes', async ({ page }) => {
-  await expect(page.locator('.hero-scene[src$="home_tropical_bay.webp"]')).toBeVisible();
-  await expect(page.locator('.tula-art[src$="tula_waving.webp"]')).toBeVisible();
-  await expect(page.locator('.stats-v3 img[src$="reward_star_xp.webp"]')).toBeVisible();
-  await expect(page.locator('.stats-v3 img[src$="reward_shell_pearl.webp"]')).toBeVisible();
-  await expect(page.locator('.stats-v3 img[src$="reward_streak_flame.webp"]')).toBeVisible();
-  await expect(page.locator('.journey-grid img[src$="mode_speech_trainer.webp"]')).toBeVisible();
-  await expect(page.locator('.journey-grid img[src$="mode_stories.webp"]')).toBeVisible();
+  await expect(page.locator('.cinematic-home-bg[src$="home_cinematic_island.webp"]')).toBeVisible();
+  await expect(page.locator('.cinematic-home-tula[src$="tula_waving.webp"]')).toBeVisible();
+  await expect(page.locator('.home-goal-panel img[src$="reward_star_xp.webp"]')).toBeVisible();
+  await expect(page.locator('.wallet-mini img[src$="reward_shell_pearl.webp"]')).toBeVisible();
+  await expect(page.locator('.home-goal-panel img[src$="reward_streak_flame.webp"]')).toBeVisible();
   await page.locator('[data-route="island"]').first().click();
+  await expect(page.locator('.island-adventure-grid img[src$="mode_speech_trainer.webp"]')).toBeVisible();
+  await expect(page.locator('.island-adventure-grid img[src$="mode_stories.webp"]')).toBeVisible();
   await expect(page.locator('.island-card img[src$="map_turtle_island_overview.webp"]')).toBeVisible();
   const homeFeature = page.locator('.tula-home-feature');
   await expect(homeFeature.locator('img[src$="home_tropical_bay.webp"]')).toBeVisible();
@@ -83,10 +83,10 @@ test('all finished Creative Production assets are visible in their intended rout
   await homeFeature.click();
   await expect(page.locator('.home-room-scene[src$="home_tula_house_interior.webp"]')).toBeVisible();
   await expect(page.locator('.room-tula img[src$="tula_neutral_front.webp"]')).toBeVisible();
-  await page.locator('[data-route="home"]').first().click();
+  await page.locator('[data-route="island"]').first().click();
   await page.locator('[data-route="speaking"]').click();
   await expect(page.locator('.experience-hero img[src$="tula_speaking.webp"]')).toBeVisible();
-  await page.locator('[data-route="home"]').first().click();
+  await page.locator('[data-route="island"]').first().click();
   await page.locator('[data-route="stories"]').click();
   await expect(page.locator('.experience-mode-art[src$="mode_stories.webp"]')).toBeVisible();
   await page.locator('[data-action="open-story"][data-index="2"]').click();
@@ -227,7 +227,8 @@ test('Deutsch to Greek changes learning content and persists the pair', async ({
 
 test('Greek to Spanish updates the full interface and learning direction', async ({ page }) => {
   await setPair(page, 'el', 'es');
-  await expect(page.getByText('Έλα μαζί μας στο νησί!')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Γεια σου, Mia!' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Συνέχισε' })).toBeVisible();
   await expect(page.locator('.language-pair-chip')).toContainText('🇬🇷 → 🇪🇸');
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
@@ -250,9 +251,10 @@ test('Deutsch to English shows English words and stores the pair', async ({ page
 
 test('English to Greek translates interface, places and learning direction', async ({ page }) => {
   await setPair(page, 'en', 'el');
-  await expect(page.getByText('Come to the island!')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Hello Mia!' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue learning' })).toBeVisible();
   await expect(page.locator('.language-pair-chip')).toContainText('🇬🇧 → 🇬🇷');
-  await page.getByRole('button', { name: /Explore the island/i }).click();
+  await page.getByRole('button', { name: 'Open island' }).click();
   await expect(page.getByRole('heading', { name: /Where would you like to go/i })).toBeVisible();
   await expect(page.getByText('Garden', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('Fruit, vegetables and nature')).toBeVisible();
