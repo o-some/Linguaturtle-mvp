@@ -44,7 +44,7 @@ export function uiText(de, es, el = de, en = null) {
 export function pairBadge() {
   const source = languageMeta(sourceLanguage());
   const target = languageMeta(targetLanguage());
-  return `${source.flag} ${source.short} → ${target.flag} ${target.short}`;
+  return `${source.flag} → ${target.flag}`;
 }
 
 export function setSourceLanguage(code) {

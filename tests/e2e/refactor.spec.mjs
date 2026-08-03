@@ -126,7 +126,7 @@ test('words area lists real words and unlocks one with the shared shell currency
   await lockedCard.locator('[data-action="buy-word"]').click();
   await expect(page.locator(`[data-word-card="${wordId}"]`)).toHaveClass(/owned/);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
-  expect(stored.progress.shells).toBe(before - 10);
+  expect(stored.progress.shells).toBe(before - 1);
   expect(stored.inventory.unlockedWords).toContain(wordId);
   await expect(page.locator('.wallet-mini img[src$="reward_shell_pearl.webp"]')).toBeVisible();
 });
@@ -215,7 +215,7 @@ test('memory and speed mode start from learning world', async ({ page }) => {
 
 test('Deutsch to Greek changes learning content and persists the pair', async ({ page }) => {
   await setPair(page, 'de', 'el');
-  await expect(page.locator('.language-pair-chip')).toContainText('DE → 🇬🇷 EL');
+  await expect(page.locator('.language-pair-chip')).toContainText('🇩🇪 → 🇬🇷');
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
   const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
@@ -228,7 +228,7 @@ test('Deutsch to Greek changes learning content and persists the pair', async ({
 test('Greek to Spanish updates the full interface and learning direction', async ({ page }) => {
   await setPair(page, 'el', 'es');
   await expect(page.getByText('Έλα μαζί μας στο νησί!')).toBeVisible();
-  await expect(page.locator('.language-pair-chip')).toContainText('EL → 🇪🇸 ES');
+  await expect(page.locator('.language-pair-chip')).toContainText('🇬🇷 → 🇪🇸');
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
   const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
@@ -238,7 +238,7 @@ test('Greek to Spanish updates the full interface and learning direction', async
 
 test('Deutsch to English shows English words and stores the pair', async ({ page }) => {
   await setPair(page, 'de', 'en');
-  await expect(page.locator('.language-pair-chip')).toContainText('DE → 🇬🇧 EN');
+  await expect(page.locator('.language-pair-chip')).toContainText('🇩🇪 → 🇬🇧');
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
   const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
@@ -251,7 +251,7 @@ test('Deutsch to English shows English words and stores the pair', async ({ page
 test('English to Greek translates interface, places and learning direction', async ({ page }) => {
   await setPair(page, 'en', 'el');
   await expect(page.getByText('Come to the island!')).toBeVisible();
-  await expect(page.locator('.language-pair-chip')).toContainText('EN → 🇬🇷 EL');
+  await expect(page.locator('.language-pair-chip')).toContainText('🇬🇧 → 🇬🇷');
   await page.getByRole('button', { name: /Explore the island/i }).click();
   await expect(page.getByRole('heading', { name: /Where would you like to go/i })).toBeVisible();
   await expect(page.getByText('Garden', { exact: true }).first()).toBeVisible();

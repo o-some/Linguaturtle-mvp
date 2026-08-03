@@ -19,7 +19,7 @@ migrateLegacyState();
 ensureLanguagePair();
 
 const tr=(de,es,el=de,en=null)=>uiText(de,es,el,en);
-const WORD_COST=10;
+const WORD_COST=1;
 const STARTER_WORDS_PER_COLLECTION=4;
 const currentCollection=()=>collections.find(c=>c.id===getState().session.collectionId)||collections[0];
 const wordCatalogCollection=()=>collections.find(c=>c.id===(getState().session.wordCollectionId||'garden'))||collections[0];
