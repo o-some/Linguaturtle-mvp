@@ -68,27 +68,49 @@ test('interactive island map shows level requirements and blocks locked worlds',
 test('all finished Creative Production assets are visible in their intended routes', async ({ page }) => {
   await expect(page.locator('.hero-scene[src$="home_tropical_bay.webp"]')).toBeVisible();
   await expect(page.locator('.tula-art[src$="tula_waving.webp"]')).toBeVisible();
+  await expect(page.locator('.stats-v3 img[src$="reward_star_xp.webp"]')).toBeVisible();
+  await expect(page.locator('.stats-v3 img[src$="reward_shell_pearl.webp"]')).toBeVisible();
+  await expect(page.locator('.stats-v3 img[src$="reward_streak_flame.webp"]')).toBeVisible();
+  await expect(page.locator('.journey-grid img[src$="mode_speech_trainer.webp"]')).toBeVisible();
+  await expect(page.locator('.journey-grid img[src$="mode_stories.webp"]')).toBeVisible();
   await page.locator('[data-route="island"]').first().click();
   await expect(page.locator('.island-card img[src$="map_turtle_island_overview.webp"]')).toBeVisible();
   const homeFeature = page.locator('.tula-home-feature');
   await expect(homeFeature.locator('img[src$="home_tropical_bay.webp"]')).toBeVisible();
-  await expect(page.locator('.place-scene[src$="world_sun_bay.webp"]')).toBeVisible();
-  await expect(page.locator('.place-scene[src$="world_jungle_trail.webp"]')).toBeVisible();
+  for (const world of ['garden','library','jungle_trail','sun_bay','coral_reef','crystal_cove','desert_oasis','ice_peak','harbor','castle']) {
+    await expect(page.locator(`.place-scene[src$="world_${world}.webp"]`)).toBeVisible();
+  }
   await homeFeature.click();
   await expect(page.locator('.home-room-scene[src$="home_tula_house_interior.webp"]')).toBeVisible();
   await expect(page.locator('.room-tula img[src$="tula_neutral_front.webp"]')).toBeVisible();
+  await page.locator('[data-route="home"]').first().click();
+  await page.locator('[data-route="speaking"]').click();
+  await expect(page.locator('.experience-hero img[src$="tula_speaking.webp"]')).toBeVisible();
+  await page.locator('[data-route="home"]').first().click();
+  await page.locator('[data-route="stories"]').click();
+  await expect(page.locator('.experience-mode-art[src$="mode_stories.webp"]')).toBeVisible();
+  await page.locator('[data-action="open-story"][data-index="2"]').click();
+  await expect(page.locator('.story-tula[src$="tula_sleeping.webp"]')).toBeVisible();
   await page.locator('[data-route="profile"]').first().click();
   await expect(page.locator('.profile-hero-v3 img[src$="tula_profile.webp"]')).toBeVisible();
+  for (const chest of ['bronze','silver','gold','jewel']) {
+    await expect(page.locator(`.milestone-chest[src$="reward_chest_${chest}.webp"]`).first()).toBeVisible();
+  }
 });
 
 test('explore opens only after selecting the exercise', async ({ page }) => {
   await page.locator('[data-action="open-world"]').first().click();
-  await expect(page.locator('.world-scene[src$="world_sun_bay.webp"]')).toBeVisible();
+  await expect(page.locator('.world-scene[src$="world_garden.webp"]')).toBeVisible();
+  await expect(page.locator('.mode-art')).toHaveCount(5);
+  for (const mode of ['words_discover','listening_adventure','sentence_workshop','memory','golden_minute']) {
+    await expect(page.locator(`.mode-art[src$="mode_${mode}.webp"]`)).toBeVisible();
+  }
   await page.getByRole('button', { name: /Wörter entdecken/i }).click();
   await expect(page.locator('.explore-grid')).toBeVisible();
   await expect(page.locator('[data-action="finish-explore"]')).toBeVisible();
   await page.locator('[data-action="finish-explore"]').click();
-  await expect(page.locator('.celebration img[src$="tula_happy.webp"]')).toBeVisible();
+  await expect(page.locator('.celebration img[src$="tula_celebrating.webp"]')).toBeVisible();
+  await expect(page.locator('.reward-row img[src$="reward_shell_gold.webp"]')).toBeVisible();
 });
 
 test('listening quiz accepts an answer and persists reward', async ({ page }) => {
@@ -163,6 +185,7 @@ test('memory and speed mode start from learning world', async ({ page }) => {
   await page.locator('[data-action="navigate"][data-route="world"]').first().click();
   await page.locator('[data-action="start-speed"]').click();
   await expect(page.getByText(/Goldene Minute/i)).toBeVisible();
+  await expect(page.locator('.speed-tula[src$="tula_surprised.webp"]')).toBeVisible();
 });
 
 test('Deutsch to Greek changes learning content and persists the pair', async ({ page }) => {

@@ -1,74 +1,90 @@
-# Design QA — Interaktive Inselkarte
+# Design QA — Creative-Production-Assetpaket
 
 ## Vergleichsziel
 
-- Source visual truth Karte: `/Users/eleftheriossamouladas/Desktop/Bildschirmfoto 2026-08-02 um 23.06.18.png`
-- Source visual truth Kartenraster: `/var/folders/dt/7lh1fq_d15d6httm8k_rgkk80000gn/T/TemporaryItems/NSIRD_screencaptureui_v7A5s3/Bildschirmfoto 2026-08-02 um 23.07.21.png`
-- Browser-Implementation Karte: `/tmp/chelonaki-island-map-source-size-final.png`
-- Browser-Implementation Kartenraster: `/tmp/chelonaki-island-cards-source-size-final.png`
-- Mobile Implementation: `/tmp/chelonaki-island-map-mobile-top-final.png`
-- Mobile Lernwelt: `/tmp/chelonaki-garden-world-mobile-final.png`
-- Full-view comparison Karte: `/tmp/chelonaki-island-map-comparison.png`
-- Focused comparison Kartenraster: `/tmp/chelonaki-island-cards-comparison.png`
-- State: deutsche Inselansicht auf Level 1; Garten freigeschaltet, Lernwelten 2–8 gesperrt
-- Source Karte: 1391 × 1214 px
-- Implementation Karte: 1391 × 1201 px bei CSS-Viewport 1406 × 1214 px und DPR 1; für den Vergleich unten um 13 px weiß aufgefüllt
-- Source Kartenraster: 1420 × 822 px
-- Implementation Kartenraster: 1420 × 813 px bei CSS-Viewport 1435 × 822 px und DPR 1; für den Vergleich unten um 9 px weiß aufgefüllt
-- Mobile CSS-Viewport: 390 × 844 px
+- Verbindliche Art Direction: `/Users/eleftheriossamouladas/Library/CloudStorage/Dropbox/[LinguaTurtle]/03_Bilder_und_Design/00_Brand_Guide/LinguaTurtle_Asset_Manifest.md`
+- Source visual truth Tula: `/Users/eleftheriossamouladas/Library/CloudStorage/Dropbox/[LinguaTurtle]/03_Bilder_und_Design/01_Characters/Tula/Web/`
+- Source visual truth Welten: `/Users/eleftheriossamouladas/Library/CloudStorage/Dropbox/[LinguaTurtle]/03_Bilder_und_Design/02_Backgrounds/Web/Worlds/`
+- Source visual truth Lernmodi: `/Users/eleftheriossamouladas/Library/CloudStorage/Dropbox/[LinguaTurtle]/03_Bilder_und_Design/03_Game_Cards/Web/`
+- Source visual truth Belohnungen: `/Users/eleftheriossamouladas/Library/CloudStorage/Dropbox/[LinguaTurtle]/03_Bilder_und_Design/04_UI_Assets/Web/Rewards/`
+- Browser-Implementation Startseite: `/tmp/chelonaki-assets-home-desktop.png`
+- Browser-Implementation Inselkarten: `/tmp/chelonaki-assets-island-cards-desktop.png`
+- Browser-Implementation Lernwelt: `/tmp/chelonaki-assets-world-desktop.png`
+- Browser-Implementation Mobile: `/tmp/chelonaki-assets-world-mobile.png`
+- Browser-Implementation Sprechtrainer: `/tmp/chelonaki-assets-speaking-mobile.png`
+- Browser-Implementation Profil: `/tmp/chelonaki-assets-profile-mobile.png`
+- Browser-Implementation Shop: `/tmp/chelonaki-assets-shop-mobile.png`
+- Full-view comparison: `/tmp/chelonaki-assets-world-comparison.png`
+- Focused asset comparison: `/tmp/chelonaki-assets-focused-comparison.png`
+- State: deutsche Oberfläche, Level 1, Garten-Lernwelt, Shop und Profil
+- Desktop CSS-Viewport: 1280 × 720 px bei DPR 1; Screenshots 1265 × 712 px durch Browser-Scrollbar und App-Chrome
+- Mobile CSS-Viewport: 390 × 844 px bei DPR 1; Screenshots 375 × 812 px durch Browser-Scrollbar und App-Chrome
+- Source-Weltbild: 960 × 1200 px; im Full-view comparison proportional auf 576 × 720 px skaliert
+- Full-view comparison: 1856 × 720 px
+- Focused comparison: 1600 × 800 px; je vier Quellen und vier Implementierungszustände in 400 × 400 px großen, proportional gepolsterten Feldern
+
+## Asset-Inventar
+
+- 4 neue Tula-Posen: sprechend, überrascht, schlafend und jubelnd
+- 8 neue Weltbilder: Garten, Bibliothek, Eisgipfel, Wüstenoase, Korallenriff, Kristallbucht, Hafen und Schloss
+- 7 neue Lernmodus-Karten: Wörter, Hören, Satzwerkstatt, Sprechen, Geschichten, Memory und Goldene Minute
+- 8 neue Belohnungen: goldene und perlmuttfarbene Muschel, XP-Stern, Lerntage-Flamme sowie Bronze-, Silber-, Gold- und Juweltruhe
+
+Alle 27 neuen WebP-Dateien werden in mindestens einer sichtbaren App-Route verwendet.
 
 ## Comparison history
 
 ### Iteration 1
 
-- [P1] Die große Inselgrafik war statisch und gab keine direkte Navigation zu Garten, Bibliothek, Tierwelt oder den weiteren Lernwelten.
-- [P1] Die Levelanforderungen der Lernwelten waren nicht sichtbar und wurden beim Öffnen nicht durchgesetzt.
-- [P2] In mehreren Ortskarten kollidierten Titel, Beschreibung, Nummer und Bildfläche.
-- [P2] Auf dem mobilen Viewport waren Karteninformation und Navigationsziele zu dicht und schwer erfassbar.
+- [P1] Die neuen Dateien lagen ausschließlich in der Designablage und waren weder im App-Assetmanifest noch in einer Route eingebunden.
+- [P1] Sechs der acht Lernwelten sowie Hafen und Schloss verwendeten weiterhin Symbole oder unpassende ältere Szenen.
+- [P2] Lernmodus-, Fortschritts- und Belohnungskarten nutzten weiterhin Emoji-Platzhalter statt der gelieferten Premium-Grafiken.
+- [P2] Das mobile Profil zeigte nach dem Asseteinbau eine umbrechende Eyebrow und schlecht getrennte Einstellungsbuttons.
 
 Fixes:
 
-- Acht echte, fokussierbare Karten-Hotspots auf der gelieferten Inselgrafik positioniert.
-- Die Lernwelten werden fortlaufend auf Level 1–8 freigeschaltet; gesperrte Ziele zeigen die konkrete Levelanforderung und einen erklärenden Hinweis beim Antippen.
-- Der Garten öffnet direkt aus der Karte; die geöffnete Lernwelt bestätigt das Freischaltlevel.
-- Kartenmarkup und Typografie in eigene Bereiche für Titel, Untertitel, Nummer und Levelhinweis getrennt.
-- Kompakte mobile Hotspots und responsive Kartenabstände ergänzt.
-- Cache-Versionen erhöht, damit Browser und Service Worker die neue Darstellung zuverlässig laden.
+- Assetmanifest um alle 27 Dateien erweitert und die Web-Versionen nach `assets/creative/` übernommen.
+- Jeder Lernwelt ein eigenes Weltbild zugeordnet; Hafen und Schloss als echte Bildkarten und Abenteuer-Hintergründe eingebaut.
+- Lernmodus-Bilder in Welt, Startseite und Shop integriert.
+- Neue Tula-Posen in Sprechtrainer, Geschichten, Goldener Minute und Abschlusszuständen eingesetzt.
+- Belohnungsgrafiken in Startseiten-Statistik, Profil, Shop, Meilensteinen und Abschlussbelohnungen eingebaut.
+- Profil-Eyebrow als eigene Zeile fixiert und Einstellungsbuttons mit klarer Pillenform, Abstand und Kontrast versehen.
 
 Post-fix evidence:
 
-- Die acht Lernwelten sind auf Desktop und Mobile direkt auf der Karte auswählbar.
-- Auf Level 1 öffnet Garten; Tierwelt bleibt gesperrt und zeigt „Diese Lernwelt öffnet sich ab Level 3.“
-- Die Garten-Lernwelt zeigt „Freigeschaltet ab Level 1“.
-- Nummern, Titel, Untertitel und Levelhinweise überlappen nicht mehr.
-- Bei 390 × 844 px entsteht kein horizontaler Überlauf.
+- Die Gartenquelle bleibt in der Lernwelt scharf, proportional und fokal passend; das Full-view comparison zeigt keine Verzerrung.
+- Modusbilder sind auf Desktop 74 × 82 px und Mobile 54 × 64 px groß, ohne Beschnitt wichtiger Motive.
+- Tulas sprechende Pose sitzt vollständig und ohne Überlagerung im mobilen Sprechtrainer.
+- Perlmuttmuschel, XP-Stern, Flamme und vier Truhenstufen sind im Profil und Shop klar erkennbar.
+- Alle geprüften Desktop- und Mobile-Zustände haben keinen horizontalen Überlauf.
 
 ## Required fidelity surfaces
 
-- Fonts und Typografie: bestehende Display- und UI-Fonts, Gewichtungen und Farbwerte bleiben erhalten; Titel, Untertitel, Nummer und Freischaltlevel besitzen jetzt eine klare Hierarchie.
-- Spacing und Layout-Rhythmus: Inselbild, Zuhause-Feature und Raster behalten Breite, Rundungen und Abstände der Referenz; die neuen Bedienelemente sind in die Grafik eingebettet.
-- Farben und visuelle Tokens: Navy, Gold, Creme, weiße Karten und bestehende Schatten folgen dem vorhandenen Premium-Theme.
-- Bildqualität und Asset-Fidelity: die vorhandene hochauflösende Inselgrafik und Weltbilder werden unverändert verwendet; kein Asset ist verzerrt oder durch Platzhalter ersetzt.
-- Copy und Content: Ortsnamen und Beschreibungen bleiben erhalten; Leveltexte wurden als notwendige Produktinformation ergänzt und übersetzt.
+- Fonts und Typografie: vorhandene Palatino-/Georgia-Hierarchie und UI-Schrift bleiben erhalten. Neue Bildflächen verdrängen keine Titel oder Beschreibungen; Profil-Eyebrow und Buttons umbrechen kontrolliert.
+- Spacing und Layout-Rhythmus: Bildgrößen folgen den bestehenden Kartenrastern. Welt-, Modus-, Shop-, Profil- und Abschlusskarten behalten ihre Abstände, Rundungen und feste Navigation.
+- Farben und visuelle Tokens: Marineblau, Gold, Champagner, Perlmutt und Türkis der gelieferten Assets harmonieren mit den bestehenden Theme-Tokens.
+- Bildqualität und Asset-Fidelity: ausschließlich die gelieferten WebP-Dateien werden verwendet. Seitenverhältnis, Transparenz, Schärfe und Fokuspunkte bleiben erhalten; keine Grafik wurde durch CSS-Art, Platzhalter oder nachgezeichnete Formen ersetzt.
+- Copy und Content: bestehende App-Texte, Lernlogik und Übersetzungen bleiben unverändert. Grafiken ergänzen die vorhandenen Bedeutungen.
 
 ## Primäre Interaktionen
 
-- Garten-Hotspot öffnet die Garten-Lernwelt.
-- Gesperrter Tierwelt-Hotspot bleibt auf der Inselansicht und zeigt die Level-3-Erklärung.
-- Die Ortskarten unterhalb der Karte verwenden dieselbe Freischaltlogik.
-- Die Garten-Lernwelt zeigt das benötigte Freischaltlevel.
-- Browser-Konsole: keine Fehler.
-- Horizontaler Überlauf: Desktop und Mobile 0 px.
+- Startseite → Insel → Garten-Lernwelt
+- Auswahl von Wörter entdecken, Hör-Abenteuer und weiteren Lernmodi
+- Startseite → Sprechtrainer
+- Startseite → Mini-Geschichten → Schlafgeschichte
+- Navigation zu Profil und Muschel-Boutique
+- Browser-Konsole: keine Fehler
+- Horizontaler Überlauf: Desktop und Mobile 0 px
 
 ## Automatisierte Prüfung
 
-- Neuer E2E-Test für acht Insel-Hotspots, Levelhinweise, gesperrte Navigation und Garten-Navigation: Mobile Chrome und Mobile Safari bestanden.
-- Gesamtlauf: 27 von 28 Tests bestanden; ein bestehender Tula-Outfit-Test war in Mobile Safari transient.
-- Direkter Wiederholungslauf des betroffenen Tula-Outfit-Tests: Mobile Chrome und Mobile Safari bestanden (2/2).
-- Syntax- und Architekturprüfung: bestanden.
+- Asset-, Lernwelt- und Modus-Tests in Mobile Chrome und Mobile Safari: 6/6 bestanden.
+- Jede der 27 neuen Dateien wird durch Manifest- oder Routencode referenziert.
+- Syntaxprüfung und `git diff --check`: bestanden.
+- Vollständiger Testlauf einschließlich Architektur-, Mobile-Chrome- und Mobile-Safari-Prüfung: 28/28 bestanden.
 
 ## Findings
 
-Keine verbleibenden P0-, P1- oder P2-Befunde. Die kombinierten Vergleichsbilder bestätigen, dass die Navigation ergänzt wurde, ohne die bestehende Bildkomposition zu beschädigen, und dass die problematischen Textüberlagerungen im Kartenraster behoben sind.
+Keine verbleibenden P0-, P1- oder P2-Befunde. Die Quellen und die browsergerenderten Zustände wurden im Full-view- und Focused-Comparison gemeinsam beurteilt. Die Implementierung übernimmt die gelieferten Motive unverändert und bewahrt die bestehende Informationshierarchie.
 
 final result: passed
