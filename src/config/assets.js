@@ -22,6 +22,12 @@ export const assets = Object.freeze({
       tropicalBay: 'assets/creative/home_tropical_bay.webp',
       interior: 'assets/creative/home_tula_house_interior.webp'
     },
+    cinematic: {
+      island: 'assets/creative-v2/island_cinematic_map.webp',
+      words: 'assets/creative-v2/words_cinematic_library.webp',
+      shop: 'assets/creative-v2/shop_cinematic_boutique.webp',
+      profile: 'assets/creative-v2/profile_cinematic_sanctuary.webp'
+    },
     worlds: {
       garden: 'assets/creative/world_garden.webp',
       library: 'assets/creative/world_library.webp',

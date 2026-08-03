@@ -13,8 +13,8 @@ async function seed(page) {
       profile: { id: 'default', name: 'Mia', stage: 'preschool', goal: 'balanced', support: 'normal' },
       progress: { xp: 1200, shells: 1000, streak: 5, daily: 2, learned: {}, mastery: {} },
       settings: { sound: false, motion: true, music: false },
-      inventory: { unlockedModes: ['sentence','memory','speed'], boosters: { doubleXp: 0, hints: 3, jumps: 1 }, claimedMilestones: [] },
-      session: { activeGame: null, collectionId: 'garden', busy: false, error: null }
+      inventory: { unlockedModes: ['sentence','memory','speed'], boosters: { doubleXp: 0, hints: 3, jumps: 1 }, claimedMilestones: [], dailyGoalClaimed: false },
+      session: { activeGame: null, collectionId: 'garden', busy: false, error: null, rewardNotices: [], focusMilestone: null }
     }));
   });
 }
@@ -29,6 +29,14 @@ async function setPair(page, source, target) {
   await page.locator(`[data-action="select-source-language"][data-language="${source}"]`).click();
   await page.locator(`[data-action="select-target-language"][data-language="${target}"]`).click();
   await page.locator('[data-action="confirm-language-pair"]').click();
+}
+
+async function expectPair(page, source, target) {
+  const chip = page.locator('.language-pair-chip');
+  await expect(chip.locator(`img[src$="/${source}.svg"]`)).toBeVisible();
+  await expect(chip.locator(`img[src$="/${target}.svg"]`)).toBeVisible();
+  await expect(chip).toContainText(source.toUpperCase());
+  await expect(chip).toContainText(target.toUpperCase());
 }
 
 test.beforeEach(async ({ page }) => {
@@ -72,6 +80,7 @@ test('all finished Creative Production assets are visible in their intended rout
   await expect(page.locator('.wallet-mini img[src$="reward_shell_pearl.webp"]')).toBeVisible();
   await expect(page.locator('.home-goal-panel img[src$="reward_streak_flame.webp"]')).toBeVisible();
   await page.locator('[data-route="island"]').first().click();
+  await expect(page.locator('.cinematic-subpage-bg[src$="island_cinematic_map.webp"]')).toBeVisible();
   await expect(page.locator('.island-adventure-grid img[src$="mode_speech_trainer.webp"]')).toBeVisible();
   await expect(page.locator('.island-adventure-grid img[src$="mode_stories.webp"]')).toBeVisible();
   await expect(page.locator('.island-card img[src$="map_turtle_island_overview.webp"]')).toBeVisible();
@@ -92,10 +101,15 @@ test('all finished Creative Production assets are visible in their intended rout
   await page.locator('[data-action="open-story"][data-index="2"]').click();
   await expect(page.locator('.story-tula[src$="tula_sleeping.webp"]')).toBeVisible();
   await page.locator('[data-route="profile"]').first().click();
+  await expect(page.locator('.cinematic-subpage-bg[src$="profile_cinematic_sanctuary.webp"]')).toBeVisible();
   await expect(page.locator('.profile-hero-v3 img[src$="tula_profile.webp"]')).toBeVisible();
   for (const chest of ['bronze','silver','gold','jewel']) {
     await expect(page.locator(`.milestone-chest[src$="reward_chest_${chest}.webp"]`).first()).toBeVisible();
   }
+  await page.locator('[data-route="words"]').first().click();
+  await expect(page.locator('.cinematic-subpage-bg[src$="words_cinematic_library.webp"]')).toBeVisible();
+  await page.locator('[data-route="shop"]').first().click();
+  await expect(page.locator('.cinematic-subpage-bg[src$="shop_cinematic_boutique.webp"]')).toBeVisible();
 });
 
 test('explore opens only after selecting the exercise', async ({ page }) => {
@@ -132,9 +146,10 @@ test('words area lists real words and unlocks one with the shared shell currency
 });
 
 test('language selector shows a flag for every available language', async ({ page }) => {
+  await expectPair(page, 'de', 'es');
   await openLanguageSelector(page);
-  for (const flag of ['🇩🇪', '🇪🇸', '🇬🇷', '🇬🇧']) {
-    await expect(page.locator('.language-flag').filter({ hasText: flag }).first()).toBeVisible();
+  for (const code of ['de', 'es', 'el', 'en']) {
+    await expect(page.locator(`.language-option img[src$="/${code}.svg"]`).first()).toBeVisible();
   }
 });
 
@@ -215,7 +230,7 @@ test('memory and speed mode start from learning world', async ({ page }) => {
 
 test('Deutsch to Greek changes learning content and persists the pair', async ({ page }) => {
   await setPair(page, 'de', 'el');
-  await expect(page.locator('.language-pair-chip')).toContainText('🇩🇪 → 🇬🇷');
+  await expectPair(page, 'de', 'el');
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
   const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
@@ -229,7 +244,7 @@ test('Greek to Spanish updates the full interface and learning direction', async
   await setPair(page, 'el', 'es');
   await expect(page.getByRole('heading', { name: 'Γεια σου, Mia!' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Συνέχισε' })).toBeVisible();
-  await expect(page.locator('.language-pair-chip')).toContainText('🇬🇷 → 🇪🇸');
+  await expectPair(page, 'el', 'es');
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
   const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
@@ -239,7 +254,7 @@ test('Greek to Spanish updates the full interface and learning direction', async
 
 test('Deutsch to English shows English words and stores the pair', async ({ page }) => {
   await setPair(page, 'de', 'en');
-  await expect(page.locator('.language-pair-chip')).toContainText('🇩🇪 → 🇬🇧');
+  await expectPair(page, 'de', 'en');
   await page.locator('[data-action="open-world"]').first().click();
   await page.locator('[data-route="explore"]').click();
   const apple = page.locator('[data-action="speak-word"][data-word="garden-apple"]');
@@ -253,7 +268,7 @@ test('English to Greek translates interface, places and learning direction', asy
   await setPair(page, 'en', 'el');
   await expect(page.getByRole('heading', { name: 'Hello Mia!' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continue learning' })).toBeVisible();
-  await expect(page.locator('.language-pair-chip')).toContainText('🇬🇧 → 🇬🇷');
+  await expectPair(page, 'en', 'el');
   await page.getByRole('button', { name: 'Open island' }).click();
   await expect(page.getByRole('heading', { name: /Where would you like to go/i })).toBeVisible();
   await expect(page.getByText('Garden', { exact: true }).first()).toBeVisible();
@@ -274,4 +289,51 @@ test('English sentence workshop renders English sentence tiles without crashing'
   const sentenceTiles = page.locator('.sentence-bank .sentence-tile');
   await expect(sentenceTiles.first()).toBeVisible();
   expect(await sentenceTiles.count()).toBeGreaterThan(0);
+});
+
+test('daily goal completion opens a claim modal and grants the daily treasure', async ({ page }) => {
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.getByRole('button', { name: /Wörter entdecken/i }).click();
+  await page.locator('[data-action="finish-explore"]').click();
+
+  const modal = page.locator('.reward-notice-modal[data-reward-notice="daily"]');
+  await expect(modal.getByRole('heading', { name: /Tagesziel geschafft/i })).toBeVisible();
+  await expect(modal.locator('img[src$="reward_chest_gold.webp"]')).toBeVisible();
+  await modal.getByRole('button', { name: /Belohnung abholen/i }).click();
+
+  await expect(modal).toHaveCount(0);
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(after.progress.shells).toBe(before + 31);
+  expect(after.inventory.dailyGoalClaimed).toBe(true);
+});
+
+test('reaching a milestone opens the profile reward path and allows claiming it', async ({ page }) => {
+  await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.progress.xp = 190;
+    state.progress.daily = 0;
+    state.inventory.claimedMilestones = [];
+    state.inventory.dailyGoalClaimed = false;
+    state.session.rewardNotices = [];
+    state.session.focusMilestone = null;
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+  const shellsBefore = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.getByRole('button', { name: /Wörter entdecken/i }).click();
+  await page.locator('[data-action="finish-explore"]').click();
+
+  const modal = page.locator('.reward-notice-modal[data-reward-notice="level-3"]');
+  await expect(modal.getByRole('heading', { name: /Level 3 erreicht/i })).toBeVisible();
+  await modal.getByRole('button', { name: /Zum Profil-Schatz/i }).click();
+
+  const milestone = page.locator('[data-milestone="3"]');
+  await expect(milestone).toHaveClass(/milestone-focus/);
+  await milestone.getByRole('button', { name: /Abholen/i }).click();
+  await expect(milestone).not.toHaveClass(/milestone-focus/);
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(after.inventory.claimedMilestones).toContain(3);
+  expect(after.progress.shells).toBe(shellsBefore + 36);
 });

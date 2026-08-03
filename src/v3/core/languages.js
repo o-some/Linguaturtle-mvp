@@ -3,10 +3,10 @@ import { englishUi } from '../ui-en.js';
 import { englishValue } from '../content-en.js';
 
 export const LANGUAGES = {
-  de: { code: 'de', flag: '🇩🇪', short: 'DE', name: 'Deutsch', nativeName: 'Deutsch', voice: 'de-DE' },
-  es: { code: 'es', flag: '🇪🇸', short: 'ES', name: 'Español', nativeName: 'Español', voice: 'es-ES' },
-  el: { code: 'el', flag: '🇬🇷', short: 'EL', name: 'Ελληνικά', nativeName: 'Ελληνικά', voice: 'el-GR' },
-  en: { code: 'en', flag: '🇬🇧', short: 'EN', name: 'English', nativeName: 'English', voice: 'en-GB' },
+  de: { code: 'de', flag: '🇩🇪', flagSrc: 'assets/vendor/twemoji/flags/de.svg', short: 'DE', name: 'Deutsch', nativeName: 'Deutsch', voice: 'de-DE' },
+  es: { code: 'es', flag: '🇪🇸', flagSrc: 'assets/vendor/twemoji/flags/es.svg', short: 'ES', name: 'Español', nativeName: 'Español', voice: 'es-ES' },
+  el: { code: 'el', flag: '🇬🇷', flagSrc: 'assets/vendor/twemoji/flags/el.svg', short: 'EL', name: 'Ελληνικά', nativeName: 'Ελληνικά', voice: 'el-GR' },
+  en: { code: 'en', flag: '🇬🇧', flagSrc: 'assets/vendor/twemoji/flags/en.svg', short: 'EN', name: 'English', nativeName: 'English', voice: 'en-GB' },
 };
 
 export const LANGUAGE_CODES = Object.keys(LANGUAGES);
@@ -41,10 +41,15 @@ export function uiText(de, es, el = de, en = null) {
   return values[uiLanguage()] ?? de;
 }
 
+export function flagImage(code, className = 'language-flag-image') {
+  const language = languageMeta(code);
+  return `<img class="${className}" src="${language.flagSrc}" alt="${language.name}">`;
+}
+
 export function pairBadge() {
   const source = languageMeta(sourceLanguage());
   const target = languageMeta(targetLanguage());
-  return `${source.flag} → ${target.flag}`;
+  return `<span class="pair-language">${flagImage(source.code)}<b>${source.short}</b></span><i class="ph-bold ph-arrow-right pair-arrow" aria-hidden="true"></i><span class="pair-language">${flagImage(target.code)}<b>${target.short}</b></span>`;
 }
 
 export function setSourceLanguage(code) {

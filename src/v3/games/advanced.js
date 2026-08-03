@@ -2,8 +2,8 @@ import { collections } from '../content-multilingual.js';
 import {
   getState, setState, registerAction, grantReward,
   sourceLanguage, targetLanguage, languageValue, uiText
-} from '../core/index.js';
-import { assets } from '../../config/assets.js';
+} from '../core/index.js?build=cinematic-worlds-1';
+import { assets } from '../../config/assets.js?build=cinematic-worlds-1';
 
 const tr=(de,es,el=de)=>uiText(de,es,el);
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);

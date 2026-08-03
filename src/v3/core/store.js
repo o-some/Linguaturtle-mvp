@@ -17,6 +17,7 @@ export const initialState = {
     unlockedWords: [],
     boosters: { doubleXp: 0, hints: 0, jumps: 0 },
     claimedMilestones: [],
+    dailyGoalClaimed: false,
     homeLayoutVersion: 0,
     homeOwned: ['plant'],
     homePlaced: ['plant'],
@@ -24,7 +25,14 @@ export const initialState = {
     homePositions: { plant: { x: 68, y: 22 } },
     tulaHomePosition: { x: 50, y: 70 },
   },
-  session: { activeGame: null, collectionId: 'garden', busy: false, error: null },
+  session: {
+    activeGame: null,
+    collectionId: 'garden',
+    busy: false,
+    error: null,
+    rewardNotices: [],
+    focusMilestone: null,
+  },
 };
 
 let state = readStorage(initialState);
