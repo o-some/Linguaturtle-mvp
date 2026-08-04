@@ -1,0 +1,37 @@
+.account-card{position:relative;margin:18px 0;padding:20px;border:1px solid rgba(211,171,73,.5);border-radius:26px;background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(238,250,255,.95));box-shadow:0 14px 34px rgba(0,38,67,.14);color:var(--navy)}
+.account-card p{color:var(--muted);line-height:1.5}
+.account-heading{display:flex;align-items:center;gap:13px}
+.account-heading>i{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:16px;background:linear-gradient(145deg,var(--navy),#0b6b92);color:#fff;font-size:1.45rem}
+.account-heading small{display:block;color:var(--gold);font-weight:900;letter-spacing:.1em;font-size:.68rem}
+.account-heading h2{margin:4px 0 0;font:1.25rem/1.2 Georgia,serif;overflow-wrap:anywhere}
+.account-form{display:grid;gap:13px;margin-top:16px}
+.account-form label{display:grid;gap:7px;color:var(--navy);font-weight:900;font-size:.84rem}
+.account-form input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:15px;background:#fff;padding:13px 14px;color:var(--ink);font:inherit;outline:none}
+.account-form input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(211,173,81,.15)}
+.account-card .primary,.account-card .secondary{width:100%;margin-top:10px}
+.account-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:4px;border-radius:16px;background:#e8f1f5}
+.account-tabs button{border:0;border-radius:12px;background:transparent;padding:10px 7px;color:var(--muted);font-weight:900}
+.account-tabs button.active{background:#fff;color:var(--navy);box-shadow:0 4px 12px rgba(0,42,70,.1)}
+.text-button,.account-delete{display:block;width:100%;border:0;background:transparent;padding:12px;color:var(--navy2);font-weight:900;text-decoration:underline}
+.account-delete{margin-top:7px;color:#a33b48}
+.account-message,.account-error{border-radius:15px;padding:11px 13px;font-weight:800}
+.account-message{background:#e8f8ee;color:#28633f!important}
+.account-error{background:#fff0f1;color:#983946!important}
+.sync-status{display:flex;align-items:center;gap:12px;margin:16px 0;padding:13px;border-radius:17px;background:#eef6fa}
+.sync-status>i{font-size:1.5rem}
+.sync-status strong,.sync-status small{display:block}
+.sync-status small{margin-top:3px;color:var(--muted)}
+.sync-synced{background:#e8f8ee;color:#28633f}
+.sync-offline,.sync-error{background:#fff5df;color:#8b6115}
+.sync-conflict{background:#fff0f1;color:#983946}
+.account-conflict{position:fixed;inset:0;z-index:180;display:grid;place-items:center;padding:22px;background:rgba(1,24,41,.72);backdrop-filter:blur(7px)}
+.account-conflict-card{width:min(100%,480px);box-sizing:border-box;border-radius:28px;background:#fff;padding:24px;box-shadow:0 28px 70px rgba(0,0,0,.35);color:var(--navy)}
+.account-conflict-card h2{font:1.65rem/1.15 Georgia,serif;margin:8px 0}
+.account-conflict-card p{color:var(--muted);line-height:1.5}
+.account-prompt{position:fixed;inset:0;z-index:170;display:grid;place-items:end center;padding:20px;background:rgba(1,24,41,.62);backdrop-filter:blur(6px)}
+.account-prompt-card{width:min(100%,480px);box-sizing:border-box;border-radius:28px;background:linear-gradient(155deg,#fff,#edf9ff);padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.34);color:var(--navy);text-align:center}
+.account-prompt-card>i{display:grid;place-items:center;width:62px;height:62px;margin:0 auto 14px;border-radius:21px;background:linear-gradient(145deg,var(--navy),#0b6b92);color:#fff;font-size:1.9rem}
+.account-prompt-card h2{margin:0;font:1.7rem/1.15 Georgia,serif}
+.account-prompt-card p{color:var(--muted);line-height:1.5}
+.account-prompt-card button{width:100%;margin-top:9px}
+@media(max-width:430px){.account-card{padding:17px}.account-heading h2{font-size:1.08rem}.account-conflict-card,.account-prompt-card{padding:20px}}

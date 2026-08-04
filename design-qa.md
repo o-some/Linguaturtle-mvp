@@ -1,4 +1,4 @@
-# Design QA — Cinematic LinguaTurtle
+# Design QA — Cinematic Tulas Island
 
 ## Vergleichsziel
 
@@ -6,7 +6,7 @@
 - Browser-Implementation: `design-qa-evidence/implementation-final-390x844.png`
 - Gemeinsamer Full-view-Vergleich: `design-qa-evidence/comparison-final-full.png`
 - Responsive Nachweise: `design-qa-evidence/implementation-responsive-360x800.png` und `design-qa-evidence/implementation-responsive-430x932.png`
-- Geprüfter State: deutsche Oberfläche, Profilname „Kind“, Sprachpaar DE → ES, 5000 Muscheln, Level 1, Tagesziel 0/3
+- Geprüfter State: deutsche Oberfläche, Profilname „Kind“, Sprachpaar DE → ES, 150 Muscheln, Level 1, Tagesziel 0/3
 - CSS-Viewport der Hauptprüfung: 390 × 844 px bei DPR 1
 - Source Visual: 852 × 1846 px, proportional auf 390 × 844 CSS-Pixel normalisiert
 - Browser-Screenshot: 375 × 812 px; die Abweichung vom CSS-Viewport entsteht durch Scrollbar und In-App-Browser-Chrome

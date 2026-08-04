@@ -1,0 +1,13 @@
+project_id = "linguaturtle"
+
+[functions.delete-account]
+verify_jwt = true
+
+[functions.economy]
+verify_jwt = true
+
+[functions.verify-purchase]
+verify_jwt = true
+
+[functions.store-webhook]
+verify_jwt = false

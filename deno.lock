@@ -1,0 +1,24 @@
+{
+  "version": "5",
+  "redirects": {
+    "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2.112.0"
+  },
+  "remote": {
+    "https://esm.sh/@supabase/supabase-js@2.112.0": "f420344a1c52d354b8af85dfdcfa10d2178c0840526dbc39768a24de3b956a95"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@capacitor/android@^8.5.0",
+        "npm:@capacitor/app@^8.1.1",
+        "npm:@capacitor/cli@^8.5.0",
+        "npm:@capacitor/core@^8.5.0",
+        "npm:@capacitor/ios@^8.5.0",
+        "npm:@phosphor-icons/web@^2.1.2",
+        "npm:@playwright/test@^1.54.0",
+        "npm:@supabase/supabase-js@^2.112.0",
+        "npm:vite@^8.2.0"
+      ]
+    }
+  }
+}

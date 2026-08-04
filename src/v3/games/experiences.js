@@ -1,6 +1,6 @@
 import { collections } from '../content-multilingual.js';
 import {
-  getState,setState,registerAction,speak,grantReward,spendShells,levelFromXp,
+  getState,setState,registerAction,speak,grantReward,spendEconomyShells,levelFromXp,
   sourceLanguage,targetLanguage,languageMeta,languageValue,uiText
 } from '../core/index.js?build=cinematic-worlds-1';
 import { profileConfig } from '../screens/child-profile.js?build=cinematic-worlds-1';
@@ -134,10 +134,10 @@ export function registerExperienceActions(router){
  registerAction('open-harbor',()=>{if(levelFromXp()<7)return alert(tr('Der Hafen öffnet ab Level 7.','El puerto se abre en nivel 7.','Το λιμάνι ανοίγει στο επίπεδο 7.'));travel={mode:'harbor',items:[...phrases],step:0,score:0,current:null};router.navigate('harbor')});
  registerAction('open-castle',()=>{if(levelFromXp()<10)return alert(tr('Das Schloss öffnet ab Level 10.','El castillo se abre en nivel 10.','Το κάστρο ανοίγει στο επίπεδο 10.'));travel={mode:'castle',items:shuffle(phrases).slice(0,5),step:0,score:0,current:null};router.navigate('castle')});
  registerAction('travel-answer',({data})=>{if(data.value===languageValue(travel.current,targetLanguage()))travel.score++;travel.step++;router.renderCurrent()});
- registerAction('home-item',({data})=>{
+ registerAction('home-item',async({data})=>{
   const item=homeCatalog.find(i=>i.id===data.id);if(!item)return;
   const before=homeViewState(getState()),isNew=!before.owned.includes(item.id);
-  if(isNew&&!spendShells(item.cost))return alert(tr('Nicht genug Muscheln.','No hay suficientes conchas.','Δεν έχεις αρκετά κοχύλια.'));
+  if(isNew){const result=await spendEconomyShells(`home:${item.id}`,item.cost);if(!result.ok)return alert(tr('Nicht genug Muscheln.','No hay suficientes conchas.','Δεν έχεις αρκετά κοχύλια.'))}
   setState(d=>{
    const current=homeViewState(d);
    d.inventory.homeLayoutVersion=HOME_LAYOUT_VERSION;

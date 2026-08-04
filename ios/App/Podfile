@@ -1,0 +1,25 @@
+require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
+
+platform :ios, '15.0'
+use_frameworks!
+
+# workaround to avoid Xcode caching of Pods that requires
+# Product -> Clean Build Folder after new Cordova plugins installed
+# Requires CocoaPods 1.6 or newer
+install! 'cocoapods', :disable_input_output_paths => true
+
+def capacitor_pods
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+
+end
+
+target 'App' do
+  capacitor_pods
+  # Kidoz is the only ad SDK in the app. No mediation, analytics, IDFA or ATT SDKs.
+  pod 'KidozSDK', '10.1.5'
+end
+
+post_install do |installer|
+  assertDeploymentTarget(installer)
+end

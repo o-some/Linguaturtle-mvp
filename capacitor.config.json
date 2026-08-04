@@ -1,0 +1,14 @@
+{
+  "appId": "com.linguaturtle.app",
+  "appName": "Tulas Island",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

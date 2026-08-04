@@ -1,8 +1,8 @@
-# LinguaTurtle 3.0 – Turtle Island
+# Tulas Island 3.0
 
 ## Ziel
 
-LinguaTurtle wird von einer klassischen Lern-App zu einer modularen, illustrierten Sprachlernwelt für Kinder weiterentwickelt. Die öffentliche Version auf `main` bleibt stabil. Entwicklung erfolgt über `develop` und Feature-Branches.
+Tulas Island wird von einer klassischen Lern-App zu einer modularen, illustrierten Sprachlernwelt für Kinder weiterentwickelt. Die öffentliche Version auf `main` bleibt stabil. Entwicklung erfolgt über `develop` und Feature-Branches.
 
 ## Git-Workflow
 
@@ -19,7 +19,7 @@ LinguaTurtle wird von einer klassischen Lern-App zu einer modularen, illustriert
 - konfigurierbare Feature Flags
 - zentraler Audio- und Animation-Adapter
 
-### M2 – Turtle Island
+### M2 – Tulas Island
 - Insel als Hauptnavigation
 - Bibliothek, Wald, Garten, Hafen, Boutique, Zuhause und Schloss
 - animierte Hotspots

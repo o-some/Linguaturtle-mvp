@@ -1,4 +1,4 @@
-/* LinguaTurtle Premium Anime Theme – presentation only */
+/* Tulas Island Premium Anime Theme – presentation only */
 :root{
  --navy:#032f50;--navy2:#075b87;--navy3:#0c729d;--gold:#e4b84d;--gold2:#ffdb7d;
  --cream:#fff8e8;--pearl:#fffdf7;--sky:#dff7ff;--ink:#092f4b;--muted:#6e8291;
@@ -112,5 +112,40 @@ button:active{transform:scale(.975)}
  .stats-v3 .reward-art{width:42px;height:42px}.mode-art,.journey-grid .mode-art{flex-basis:54px;width:54px;height:64px;border-radius:14px}.shop-mode-art{flex-basis:52px;width:52px;height:64px}.shop-hero-chest{flex-basis:72px;width:72px;height:72px}.milestone-chest{flex-basis:58px;width:58px;height:58px}.experience-hero{min-height:220px;padding:18px;gap:10px}.experience-hero h1{font-size:1.65rem}.experience-hero>img:not(.experience-mode-art){width:128px;height:205px}.experience-mode-hero{min-height:220px}.story-card-with-tula{grid-template-columns:105px 1fr;gap:12px;padding:18px 14px}.story-tula{height:205px}.speed-title-with-tula{grid-template-columns:1fr 92px}.speed-tula{width:92px;height:128px}.expansion-art-hero{min-height:230px}
  .tula-room{min-height:330px!important}.page-title{padding:17px}.v3-nav{width:calc(100% - 18px);bottom:max(7px,env(safe-area-inset-bottom));border-radius:26px}.v3-nav button small{font-size:.62rem}
 }
+@media(max-width:600px){
+ .cinematic-island .island-map{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  padding:10px;
+  background:#043b61;
+ }
+ .cinematic-island .island-map>img{
+  grid-column:1 / -1;
+  width:100%;
+  height:clamp(190px,52vw,240px);
+  border-radius:20px;
+  object-fit:cover;
+ }
+ .cinematic-island .island-hotspot{
+  position:static;
+  width:100%;
+  min-width:0;
+  min-height:54px;
+  padding:8px 9px;
+  transform:none!important;
+ }
+ .cinematic-island .hotspot-copy strong{
+  max-width:none;
+  overflow:visible;
+  font-size:.72rem;
+  text-overflow:clip;
+ }
+ .cinematic-island .hotspot-copy small{font-size:.59rem}
+}
 @media(max-width:360px){.hero-copy{width:72%}.hero-v3 h1{font-size:1.9rem}.tula-art{height:66%;right:-9%;bottom:0}.stats-v3{gap:7px}.stats-v3 div{padding:13px 5px}.v3-brand strong{display:none}}
+@media(max-width:340px){
+ .cinematic-island .island-map{grid-template-columns:1fr}
+ .cinematic-island .island-map>img{grid-column:1}
+}
 @media(prefers-reduced-motion:reduce){button{transition:none}.tula-art{animation:none!important}}

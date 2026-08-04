@@ -1,8 +1,9 @@
 import { collections } from './content-multilingual.js';
 import {
   createRouter, registerAction, bindActions, getState, setState, subscribe,
-  migrateLegacyState, levelFromXp, levelProgress, spendShells, speak,
-  MILESTONE_LEVELS,
+  migrateLegacyState, levelFromXp, levelProgress, spendEconomyShells, creditGameplayShells, speak,
+  MILESTONE_LEVELS, WEEKLY_GOAL_TARGET, WEEKLY_GOAL_REWARD,
+  currentWeekKey, ensureWeeklyGoalState,
   LANGUAGES, LANGUAGE_CODES, ensureLanguagePair, sourceLanguage, targetLanguage,
   languageMeta, languageValue, uiText, flagImage, pairBadge,
   setSourceLanguage, setTargetLanguage, swapLanguages
@@ -13,11 +14,14 @@ import { registerExperienceRoutes, registerExperienceActions } from './games/exp
 import { renderShop, renderProfile, renderSettings, registerProgressionActions } from './screens/progression.js?build=cinematic-worlds-1';
 import { renderChildProfile, registerChildProfileActions } from './screens/child-profile.js?build=cinematic-worlds-1';
 import { assets } from '../config/assets.js?build=cinematic-worlds-1';
+import { getAccountState, initializeAccount, subscribeAccount } from './core/account.js';
+import { initializeEconomy, subscribeEconomy } from './core/economy.js';
 
 const app=document.querySelector('#app');
 const router=createRouter(app);
 migrateLegacyState();
 ensureLanguagePair();
+ensureWeeklyGoalState();
 
 const tr=(de,es,el=de,en=null)=>uiText(de,es,el,en);
 const WORD_COST=1;
@@ -86,28 +90,59 @@ function showToast(message){
 function rewardNoticeMarkup(notice){
   if(!notice)return '';
   const isDaily=notice.type==='daily';
+  const isWeekly=notice.type==='weekly';
+  const isGoal=isDaily||isWeekly;
   const title=isDaily
     ? tr('Tagesziel geschafft!','¡Objetivo diario completado!','Ο ημερήσιος στόχος ολοκληρώθηκε!','Daily goal complete!')
-    : tr(`Level ${notice.level} erreicht!`,`¡Nivel ${notice.level} alcanzado!`,`Έφτασες στο επίπεδο ${notice.level}!`,`Level ${notice.level} reached!`);
+    : isWeekly
+      ? tr('Wochenziel geschafft!','¡Objetivo semanal completado!','Ο εβδομαδιαίος στόχος ολοκληρώθηκε!','Weekly goal complete!')
+      : tr(`Level ${notice.level} erreicht!`,`¡Nivel ${notice.level} alcanzado!`,`Έφτασες στο επίπεδο ${notice.level}!`,`Level ${notice.level} reached!`);
   const body=isDaily
     ? tr('Drei Abenteuer sind geschafft. Öffne deine Schatztruhe und hol dir die Belohnung.','Has completado tres aventuras. Abre el cofre y recoge tu recompensa.','Ολοκλήρωσες τρεις περιπέτειες. Άνοιξε το σεντούκι και πάρε την ανταμοιβή.','You completed three adventures. Open the chest and claim your reward.')
-    : tr('Dein neuer Level-Schatz wartet im Profil auf dich.','Tu nuevo tesoro de nivel te espera en el perfil.','Ο νέος θησαυρός επιπέδου σε περιμένει στο προφίλ.','Your new level treasure is waiting in your profile.');
-  const art=isDaily?assets.rewards.chests.gold:milestoneChest(notice.level);
-  const key=isDaily?'daily':`level-${notice.level}`;
+    : isWeekly
+      ? tr('Du hast 15 Abenteuer in dieser Woche geschafft. Deine große Muscheltruhe ist bereit.','Has completado 15 aventuras esta semana. Tu gran cofre de conchas está listo.','Ολοκλήρωσες 15 περιπέτειες αυτή την εβδομάδα. Το μεγάλο σεντούκι είναι έτοιμο.','You completed 15 adventures this week. Your big shell chest is ready.')
+      : tr('Dein neuer Level-Schatz wartet im Profil auf dich.','Tu nuevo tesoro de nivel te espera en el perfil.','Ο νέος θησαυρός επιπέδου σε περιμένει στο προφίλ.','Your new level treasure is waiting in your profile.');
+  const art=isDaily?assets.rewards.chests.gold:isWeekly?assets.rewards.chests.jewel:milestoneChest(notice.level);
+  const key=noticeKey(notice);
   return `<section class="reward-notice-modal" data-reward-notice="${key}" role="dialog" aria-modal="true" aria-labelledby="reward-notice-title">
     <div class="reward-notice-card">
-      <button class="reward-notice-close" data-action="dismiss-reward-notice" data-notice="${key}" aria-label="${tr('Später','Más tarde','Αργότερα','Later')}"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+      ${isGoal?'':`<button class="reward-notice-close" data-action="dismiss-reward-notice" data-notice="${key}" aria-label="${tr('Später','Más tarde','Αργότερα','Later')}"><i class="ph-bold ph-x" aria-hidden="true"></i></button>`}
       <span class="reward-notice-kicker">${tr('NEUER SCHATZ','NUEVO TESORO','ΝΕΟΣ ΘΗΣΑΥΡΟΣ','NEW TREASURE')}</span>
       <img class="reward-notice-art" src="${art}" alt="">
       <h2 id="reward-notice-title">${title}</h2>
       <p>${body}</p>
-      ${isDaily
-        ? `<div class="reward-notice-value">${currencyIcon()}<strong>+${notice.shells||25}</strong><span>${tr('Muscheln','Conchas','Κοχύλια','Shells')}</span></div>
-          <button class="reward-notice-primary" data-action="claim-daily-goal">${tr('Belohnung abholen','Recoger recompensa','Πάρε την ανταμοιβή','Claim reward')}</button>`
+      ${isGoal
+        ? `<div class="reward-notice-value">${currencyIcon()}<strong>+${notice.shells||(isWeekly?WEEKLY_GOAL_REWARD:25)}</strong><span>${tr('Muscheln','Conchas','Κοχύλια','Shells')}</span></div>
+          <button class="reward-notice-primary" data-action="${isWeekly?'claim-weekly-goal':'claim-daily-goal'}">${tr('Belohnung abholen','Recoger recompensa','Πάρε την ανταμοιβή','Claim reward')}</button>`
         : `<button class="reward-notice-primary" data-action="open-level-reward" data-level="${notice.level}">${tr('Zum Profil-Schatz','Ir al tesoro del perfil','Στον θησαυρό προφίλ','Go to profile treasure')}</button>`}
-      <button class="reward-notice-later" data-action="dismiss-reward-notice" data-notice="${key}">${tr('Später','Más tarde','Αργότερα','Later')}</button>
+      ${isGoal?'':`<button class="reward-notice-later" data-action="dismiss-reward-notice" data-notice="${key}">${tr('Später','Más tarde','Αργότερα','Later')}</button>`}
     </div>
   </section>`;
+}
+
+const noticeKey=notice=>notice.type==='daily'
+  ?'daily'
+  :notice.type==='weekly'
+    ?`weekly-${notice.weekKey}`
+    :`level-${notice.level}`;
+
+function ensurePendingGoalNotices(){
+  const s=getState(),weekKey=currentWeekKey();
+  const notices=Array.isArray(s.session.rewardNotices)?s.session.rewardNotices:[];
+  const needsDaily=Number(s.progress.daily||0)>=3
+    && !s.inventory.dailyGoalClaimed
+    && !notices.some(notice=>notice.type==='daily');
+  const needsWeekly=s.progress.weekly?.weekKey===weekKey
+    && Number(s.progress.weekly.completed||0)>=WEEKLY_GOAL_TARGET
+    && !s.inventory.weeklyGoalClaimed
+    && !notices.some(notice=>notice.type==='weekly'&&notice.weekKey===weekKey);
+  if(!needsDaily&&!needsWeekly)return;
+  setState(d=>{
+    d.session.rewardNotices=Array.isArray(d.session.rewardNotices)?d.session.rewardNotices:[];
+    if(needsDaily)d.session.rewardNotices.unshift({type:'daily',shells:25});
+    if(needsWeekly)d.session.rewardNotices.push({type:'weekly',weekKey,shells:WEEKLY_GOAL_REWARD});
+    return d;
+  });
 }
 
 let rewardNoticeSyncQueued=false;
@@ -116,7 +151,7 @@ function syncRewardNotice(){
   const notice=(getState().session.rewardNotices||[])[0]||null;
   const current=app.querySelector('.reward-notice-modal');
   if(!notice){current?.remove();return}
-  const key=notice.type==='daily'?'daily':`level-${notice.level}`;
+  const key=noticeKey(notice);
   if(current?.dataset.rewardNotice===key)return;
   current?.remove();
   app.insertAdjacentHTML('beforeend',rewardNoticeMarkup(notice));
@@ -125,12 +160,40 @@ function syncRewardNotice(){
 function scheduleRewardNoticeSync(){
   if(rewardNoticeSyncQueued)return;
   rewardNoticeSyncQueued=true;
+  ensurePendingGoalNotices();
   queueMicrotask(syncRewardNotice);
+}
+
+function accountPromptMarkup(){
+  return `<section class="account-prompt" role="dialog" aria-modal="true" aria-labelledby="account-prompt-title">
+    <div class="account-prompt-card">
+      <i class="ph-bold ph-cloud-arrow-up" aria-hidden="true"></i>
+      <span class="eyebrow">${tr('OPTIONALE CLOUD-SICHERUNG','COPIA OPCIONAL EN LA NUBE','ΠΡΟΑΙΡΕΤΙΚΟ CLOUD','OPTIONAL CLOUD BACKUP')}</span>
+      <h2 id="account-prompt-title">${tr('Fortschritt sichern?','¿Guardar tu progreso?','Αποθήκευση προόδου;','Back up progress?')}</h2>
+      <p>${tr('Du kannst sofort ohne Login weitermachen. Ein Elternkonto sichert den Fortschritt zusätzlich für andere Geräte.','Puedes continuar sin iniciar sesión. Una cuenta parental también guarda el progreso para otros dispositivos.','Μπορείς να συνεχίσεις χωρίς σύνδεση. Ένας γονικός λογαριασμός αποθηκεύει την πρόοδο και για άλλες συσκευές.','Continue without signing in, or use a parent account to back up progress across devices.')}</p>
+      <button class="primary" data-action="open-account-settings">${tr('Elternkonto einrichten','Configurar cuenta parental','Ρύθμιση γονικού λογαριασμού','Set up parent account')}</button>
+      <button class="secondary" data-action="continue-without-account">${tr('Ohne Login weitermachen','Continuar sin iniciar sesión','Συνέχεια χωρίς σύνδεση','Continue without login')}</button>
+    </div>
+  </section>`;
+}
+
+function syncAccountPrompt(){
+  const existing=app.querySelector('.account-prompt');
+  if(!getAccountState().shouldPrompt){existing?.remove();return}
+  if(!existing)app.insertAdjacentHTML('beforeend',accountPromptMarkup());
+}
+
+function syncAccountConflict(){
+  const existing=app.querySelector('.account-conflict-global');
+  const account=getAccountState();
+  if(!account.conflict||getState().route.name==='settings'){existing?.remove();return}
+  if(existing)return;
+  app.insertAdjacentHTML('beforeend',`<section class="account-conflict account-conflict-global" role="dialog" aria-modal="true" aria-labelledby="global-account-conflict-title"><div class="account-conflict-card"><span class="eyebrow">${tr('SYNCHRONISIERUNG','SINCRONIZACIÓN','ΣΥΓΧΡΟΝΙΣΜΟΣ','SYNC')}</span><h2 id="global-account-conflict-title">${tr('Zwei Fortschritte gefunden','Se encontraron dos progresos','Βρέθηκαν δύο πρόοδοι','Two progress versions found')}</h2><p>${tr('Gerät und Cloud wurden unterschiedlich geändert. Wähle ausdrücklich, welcher Stand bleiben soll.','El dispositivo y la nube tienen cambios diferentes. Elige qué progreso conservar.','Η συσκευή και το cloud έχουν διαφορετικές αλλαγές. Διάλεξε ποια πρόοδο θα κρατήσεις.','Device and cloud have different changes. Choose which progress to keep.')}</p><button class="primary" data-action="resolve-sync-conflict" data-choice="local">${tr('Diesen Geräte-Stand verwenden','Usar este dispositivo','Χρήση αυτής της συσκευής','Use this device')}</button><button class="secondary" data-action="resolve-sync-conflict" data-choice="cloud">${tr('Cloud-Stand verwenden','Usar la nube','Χρήση cloud','Use cloud version')}</button></div></section>`);
 }
 function removeRewardNotice(key){
   setState(d=>{
     const notices=Array.isArray(d.session.rewardNotices)?d.session.rewardNotices:[];
-    const index=notices.findIndex(notice=>(notice.type==='daily'?'daily':`level-${notice.level}`)===key);
+    const index=notices.findIndex(notice=>noticeKey(notice)===key);
     if(index>=0)notices.splice(index,1);
     d.session.rewardNotices=notices;
     return d;
@@ -142,7 +205,7 @@ function top(backRoute=null,variant='default'){
   const home=variant==='home';
   const brand=`<div class="v3-brand">
     ${home?`<button class="home-avatar-button" data-action="navigate" data-route="profile" aria-label="${tr('Profil öffnen','Abrir perfil','Άνοιγμα προφίλ','Open profile')}"><img src="${assets.characters.tula.poses.profile}" alt=""></button>`:`<img class="brand-avatar" src="${assets.characters.tula.poses.profile}" alt="">`}
-    <strong>LinguaTurtle</strong>
+    <strong>Tulas Island</strong>
   </div>`;
   return `<header class="v3-top ${home?'v3-top-cinematic':''}">
     ${home?'':`<button class="icon" data-action="${backRoute?'navigate':'menu'}" ${backRoute?`data-route="${backRoute}"`:''} aria-label="${backRoute?tr('Zurück','Volver','Πίσω'):tr('Menü','Menú','Μενού')}"><i class="ph-bold ${backRoute?'ph-arrow-left':'ph-list'}" aria-hidden="true"></i></button>`}
@@ -193,15 +256,17 @@ router.register('language-select',()=>{
 });
 
 router.register('home',()=>{
-  const s=getState(),c=currentCollection(),lv=levelFromXp(s.progress.xp),p=levelProgress(s.progress.xp);
+  const s=getState(),c=currentCollection(),lv=levelFromXp(s.progress.xp);
   const daily=Math.max(0,Math.min(3,Number(s.progress.daily)||0)),dailyPercent=(daily/3)*100;
+  const weekly=Math.max(0,Math.min(WEEKLY_GOAL_TARGET,Number(s.progress.weekly?.completed)||0));
+  const weeklyPercent=(weekly/WEEKLY_GOAL_TARGET)*100;
   const name=safeText(s.profile?.name||tr('Kind','peque','παιδί'));
   return `<div class="v3-shell page cinematic-home">
     <img class="cinematic-home-bg" src="${assets.backgrounds.home.cinematic}" alt="">
     ${top(null,'home')}
     <section class="cinematic-home-stage">
       <div class="cinematic-home-copy">
-        <span class="home-kicker">${tr('WILLKOMMEN AUF TURTLE ISLAND','BIENVENIDO A TURTLE ISLAND','ΚΑΛΩΣ ΗΡΘΕΣ ΣΤΟ TURTLE ISLAND','WELCOME TO TURTLE ISLAND')}</span>
+        <span class="home-kicker">${tr('WILLKOMMEN AUF TULAS ISLAND','BIENVENIDO A TULAS ISLAND','ΚΑΛΩΣ ΗΡΘΕΣ ΣΤΟ TULAS ISLAND','WELCOME TO TULAS ISLAND')}</span>
         <h1>${tr(`Hallo ${name}!`,`¡Hola, ${name}!`,`Γεια σου, ${name}!`,`Hello ${name}!`)}</h1>
         <p>${tr('Bereit für dein nächstes Sprachabenteuer?','¿Listo para tu próxima aventura lingüística?','Έτοιμο για την επόμενη γλωσσική περιπέτεια;','Ready for your next language adventure?')}</p>
         <span class="home-next-label">${tr('NÄCHSTES ABENTEUER','PRÓXIMA AVENTURA','ΕΠΟΜΕΝΗ ΠΕΡΙΠΕΤΕΙΑ','NEXT ADVENTURE')} · ${collectionName(c)}</span>
@@ -227,9 +292,11 @@ router.register('home',()=>{
           <i class="ph-bold ph-arrow-right" aria-hidden="true"></i>
         </button>
         <div class="home-goal-bar"><i style="width:${dailyPercent}%"></i></div>
-        ${daily===3&&!s.inventory.dailyGoalClaimed
-          ? `<button class="home-goal-claim" data-action="claim-daily-goal">${tr('Belohnung abholen','Recoger recompensa','Πάρε την ανταμοιβή','Claim reward')} · +25</button>`
-          : `<span class="home-level-note">${tr(`Noch ${p.missing} XP bis Level ${lv+1}`,`Faltan ${p.missing} XP para nivel ${lv+1}`,`Απομένουν ${p.missing} XP για το επίπεδο ${lv+1}`)}</span>`}
+        <div class="home-weekly-goal">
+          <span class="home-weekly-label">${tr('Wochenziel','Objetivo semanal','Εβδομαδιαίος στόχος','Weekly goal')} <strong>${weekly}/${WEEKLY_GOAL_TARGET}</strong></span>
+          <span class="home-weekly-track"><i style="width:${weeklyPercent}%"></i></span>
+          <span class="home-weekly-reward">${currencyIcon()}<strong>+${WEEKLY_GOAL_REWARD}</strong></span>
+        </div>
       </section>
     </section>
   </div>${nav('home')}`;
@@ -237,7 +304,7 @@ router.register('home',()=>{
 
 router.register('island',()=>{
   const s=getState(),lv=levelFromXp(s.progress.xp);
-  return `<div class="v3-shell page cinematic-subpage cinematic-island">${cinematicBackground(assets.backgrounds.cinematic.island)}${top()}<section class="page-title"><span class="eyebrow">TURTLE ISLAND</span><h1>${tr('Wohin möchtest du?','¿Adónde quieres ir?','Πού θέλεις να πας;')}</h1><p>${tr('Tippe einen Ort auf der Karte an.','Toca un lugar en el mapa.','Πάτησε ένα μέρος στον χάρτη.')}</p></section><section class="island-card island-map" aria-label="${tr('Interaktive Inselkarte','Mapa interactivo','Διαδραστικός χάρτης')}"><img src="${assets.island.overview}" alt="Turtle Island">${collections.map(c=>islandHotspot(c,lv)).join('')}</section><button class="tula-home-feature" data-action="navigate" data-route="tula-home"><img src="${assets.backgrounds.home.tropicalBay}" alt=""><span><small>${tr('TULAS ZUHAUSE','CASA DE TULA','ΤΟ ΣΠΙΤΙ ΤΗΣ ΤΟΥΛΑ')}</small><strong>${tr('Tulas Zuhause','Casa de Tula','Το σπίτι της Τούλα')}</strong><em>${tr('Einrichten & dekorieren','Decorar y organizar','Διακόσμηση')}</em></span><b>→</b></button>
+  return `<div class="v3-shell page cinematic-subpage cinematic-island">${cinematicBackground(assets.backgrounds.cinematic.island)}${top()}<section class="page-title"><span class="eyebrow">TULAS ISLAND</span><h1>${tr('Wohin möchtest du?','¿Adónde quieres ir?','Πού θέλεις να πας;')}</h1><p>${tr('Tippe einen Ort auf der Karte an.','Toca un lugar en el mapa.','Πάτησε ένα μέρος στον χάρτη.')}</p></section><section class="island-card island-map" aria-label="${tr('Interaktive Inselkarte','Mapa interactivo','Διαδραστικός χάρτης')}"><img src="${assets.island.overview}" alt="Tulas Island">${collections.map(c=>islandHotspot(c,lv)).join('')}</section><button class="tula-home-feature" data-action="navigate" data-route="tula-home"><img src="${assets.backgrounds.home.tropicalBay}" alt=""><span><small>${tr('TULAS ZUHAUSE','CASA DE TULA','ΤΟ ΣΠΙΤΙ ΤΗΣ ΤΟΥΛΑ')}</small><strong>${tr('Tulas Zuhause','Casa de Tula','Το σπίτι της Τούλα')}</strong><em>${tr('Einrichten & dekorieren','Decorar y organizar','Διακόσμηση')}</em></span><b>→</b></button>
     <section class="section-head island-adventures-head"><div><span class="eyebrow">${tr('MIT TULA','CON TULA','ΜΕ ΤΗΝ ΤΟΥΛΑ')}</span><h2>${tr('Besondere Abenteuer','Aventuras especiales','Ξεχωριστές περιπέτειες')}</h2></div></section>
     <section class="journey-grid island-adventure-grid">
       <button data-action="start-adaptive"><img class="mode-art" src="${assets.characters.tula.poses.thinking}" alt=""><div><strong>${tr('Schlaue Wiederholung','Repaso inteligente','Έξυπνη επανάληψη')}</strong><small>${tr('Persönliche Übungsrunde','Ronda personalizada','Προσωπική εξάσκηση')}</small></div><b>→</b></button>
@@ -313,7 +380,39 @@ registerAction('claim-daily-goal',()=>{
     d.session.rewardNotices=(d.session.rewardNotices||[]).filter(notice=>notice.type!=='daily');
     return d;
   });
+  creditGameplayShells(
+    shells,
+    'daily-goal',
+    `daily-goal-${new Date().toISOString().slice(0,10)}`
+  ).catch(()=>{});
   showToast(tr(`Tagesziel-Belohnung: +${shells} Muscheln!`,`Recompensa diaria: ¡+${shells} conchas!`,`Ημερήσια ανταμοιβή: +${shells} κοχύλια!`,`Daily reward: +${shells} shells!`));
+  router.renderCurrent();
+});
+registerAction('claim-weekly-goal',()=>{
+  const s=getState(),weekKey=currentWeekKey();
+  if(
+    s.progress.weekly?.weekKey!==weekKey
+    || Number(s.progress.weekly.completed||0)<WEEKLY_GOAL_TARGET
+    || s.inventory.weeklyGoalClaimed
+  )return;
+  setState(d=>{
+    d.inventory.weeklyGoalClaimed=true;
+    d.progress.shells+=WEEKLY_GOAL_REWARD;
+    d.session.rewardNotices=(d.session.rewardNotices||[])
+      .filter(notice=>notice.type!=='weekly'||notice.weekKey!==weekKey);
+    return d;
+  });
+  creditGameplayShells(
+    WEEKLY_GOAL_REWARD,
+    'weekly-goal',
+    `weekly-goal-${weekKey}`
+  ).catch(()=>{});
+  showToast(tr(
+    `Wochenziel-Belohnung: +${WEEKLY_GOAL_REWARD} Muscheln!`,
+    `Recompensa semanal: ¡+${WEEKLY_GOAL_REWARD} conchas!`,
+    `Εβδομαδιαία ανταμοιβή: +${WEEKLY_GOAL_REWARD} κοχύλια!`,
+    `Weekly reward: +${WEEKLY_GOAL_REWARD} shells!`
+  ));
   router.renderCurrent();
 });
 registerAction('open-level-reward',({data})=>{
@@ -324,11 +423,12 @@ registerAction('open-level-reward',({data})=>{
   setTimeout(()=>document.querySelector(`[data-milestone="${level}"]`)?.scrollIntoView({behavior:'smooth',block:'center'}),120);
 });
 registerAction('select-word-collection',({data})=>{setState(d=>{d.session.wordCollectionId=data.collection;return d});router.renderCurrent()});
-registerAction('buy-word',({data})=>{
+registerAction('buy-word',async({data})=>{
   const word=collections.flatMap(c=>c.words).find(item=>item.id===data.word);
   if(!word)return;
   if((getState().inventory.unlockedWords||[]).includes(word.id))return;
-  if(!spendShells(WORD_COST)){showToast(tr('Du brauchst mehr Muscheln.','Necesitas más conchas.','Χρειάζεσαι περισσότερα κοχύλια.','You need more shells.'));return}
+  const result=await spendEconomyShells(`word:${word.id}`,WORD_COST);
+  if(!result.ok){showToast(tr('Du brauchst mehr Muscheln.','Necesitas más conchas.','Χρειάζεσαι περισσότερα κοχύλια.','You need more shells.'));return}
   setState(d=>{d.inventory.unlockedWords=[...new Set([...(d.inventory.unlockedWords||[]),word.id])];return d});
   showToast(`${word.emoji} ${tr('Wort freigeschaltet!','¡Palabra desbloqueada!','Η λέξη ξεκλειδώθηκε!','Word unlocked!')}`);
   router.renderCurrent();
@@ -341,6 +441,22 @@ registerProgressionActions(router);
 registerChildProfileActions(router);
 bindActions(app);
 subscribe(scheduleRewardNoticeSync);
+subscribeAccount(()=>{
+  syncAccountPrompt();
+  syncAccountConflict();
+  if(getState().route.name==='settings')router.renderCurrent();
+});
+subscribeEconomy(()=>{if(getState().route.name==='shop')router.renderCurrent()});
 app.addEventListener('linguaturtle:route-rendered',scheduleRewardNoticeSync);
+app.addEventListener('linguaturtle:route-rendered',syncAccountPrompt);
+app.addEventListener('linguaturtle:route-rendered',syncAccountConflict);
 router.renderCurrent();
 scheduleRewardNoticeSync();
+syncAccountPrompt();
+syncAccountConflict();
+initializeAccount();
+initializeEconomy();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}

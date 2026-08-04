@@ -1,16 +1,20 @@
 import { readStorage, writeStorage } from './storage.js';
 
-const TEST_SHELL_GRANT_VERSION = 1;
-const TEST_STARTING_SHELLS = 5000;
-
 export const initialState = {
-  storageVersion: 2,
-  testShellGrantVersion: TEST_SHELL_GRANT_VERSION,
+  storageVersion: 3,
   route: { name: 'home', params: {} },
   language: 'de',
   languages: { source: 'de', target: 'es' },
-  profile: { id: 'default', name: 'Kind', stage: 'preschool', goal: 'balanced', support: 'normal' },
-  progress: { xp: 0, shells: TEST_STARTING_SHELLS, streak: 0, daily: 0, learned: {}, mastery: {} },
+  profile: { id: 'default', name: 'Kind', stage: 'preschool', goal: 'balanced', support: 'normal', audience: 'child' },
+  progress: {
+    xp: 0,
+    shells: 150,
+    streak: 0,
+    daily: 0,
+    weekly: { weekKey: '', completed: 0 },
+    learned: {},
+    mastery: {},
+  },
   settings: { sound: true, motion: true, music: false },
   inventory: {
     unlockedModes: [],
@@ -18,6 +22,7 @@ export const initialState = {
     boosters: { doubleXp: 0, hints: 0, jumps: 0 },
     claimedMilestones: [],
     dailyGoalClaimed: false,
+    weeklyGoalClaimed: false,
     homeLayoutVersion: 0,
     homeOwned: ['plant'],
     homePlaced: ['plant'],
@@ -25,6 +30,7 @@ export const initialState = {
     homePositions: { plant: { x: 68, y: 22 } },
     tulaHomePosition: { x: 50, y: 70 },
   },
+  economy: { pendingRewards: [] },
   session: {
     activeGame: null,
     collectionId: 'garden',
@@ -36,20 +42,6 @@ export const initialState = {
 };
 
 let state = readStorage(initialState);
-
-// One-time test grant for existing profiles. The version marker prevents shells
-// from being replenished after every purchase or page reload.
-if ((state.testShellGrantVersion || 0) < TEST_SHELL_GRANT_VERSION) {
-  state = {
-    ...state,
-    testShellGrantVersion: TEST_SHELL_GRANT_VERSION,
-    progress: {
-      ...state.progress,
-      shells: Math.max(Number(state.progress?.shells) || 0, TEST_STARTING_SHELLS),
-    },
-  };
-  writeStorage(state);
-}
 
 const listeners = new Set();
 

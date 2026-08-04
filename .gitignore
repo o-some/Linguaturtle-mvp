@@ -1,3 +1,11 @@
 node_modules/
+dist/
+.env
+.env.local
 playwright-report/
 test-results/
+android/.gradle/
+android/local.properties
+android/captures/
+ios/App/Pods/
+ios/App/DerivedData/

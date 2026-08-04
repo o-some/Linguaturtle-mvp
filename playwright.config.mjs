@@ -14,7 +14,7 @@ export default defineConfig({
     screenshot: 'only-on-failure'
   },
   webServer: {
-    command: `python3 -m http.server ${port} --bind 127.0.0.1`,
+    command: `npm run dev -- --host 127.0.0.1 --port ${port}`,
     url: `${baseURL}/refactor-preview.html`,
     reuseExistingServer: true
   },

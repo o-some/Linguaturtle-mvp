@@ -46,7 +46,9 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('home, island and learning world are separated', async ({ page }) => {
-  await expect(page.locator('.v3-brand').first()).toContainText('LinguaTurtle');
+  await expect(page.locator('.v3-brand').first()).toContainText('Tulas Island');
+  await expect(page).toHaveTitle('Tulas Island');
+  await expect(page.locator('.home-goal-claim')).toHaveCount(0);
   await page.locator('[data-route="island"]').first().click();
   await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
   await page.locator('[data-action="open-world"]').first().click();
@@ -64,7 +66,21 @@ test('interactive island map shows level requirements and blocks locked worlds',
   await page.reload();
   await expect(page.locator('.island-hotspot')).toHaveCount(8);
   await expect(page.locator('.island-hotspot[data-collection="garden"]')).toContainText('Ab Level 1');
+  await expect(page.locator('.island-hotspot[data-collection="library"]')).toContainText('Ab Level 2');
   await expect(page.locator('.island-hotspot[data-collection="animals"]')).toContainText('Ab Level 3');
+  const hotspotBoxes = await page.locator('.island-hotspot').evaluateAll(elements => elements.map(element => {
+    const box = element.getBoundingClientRect();
+    return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, height: box.height };
+  }));
+  hotspotBoxes.forEach(box => expect(box.height).toBeGreaterThanOrEqual(44));
+  for (let left = 0; left < hotspotBoxes.length; left += 1) {
+    for (let right = left + 1; right < hotspotBoxes.length; right += 1) {
+      const a = hotspotBoxes[left];
+      const b = hotspotBoxes[right];
+      const overlaps = a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      expect(overlaps).toBe(false);
+    }
+  }
   await page.locator('.island-hotspot[data-collection="animals"]').click();
   await expect(page.locator('.v3-toast')).toContainText(/ab Level 3/i);
   await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
@@ -215,6 +231,116 @@ test('profile and settings are reachable', async ({ page }) => {
   await expect(page.getByText(/DEIN FORTSCHRITT/i)).toBeVisible();
   await page.locator('[data-action="open-settings"]').click();
   await expect(page.getByText(/ELTERNBEREICH/i)).toBeVisible();
+  await expect(page.getByText(/Elternkonto noch nicht verbunden/i)).toBeVisible();
+});
+
+test('guest progress stays local and only durable changes mark cloud sync dirty', async ({ page }) => {
+  await page.evaluate(() => localStorage.setItem('linguaturtle-v3-sync-meta', JSON.stringify({
+    ownerUserId: null,
+    lastSyncedRevision: 0,
+    dirty: false,
+    authPromptDismissed: true,
+  })));
+  await page.locator('[data-route="profile"]').first().click();
+  const afterNavigation = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-sync-meta') || 'null'));
+  expect(afterNavigation?.dirty || false).toBe(false);
+
+  await page.locator('[data-action="open-settings"]').click();
+  const soundToggle = page.locator('[data-action="toggle-setting"][data-setting="sound"]');
+  await soundToggle.click();
+
+  const beforeReload = await page.evaluate(() => ({
+    state: JSON.parse(localStorage.getItem('linguaturtle-v3-core')),
+    meta: JSON.parse(localStorage.getItem('linguaturtle-v3-sync-meta')),
+  }));
+  expect(beforeReload.meta.dirty).toBe(true);
+  expect(beforeReload.state.settings.sound).toBe(true);
+
+  await page.reload();
+  const afterReload = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(afterReload.settings.sound).toBe(true);
+  await expect(page.getByText(/Elternkonto noch nicht verbunden/i)).toBeVisible();
+});
+
+test('cloud serializer excludes route and active session data', async ({ page }) => {
+  const payload = await page.evaluate(async () => {
+    const { serializeDurableState } = await import('/src/v3/core/storage.js');
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.route = { name: 'speed', params: { test: true } };
+    state.session.activeGame = 'speed';
+    return serializeDurableState(state);
+  });
+  expect(payload.route).toBeUndefined();
+  expect(payload.session).toBeUndefined();
+  expect(payload.progress.xp).toBe(1200);
+  expect(payload.profile.name).toBe('Mia');
+});
+
+test('cloud serializer excludes wallet and purchasable entitlements', async ({ page }) => {
+  const payload = await page.evaluate(async () => {
+    const { serializeDurableState } = await import('/src/v3/core/storage.js');
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.progress.shells = 98765;
+    state.inventory.unlockedModes = ['server-only-mode'];
+    state.inventory.unlockedWords = ['server-only-word'];
+    state.inventory.boosters = { doubleXp: 99 };
+    state.inventory.homeOwned = ['server-only-home'];
+    return serializeDurableState(state);
+  });
+  expect(payload.progress.shells).toBeUndefined();
+  expect(payload.inventory.unlockedModes).toBeUndefined();
+  expect(payload.inventory.unlockedWords).toBeUndefined();
+  expect(payload.inventory.boosters).toBeUndefined();
+  expect(payload.inventory.homeOwned).toBeUndefined();
+});
+
+test('cloud hydration cannot overwrite the economy cache', async ({ page }) => {
+  const hydrated = await page.evaluate(async () => {
+    const { initialState } = await import('/src/v3/core/store.js');
+    const { hydrateDurableState } = await import('/src/v3/core/storage.js');
+    const current = structuredClone(initialState);
+    current.progress.shells = 777;
+    current.inventory.unlockedModes = ['memory'];
+    current.inventory.unlockedWords = ['garden-apple'];
+    current.inventory.boosters.hints = 4;
+    current.inventory.homeOwned = ['plant', 'bed'];
+    return hydrateDurableState(current, {
+      progress: { xp: 42, shells: 1 },
+      inventory: {
+        unlockedModes: ['speed'],
+        unlockedWords: [],
+        boosters: { hints: 0 },
+        homeOwned: ['plant'],
+      },
+    }, initialState);
+  });
+  expect(hydrated.progress.xp).toBe(42);
+  expect(hydrated.progress.shells).toBe(777);
+  expect(hydrated.inventory.unlockedModes).toEqual(['memory']);
+  expect(hydrated.inventory.unlockedWords).toEqual(['garden-apple']);
+  expect(hydrated.inventory.boosters.hints).toBe(4);
+  expect(hydrated.inventory.homeOwned).toEqual(['plant', 'bed']);
+});
+
+test('legacy 5000-shell test grant is reset and not imported', async ({ page }) => {
+  const migrated = await page.evaluate(async () => {
+    const { initialState } = await import('/src/v3/core/store.js');
+    const { migrateStorage } = await import('/src/v3/core/storage.js');
+    return migrateStorage({
+      storageVersion: 2,
+      testShellGrantVersion: 1,
+      progress: { shells: 5000 },
+    }, initialState);
+  });
+  expect(migrated.progress.shells).toBe(150);
+  expect(migrated.testShellGrantVersion).toBeUndefined();
+});
+
+test('browser shop contains neither real-money purchases nor ads', async ({ page }) => {
+  await page.locator('[data-route="shop"]').first().click();
+  await expect(page.locator('.mobile-shop-note')).toContainText(/weder Echtgeldkäufe noch Werbung/i);
+  await expect(page.locator('[data-action="purchase-shells"]')).toHaveCount(0);
+  await expect(page.locator('[data-action="watch-rewarded-ad"]')).toHaveCount(0);
 });
 
 test('memory and speed mode start from learning world', async ({ page }) => {
@@ -300,12 +426,46 @@ test('daily goal completion opens a claim modal and grants the daily treasure', 
   const modal = page.locator('.reward-notice-modal[data-reward-notice="daily"]');
   await expect(modal.getByRole('heading', { name: /Tagesziel geschafft/i })).toBeVisible();
   await expect(modal.locator('img[src$="reward_chest_gold.webp"]')).toBeVisible();
+  await expect(modal.locator('.reward-notice-close')).toHaveCount(0);
+  await expect(modal.locator('.reward-notice-later')).toHaveCount(0);
   await modal.getByRole('button', { name: /Belohnung abholen/i }).click();
 
   await expect(modal).toHaveCount(0);
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
   expect(after.progress.shells).toBe(before + 31);
   expect(after.inventory.dailyGoalClaimed).toBe(true);
+});
+
+test('weekly goal opens a popup and grants 250 shells', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { currentWeekKey, WEEKLY_GOAL_TARGET } = await import('/src/v3/core/rewards.js');
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.progress.daily = 0;
+    state.progress.weekly = { weekKey: currentWeekKey(), completed: WEEKLY_GOAL_TARGET - 1 };
+    state.inventory.dailyGoalClaimed = true;
+    state.inventory.weeklyGoalClaimed = false;
+    state.session.rewardNotices = [];
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
+  await expect(page.locator('.home-weekly-goal')).toContainText('14/15');
+  await expect(page.locator('.home-weekly-reward')).toContainText('+250');
+
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.getByRole('button', { name: /Wörter entdecken/i }).click();
+  await page.locator('[data-action="finish-explore"]').click();
+
+  const modal = page.locator('.reward-notice-modal[data-reward-notice^="weekly-"]');
+  await expect(modal.getByRole('heading', { name: /Wochenziel geschafft/i })).toBeVisible();
+  await expect(modal).toContainText('+250');
+  await modal.getByRole('button', { name: /Belohnung abholen/i }).click();
+
+  await expect(modal).toHaveCount(0);
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(after.progress.shells).toBe(before + 256);
+  expect(after.progress.weekly.completed).toBe(15);
+  expect(after.inventory.weeklyGoalClaimed).toBe(true);
 });
 
 test('reaching a milestone opens the profile reward path and allows claiming it', async ({ page }) => {

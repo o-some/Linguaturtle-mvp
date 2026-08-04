@@ -1,6 +1,15 @@
-export const STORAGE_VERSION = 2;
+export const STORAGE_VERSION = 3;
 export const STORAGE_KEY = 'linguaturtle-v3-core';
+export const SYNC_META_KEY = 'linguaturtle-v3-sync-meta';
 const LANGUAGE_CODES = ['de','es','el','en'];
+const DURABLE_KEYS = [
+  'language',
+  'languages',
+  'profile',
+  'progress',
+  'settings',
+  'inventory',
+];
 
 const safeParse = value => {
   try { return JSON.parse(value); } catch { return null; }
@@ -20,6 +29,65 @@ export function writeStorage(state) {
   return payload;
 }
 
+export function serializeDurableState(state) {
+  const payload = { storageVersion: STORAGE_VERSION };
+  for (const key of DURABLE_KEYS) {
+    if (state[key] !== undefined) payload[key] = structuredClone(state[key]);
+  }
+  // The paid economy is authoritative in dedicated server tables. Never let
+  // the generic progress blob overwrite wallet or purchasable entitlements.
+  if (payload.progress) delete payload.progress.shells;
+  if (payload.inventory) {
+    delete payload.inventory.unlockedModes;
+    delete payload.inventory.unlockedWords;
+    delete payload.inventory.boosters;
+    delete payload.inventory.homeOwned;
+  }
+  return payload;
+}
+
+export function hydrateDurableState(current, cloudPayload, fallback) {
+  const migrated = migrateStorage(cloudPayload, fallback);
+  const next = structuredClone(current);
+  for (const key of DURABLE_KEYS) {
+    if (migrated[key] !== undefined) next[key] = structuredClone(migrated[key]);
+  }
+  // These values belong to the dedicated economy tables. A generic progress
+  // download must preserve the most recently loaded authoritative UI cache.
+  next.progress.shells = current.progress.shells;
+  next.inventory.unlockedModes = structuredClone(current.inventory.unlockedModes || []);
+  next.inventory.unlockedWords = structuredClone(current.inventory.unlockedWords || []);
+  next.inventory.boosters = structuredClone(current.inventory.boosters || {});
+  next.inventory.homeOwned = structuredClone(current.inventory.homeOwned || []);
+  next.inventory.homePlaced = (next.inventory.homePlaced || [])
+    .filter(item => next.inventory.homeOwned.includes(item));
+  if (next.inventory.homeOutfit && !next.inventory.homeOwned.includes(next.inventory.homeOutfit)) {
+    next.inventory.homeOutfit = null;
+  }
+  next.storageVersion = STORAGE_VERSION;
+  return next;
+}
+
+export function durableStateFingerprint(state) {
+  return JSON.stringify(serializeDurableState(state));
+}
+
+export function readSyncMeta() {
+  const parsed = safeParse(localStorage.getItem(SYNC_META_KEY));
+  return {
+    ownerUserId: typeof parsed?.ownerUserId === 'string' ? parsed.ownerUserId : null,
+    lastSyncedRevision: Number.isInteger(parsed?.lastSyncedRevision) ? parsed.lastSyncedRevision : 0,
+    dirty: Boolean(parsed?.dirty),
+    authPromptDismissed: Boolean(parsed?.authPromptDismissed),
+  };
+}
+
+export function writeSyncMeta(patch) {
+  const next = { ...readSyncMeta(), ...patch };
+  localStorage.setItem(SYNC_META_KEY, JSON.stringify(next));
+  return next;
+}
+
 export function migrateStorage(input, fallback) {
   const legacySource = LANGUAGE_CODES.includes(input.language) ? input.language : fallback.languages.source;
   const source = LANGUAGE_CODES.includes(input.languages?.source) ? input.languages.source : legacySource;
@@ -35,8 +103,19 @@ export function migrateStorage(input, fallback) {
     progress: { ...fallback.progress, ...(input.progress || {}) },
     settings: { ...fallback.settings, ...(input.settings || {}) },
     inventory: { ...fallback.inventory, ...(input.inventory || {}) },
+    economy: {
+      ...fallback.economy,
+      ...(input.economy || {}),
+      pendingRewards: Array.isArray(input.economy?.pendingRewards)
+        ? input.economy.pendingRewards.slice(0, 100)
+        : [],
+    },
     session: { ...fallback.session, ...(input.session || {}) },
   };
+  if (Number(input.storageVersion || 0) < 3 && Number(input.testShellGrantVersion || 0) > 0) {
+    merged.progress.shells = 150;
+  }
+  delete merged.testShellGrantVersion;
   merged.storageVersion = STORAGE_VERSION;
   return merged;
 }

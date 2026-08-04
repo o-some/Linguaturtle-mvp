@@ -321,18 +321,6 @@ body:has(.cinematic-subpage){background:#02192d}
   background:#ffdc6c;
   box-shadow:0 0 10px rgba(255,220,108,.78);
 }
-.home-goal-claim{
-  grid-column:2 / 4;
-  grid-row:3;
-  justify-self:end;
-  border:0;
-  border-radius:999px;
-  padding:4px 9px;
-  background:#e7b84d;
-  color:#082e49;
-  font-size:.6rem;
-  font-weight:950;
-}
 .reward-notice-modal{
   box-sizing:border-box;
   position:fixed;
