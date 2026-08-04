@@ -164,6 +164,14 @@ test('all finished Creative Production assets are visible in their intended rout
 });
 
 test('explore opens only after selecting the exercise', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { setState } = await import('/src/v3/core/store.js');
+    setState(draft => {
+      draft.progress.daily = 0;
+      draft.inventory.dailyGoalClaimed = false;
+      return draft;
+    });
+  });
   await page.locator('[data-action="open-world"]').first().click();
   await expect(page.locator('.world-scene[src$="world_garden.webp"]')).toBeVisible();
   await expect(page.locator('.mode-art')).toHaveCount(5);
@@ -176,6 +184,55 @@ test('explore opens only after selecting the exercise', async ({ page }) => {
   await page.locator('[data-action="finish-explore"]').click();
   await expect(page.locator('.celebration img[src$="tula_celebrating.webp"]')).toBeVisible();
   await expect(page.locator('.reward-row img[src$="reward_shell_pearl.webp"]')).toBeVisible();
+  await expect(page.locator('.practice-star-reward')).toContainText('+3 Übungssterne');
+  await page.locator('[data-action="replay-core-game"]').click();
+  await expect(page.locator('.explore-grid')).toBeVisible();
+  await page.locator('[data-action="finish-explore"]').click();
+  await expect(page.locator('.practice-star-reward')).toContainText('+2 Übungssterne');
+  await page.locator('[data-action="replay-core-game"]').click();
+  await page.locator('[data-action="finish-explore"]').click();
+  await expect(page.locator('.practice-star-reward')).toContainText('+1 Übungssterne');
+  const dailyModal = page.locator('.reward-notice-modal[data-reward-notice="daily"]');
+  if (await dailyModal.count()) {
+    await dailyModal.getByRole('button', { name: /Belohnung abholen/i }).click();
+  }
+  await page.getByRole('button', { name: /Andere Übung wählen/i }).click();
+  await expect(page.locator('.daily-practice-total')).toContainText('6');
+  await expect(page.locator('[data-route="explore"] .next-practice-reward')).toContainText('Heute +1');
+  await expect(page.locator('[data-route="listening"] .next-practice-reward')).toContainText('Heute +3');
+});
+
+test('practice stars reset daily from three to two to one and word batches rotate', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const { setState } = await import('/src/v3/core/store.js');
+    const {
+      recordPracticeCompletion, nextPracticeStars, takePracticeWordIds,
+    } = await import('/src/v3/core/practice-rewards.js');
+    setState(draft => {
+      draft.progress.practice = {
+        dayKey: '', totalStars: 0, runs: {}, wordHistory: {}, lastWordBatch: {},
+      };
+      return draft;
+    });
+    const firstDay = new Date(2026, 7, 4, 12);
+    const nextDay = new Date(2026, 7, 5, 12);
+    const first = recordPracticeCompletion({ worldId: 'garden', exerciseId: 'listening' }, firstDay);
+    const second = recordPracticeCompletion({ worldId: 'garden', exerciseId: 'listening' }, firstDay);
+    const third = recordPracticeCompletion({ worldId: 'garden', exerciseId: 'listening' }, firstDay);
+    const tomorrow = nextPracticeStars('garden', 'listening', nextDay);
+    const pool = Array.from({ length: 12 }, (_, index) => `word-${index}`);
+    const batches = [
+      takePracticeWordIds('garden', 'explore-test', pool, 4),
+      takePracticeWordIds('garden', 'explore-test', pool, 4),
+      takePracticeWordIds('garden', 'explore-test', pool, 4),
+    ];
+    return { first, second, third, tomorrow, batches };
+  });
+
+  expect([result.first.practiceStars, result.second.practiceStars, result.third.practiceStars]).toEqual([3, 2, 1]);
+  expect(result.third.dailyPracticeStars).toBe(6);
+  expect(result.tomorrow).toBe(3);
+  expect(new Set(result.batches.flat()).size).toBe(12);
 });
 
 test('mastery stars only improve, unlock at six and require a later day for the third star', async ({ page }) => {
@@ -488,7 +545,7 @@ test('legacy 5000-shell test grant is reset and not imported', async ({ page }) 
   expect(migrated.testShellGrantVersion).toBeUndefined();
 });
 
-test('version 4 progress migrates discovered words into at most two explorer stars', async ({ page }) => {
+test('version 4 progress migrates discovered words and initializes daily practice rewards', async ({ page }) => {
   const migrated = await page.evaluate(async () => {
     const { initialState } = await import('/src/v3/core/store.js');
     const { migrateStorage, STORAGE_VERSION } = await import('/src/v3/core/storage.js');
@@ -499,11 +556,12 @@ test('version 4 progress migrates discovered words into at most two explorer sta
     }, initialState);
     return { state, version: STORAGE_VERSION };
   });
-  expect(migrated.version).toBe(5);
+  expect(migrated.version).toBe(6);
   expect(migrated.state.progress.xp).toBe(850);
   expect(migrated.state.progress.stars.garden.explore.earned).toBe(2);
   expect(migrated.state.progress.stars.library.explore.earned).toBe(1);
   expect(migrated.state.progress.stars.garden.explore.masteryConfirmedAt).toBeNull();
+  expect(migrated.state.progress.practice.runs).toEqual({});
 });
 
 test('browser shop contains neither real-money purchases nor ads', async ({ page }) => {
@@ -523,6 +581,37 @@ test('memory and speed mode start from learning world', async ({ page }) => {
   await page.locator('[data-action="start-speed"]').click();
   await expect(page.getByText(/Goldene Minute/i)).toBeVisible();
   await expect(page.locator('.speed-tula[src$="tula_surprised.webp"]')).toBeVisible();
+});
+
+test('winning Memory exposes a working replay that starts a fresh board', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { setState } = await import('/src/v3/core/store.js');
+    setState(draft => {
+      draft.progress.daily = 0;
+      draft.inventory.dailyGoalClaimed = false;
+      return draft;
+    });
+  });
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.locator('[data-action="start-memory"]').click();
+  const cardIds = await page.locator('.advanced-memory-grid [data-card]')
+    .evaluateAll(nodes => nodes.map(node => node.dataset.card));
+  const pairs = new Map();
+  for (const id of cardIds) {
+    const pair = id.replace(/-[iw]$/, '');
+    pairs.set(pair, [...(pairs.get(pair) || []), id]);
+  }
+  for (const ids of pairs.values()) {
+    await page.locator(`[data-card="${ids[0]}"]`).click();
+    await page.locator(`[data-card="${ids[1]}"]`).click();
+    await page.waitForTimeout(650);
+  }
+
+  await expect(page.getByRole('heading', { name: /Palast-Memory geschafft/i })).toBeVisible();
+  await expect(page.locator('.practice-star-reward')).toContainText('+3 Übungssterne');
+  await page.locator('[data-action="start-memory"]').click();
+  await expect(page.locator('.advanced-memory-grid [data-card]')).toHaveCount(12);
+  await expect(page.getByRole('heading', { name: /Finde die Paare/i })).toBeVisible();
 });
 
 test('Deutsch to Greek changes learning content and persists the pair', async ({ page }) => {
@@ -597,6 +686,10 @@ test('daily goal completion opens a claim modal and grants the daily treasure', 
   const modal = page.locator('.reward-notice-modal[data-reward-notice="daily"]');
   await expect(modal.getByRole('heading', { name: /Tagesziel geschafft/i })).toBeVisible();
   await expect(modal.locator('img[src$="reward_chest_gold.webp"]')).toBeVisible();
+  await expect(modal.locator('.reward-notice-card')).toHaveClass(/is-claimable/);
+  const claimAnimation = await modal.locator('.reward-notice-primary')
+    .evaluate(node => getComputedStyle(node).animationName);
+  expect(claimAnimation).toContain('treasure-claim-hop');
   await expect(modal.locator('.reward-notice-close')).toHaveCount(0);
   await expect(modal.locator('.reward-notice-later')).toHaveCount(0);
   await modal.getByRole('button', { name: /Belohnung abholen/i }).click();
@@ -769,7 +862,9 @@ test('reaching a milestone opens the profile reward path and allows claiming it'
 
   const milestone = page.locator('[data-milestone="3"]');
   await expect(milestone).toHaveClass(/milestone-focus/);
-  await milestone.getByRole('button', { name: /Abholen/i }).click();
+  await expect(milestone).toHaveClass(/claim-ready/);
+  await expect(milestone.getByRole('button', { name: /Jetzt abholen/i })).toBeVisible();
+  await milestone.getByRole('button', { name: /Jetzt abholen/i }).click();
   await expect(milestone).not.toHaveClass(/milestone-focus/);
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
   expect(after.inventory.claimedMilestones).toContain(3);

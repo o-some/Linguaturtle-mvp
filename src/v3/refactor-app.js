@@ -6,7 +6,7 @@ import {
   currentDayKey, ensureDailyGoalState, currentWeekKey, ensureWeeklyGoalState,
   LANGUAGES, LANGUAGE_CODES, ensureLanguagePair, sourceLanguage, targetLanguage,
   languageMeta, languageValue, uiText, flagImage, pairBadge,
-  setSourceLanguage, setTargetLanguage, swapLanguages
+  setSourceLanguage, setTargetLanguage, swapLanguages, nextPracticeStars, dailyPracticeSummary
 } from './core/index.js?build=cinematic-worlds-1';
 import { installCoreLearningGames } from './games/core-learning.js?build=cinematic-worlds-1';
 import { registerAdvancedRoutes, registerAdvancedActions } from './games/advanced.js?build=cinematic-worlds-1';
@@ -107,7 +107,7 @@ function rewardNoticeMarkup(notice){
   const art=isDaily?assets.rewards.chests.gold:isWeekly?assets.rewards.chests.jewel:milestoneChest(notice.level);
   const key=noticeKey(notice);
   return `<section class="reward-notice-modal" data-reward-notice="${key}" role="dialog" aria-modal="true" aria-labelledby="reward-notice-title">
-    <div class="reward-notice-card">
+    <div class="reward-notice-card is-claimable">
       ${isGoal?'':`<button class="reward-notice-close" data-action="dismiss-reward-notice" data-notice="${key}" aria-label="${tr('Später','Más tarde','Αργότερα','Later')}"><i class="ph-bold ph-x" aria-hidden="true"></i></button>`}
       <span class="reward-notice-kicker">${tr('NEUER SCHATZ','NUEVO TESORO','ΝΕΟΣ ΘΗΣΑΥΡΟΣ','NEW TREASURE')}</span>
       <img class="reward-notice-art" src="${art}" alt="">
@@ -237,8 +237,9 @@ function progressCard(){
   return `<section class="progress-card"><div class="progress-head"><strong>${tr('Level','Nivel','Επίπεδο','Level')} ${lv}</strong><span>${tr('Jedes Abenteuer bringt dich weiter','Cada aventura te hace avanzar','Κάθε περιπέτεια σε προχωρά','Every adventure moves you forward')}</span></div><div class="bar" role="progressbar" aria-label="${tr(`Level ${lv} Fortschritt`,`Progreso del nivel ${lv}`,`Πρόοδος επιπέδου ${lv}`,`Level ${lv} progress`)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p.current}"><i style="width:${p.percent}%"></i></div></section>`;
 }
 
-function renderComplete(title,reward,back='world'){
-  return `<div class="v3-shell page">${top()}<section class="celebration"><img src="${assets.characters.tula.poses.celebrating}" alt="Tula"><h1>${title}</h1><p>${tr('Tula ist stolz auf dich. Dein Level wächst im Hintergrund weiter.','Tula está orgullosa de ti. Tu nivel sigue creciendo.','Η Τούλα είναι περήφανη για σένα. Το επίπεδό σου συνεχίζει να μεγαλώνει.','Tula is proud of you. Your level keeps growing in the background.')}</p><div class="reward-row reward-row-single"><div>${rewardArt(assets.rewards.currencyShell,tr('Muscheln','Conchas','Κοχύλια','Shells'))}<strong>+${reward.shells}</strong><small>${tr('Muscheln','Conchas','Κοχύλια','Shells')}</small></div></div><button class="primary" data-action="navigate" data-route="home"><i class="ph-bold ph-house" aria-hidden="true"></i> ${tr('Zur Startseite','Ir al inicio','Στην αρχική','Back home')}</button><button class="secondary" data-action="navigate" data-route="${back}">${tr('Weitere Übung','Otro ejercicio','Άλλη άσκηση','Another exercise')}</button></section></div>`;
+function renderComplete(title,reward,back='world',replayAction=''){
+  const practiceStars=Math.max(0,Number(reward.practiceStars||0));
+  return `<div class="v3-shell page">${top()}<section class="celebration"><img src="${assets.characters.tula.poses.celebrating}" alt="Tula"><h1>${title}</h1><p>${tr('Tula ist stolz auf dich. Dein Level wächst im Hintergrund weiter.','Tula está orgullosa de ti. Tu nivel sigue creciendo.','Η Τούλα είναι περήφανη για σένα. Το επίπεδό σου συνεχίζει να μεγαλώνει.','Tula is proud of you. Your level keeps growing in the background.')}</p>${practiceStars?`<div class="practice-star-reward"><img src="${assets.rewards.xpStar}" alt=""><div><small>${tr('Heute verdient','Ganadas hoy','Κερδήθηκαν σήμερα','Earned today')}</small><strong>+${practiceStars} ${tr('Übungssterne','estrellas de práctica','αστέρια εξάσκησης','practice stars')}</strong></div></div>`:''}<div class="reward-row reward-row-single"><div>${rewardArt(assets.rewards.currencyShell,tr('Muscheln','Conchas','Κοχύλια','Shells'))}<strong>+${reward.shells}</strong><small>${tr('Muscheln','Conchas','Κοχύλια','Shells')}</small></div></div>${replayAction?`<button class="primary" data-action="${replayAction}">${tr('Nochmal spielen','Jugar otra vez','Παίξε ξανά','Play again')} <i class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i></button>`:''}<button class="secondary" data-action="navigate" data-route="${back}">${tr('Andere Übung wählen','Elegir otro ejercicio','Διάλεξε άλλη άσκηση','Choose another exercise')}</button><button class="secondary" data-action="navigate" data-route="home"><i class="ph-bold ph-house" aria-hidden="true"></i> ${tr('Zur Startseite','Ir al inicio','Στην αρχική','Back home')}</button></section></div>`;
 }
 
 function languageOption(code,selected,action){
@@ -323,18 +324,24 @@ router.register('island',()=>{
 
 router.register('world',()=>{
   const s=getState(),c=currentCollection(),unlocked=s.inventory.unlockedModes;
-  const artwork=worldArtwork(c.id),required=worldLevel(c.id);
-  const coreMode=(id,title,description)=>`<button data-action="navigate" data-route="${id}">${modeArt(id,title)}<div><strong>${title}</strong><small>${description}</small>${renderQuestStarBadge(c.id,id)}</div><b><i class="ph-bold ph-arrow-right" aria-hidden="true"></i></b></button>`;
+  const artwork=worldArtwork(c.id),required=worldLevel(c.id),dailyStars=dailyPracticeSummary().totalStars;
+  const practiceReward=id=>{
+    const reward=nextPracticeStars(c.id,id);
+    return `<span class="next-practice-reward"><img src="${assets.rewards.xpStar}" alt="">${tr(`Heute +${reward}`,`Hoy +${reward}`,`Σήμερα +${reward}`,`Today +${reward}`)}</span>`;
+  };
+  const coreMode=(id,title,description)=>{
+    return `<button data-action="navigate" data-route="${id}">${modeArt(id,title)}<div><strong>${title}</strong><small>${description}</small>${renderQuestStarBadge(c.id,id)}${practiceReward(id)}</div><b><i class="ph-bold ph-arrow-right" aria-hidden="true"></i></b></button>`;
+  };
   return `<div class="v3-shell page cinematic-subpage cinematic-island">${cinematicBackground(assets.backgrounds.cinematic.island)}${top('island')}
     <section class="place-hero ${artwork?'place-hero-art':''}">${artwork?`<img class="world-scene" src="${artwork}" alt="">`:`<span>${c.icon}</span>`}<div><h1>${collectionName(c)}</h1><p>${collectionSubtitle(c)}</p><span class="world-unlock-note"><i class="ph-bold ph-check" aria-hidden="true"></i> ${tr('Freigeschaltet ab Level','Disponible desde el nivel','Διαθέσιμο από το επίπεδο','Available from level')} ${required}</span></div></section>
     ${renderStarGate(c)}
-    <section class="world-instruction"><span class="world-step"><i class="ph-bold ph-star" aria-hidden="true"></i></span><div><strong>${tr('Sammle Meistersterne','Consigue estrellas maestras','Μάζεψε αστέρια δεξιοτεχνίας','Collect mastery stars')}</strong><small>${flagImage(sourceLanguage(),'language-mini-flag')} ${languageMeta(sourceLanguage()).short} <i class="ph-bold ph-arrow-right" aria-hidden="true"></i> ${flagImage(targetLanguage(),'language-mini-flag')} ${languageMeta(targetLanguage()).short}</small></div></section>
+    <section class="world-instruction"><span class="world-step"><i class="ph-bold ph-star" aria-hidden="true"></i></span><div><strong>${tr('Sammle Meistersterne','Consigue estrellas maestras','Μάζεψε αστέρια δεξιοτεχνίας','Collect mastery stars')}</strong><small>${flagImage(sourceLanguage(),'language-mini-flag')} ${languageMeta(sourceLanguage()).short} <i class="ph-bold ph-arrow-right" aria-hidden="true"></i> ${flagImage(targetLanguage(),'language-mini-flag')} ${languageMeta(targetLanguage()).short}</small></div><span class="daily-practice-total"><img src="${assets.rewards.xpStar}" alt=""><strong>${dailyStars}</strong><small>${tr('heute','hoy','σήμερα','today')}</small></span></section>
     <section class="mode-picker master-quest-picker">
       ${coreMode('explore',tr('Wörter entdecken','Descubrir palabras','Ανακάλυψε λέξεις','Discover words'),tr('Ansehen, hören und merken','Ver, escuchar y recordar','Δες, άκου και θυμήσου','Look, listen and remember'))}
       ${coreMode('listening',tr('Hör-Abenteuer','Aventura auditiva','Ακουστική περιπέτεια','Listening adventure'),tr('Hören und auswählen','Escuchar y elegir','Άκου και διάλεξε','Listen and choose'))}
       ${coreMode('sentence',tr('Satzwerkstatt','Taller de frases','Εργαστήριο προτάσεων','Sentence workshop'),tr('Sätze in Reihenfolge bringen','Ordenar frases','Βάλε τις λέξεις στη σειρά','Put sentences in order'))}
-      <button data-action="${unlocked.includes('memory')?'start-memory':'navigate'}" ${unlocked.includes('memory')?'':'data-route="shop"'}>${modeArt('memory',tr('Palast-Memory','Memoria del palacio','Μνήμη του παλατιού','Palace Memory'))}<div><strong>${tr('Palast-Memory','Memoria del palacio','Μνήμη του παλατιού','Palace Memory')}</strong><small>${unlocked.includes('memory')?tr('Bild und Wort verbinden','Unir imagen y palabra','Ταίριαξε εικόνα και λέξη','Match picture and word'):tr('In der Boutique freischalten','Desbloquear en boutique','Ξεκλείδωσε στο κατάστημα','Unlock in the boutique')}</small></div><b><i class="ph-bold ${unlocked.includes('memory')?'ph-arrow-right':'ph-lock'}" aria-hidden="true"></i></b></button>
-      <button data-action="${unlocked.includes('speed')?'start-speed':'navigate'}" ${unlocked.includes('speed')?'':'data-route="shop"'}>${modeArt('speed',tr('Goldene Minute','Minuto dorado','Χρυσό λεπτό','Golden Minute'))}<div><strong>${tr('Goldene Minute','Minuto dorado','Χρυσό λεπτό','Golden Minute')}</strong><small>${unlocked.includes('speed')?tr('45 Sekunden Sprachtempo','45 segundos de velocidad','45 δευτερόλεπτα ταχύτητας','45 seconds of language speed'):tr('In der Boutique freischalten','Desbloquear en boutique','Ξεκλείδωσε στο κατάστημα','Unlock in the boutique')}</small></div><b><i class="ph-bold ${unlocked.includes('speed')?'ph-arrow-right':'ph-lock'}" aria-hidden="true"></i></b></button>
+      <button data-action="${unlocked.includes('memory')?'start-memory':'navigate'}" ${unlocked.includes('memory')?'':'data-route="shop"'}>${modeArt('memory',tr('Palast-Memory','Memoria del palacio','Μνήμη του παλατιού','Palace Memory'))}<div><strong>${tr('Palast-Memory','Memoria del palacio','Μνήμη του παλατιού','Palace Memory')}</strong><small>${unlocked.includes('memory')?tr('Bild und Wort verbinden','Unir imagen y palabra','Ταίριαξε εικόνα και λέξη','Match picture and word'):tr('In der Boutique freischalten','Desbloquear en boutique','Ξεκλείδωσε στο κατάστημα','Unlock in the boutique')}</small>${unlocked.includes('memory')?practiceReward('memory'):''}</div><b><i class="ph-bold ${unlocked.includes('memory')?'ph-arrow-right':'ph-lock'}" aria-hidden="true"></i></b></button>
+      <button data-action="${unlocked.includes('speed')?'start-speed':'navigate'}" ${unlocked.includes('speed')?'':'data-route="shop"'}>${modeArt('speed',tr('Goldene Minute','Minuto dorado','Χρυσό λεπτό','Golden Minute'))}<div><strong>${tr('Goldene Minute','Minuto dorado','Χρυσό λεπτό','Golden Minute')}</strong><small>${unlocked.includes('speed')?tr('45 Sekunden Sprachtempo','45 segundos de velocidad','45 δευτερόλεπτα ταχύτητας','45 seconds of language speed'):tr('In der Boutique freischalten','Desbloquear en boutique','Ξεκλείδωσε στο κατάστημα','Unlock in the boutique')}</small>${unlocked.includes('speed')?practiceReward('speed'):''}</div><b><i class="ph-bold ${unlocked.includes('speed')?'ph-arrow-right':'ph-lock'}" aria-hidden="true"></i></b></button>
     </section>
   </div>${nav(c.id==='library'?'words':'island')}`;
 });

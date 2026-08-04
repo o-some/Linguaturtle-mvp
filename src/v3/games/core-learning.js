@@ -1,7 +1,8 @@
 import { collections } from '../content-multilingual.js';
 import {
   getState, setState, registerAction, speak, grantReward,
-  sourceLanguage, targetLanguage, languageMeta, languageValue, uiText, flagImage, pairBadge
+  sourceLanguage, targetLanguage, languageMeta, languageValue, uiText, flagImage, pairBadge,
+  takePracticeWordIds
 } from '../core/index.js?build=cinematic-worlds-1';
 import { assets } from '../../config/assets.js?build=cinematic-worlds-1';
 
@@ -29,7 +30,8 @@ const game = {
   listening: { items: [], step: 0, score: 0, firstTryCorrect: 0, currentAttempted: false, current: null },
   sentence: { rounds: [], step: 0, score: 0, firstTryCorrect: 0, currentAttempted: false, feedback: '', bank: [], built: [] },
   lastReward: null,
-  lastTitle: ''
+  lastTitle: '',
+  lastQuestId: null
 };
 
 function top(backRoute = 'world') {
@@ -69,20 +71,23 @@ function completion(title, reward) {
       ? tr('Du hast einen neuen Meisterstern gewonnen!', '¡Has ganado una nueva estrella maestra!', 'Κέρδισες ένα νέο αστέρι δεξιοτεχνίας!', 'You earned a new mastery star!')
       : tr(`Du hast ${newStars} neue Meistersterne gewonnen!`, `¡Has ganado ${newStars} nuevas estrellas maestras!`, `Κέρδισες ${newStars} νέα αστέρια δεξιοτεχνίας!`, `You earned ${newStars} new mastery stars!`)
     : tr('Deine Meistersterne bleiben für immer.', 'Tus estrellas maestras se quedan para siempre.', 'Τα αστέρια δεξιοτεχνίας σου μένουν για πάντα.', 'Your mastery stars are yours forever.');
-  return `<div class="v3-shell page">${top('world')}<section class="celebration star-celebration"><img src="${assets.characters.tula.poses.celebrating}" alt="Tula"><h1>${title}</h1><p>${starMessage}</p>${masterStarStrip(stars)}${reward.dungeonUnlocked ? `<div class="dungeon-unlocked-note"><i class="ph-bold ph-door-open" aria-hidden="true"></i><strong>${tr('Das Sternentor ist jetzt offen!', '¡El portal estelar está abierto!', 'Η πύλη των αστεριών άνοιξε!', 'The Star Gate is now open!')}</strong></div>` : ''}<div class="reward-row reward-row-single"><div><img class="reward-art" src="${assets.rewards.currencyShell}" alt=""><strong>+${reward.shells}</strong><small>${tr('Muscheln', 'Conchas', 'Κοχύλια', 'Shells')}</small></div></div><button class="primary" data-action="navigate" data-route="world">${tr('Weitere Übung', 'Otro ejercicio', 'Άλλη άσκηση', 'Another exercise')}</button><button class="secondary" data-action="navigate" data-route="home"><i class="ph-bold ph-house" aria-hidden="true"></i> ${tr('Zur Startseite', 'Ir al inicio', 'Στην αρχική', 'Back home')}</button></section></div>`;
+  const practiceStars = Math.max(1, Number(reward.practiceStars || 1));
+  return `<div class="v3-shell page">${top('world')}<section class="celebration star-celebration"><img src="${assets.characters.tula.poses.celebrating}" alt="Tula"><h1>${title}</h1><p>${starMessage}</p>${masterStarStrip(stars)}${reward.dungeonUnlocked ? `<div class="dungeon-unlocked-note"><i class="ph-bold ph-door-open" aria-hidden="true"></i><strong>${tr('Das Sternentor ist jetzt offen!', '¡El portal estelar está abierto!', 'Η πύλη των αστεριών άνοιξε!', 'The Star Gate is now open!')}</strong></div>` : ''}<div class="practice-star-reward" aria-label="${practiceStars} ${tr('Übungssterne', 'estrellas de práctica', 'αστέρια εξάσκησης', 'practice stars')}"><img src="${assets.rewards.xpStar}" alt=""><div><small>${tr('Heute verdient', 'Ganadas hoy', 'Κερδήθηκαν σήμερα', 'Earned today')}</small><strong>+${practiceStars} ${tr('Übungssterne', 'estrellas de práctica', 'αστέρια εξάσκησης', 'practice stars')}</strong></div></div><div class="reward-row reward-row-single"><div><img class="reward-art" src="${assets.rewards.currencyShell}" alt=""><strong>+${reward.shells}</strong><small>${tr('Muscheln', 'Conchas', 'Κοχύλια', 'Shells')}</small></div></div><button class="primary" data-action="replay-core-game">${tr('Nochmal spielen', 'Jugar otra vez', 'Παίξε ξανά', 'Play again')} <i class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i></button><button class="secondary" data-action="navigate" data-route="world">${tr('Andere Übung wählen', 'Elegir otro ejercicio', 'Διάλεξε άλλη άσκηση', 'Choose another exercise')}</button><button class="secondary" data-action="navigate" data-route="home"><i class="ph-bold ph-house" aria-hidden="true"></i> ${tr('Zur Startseite', 'Ir al inicio', 'Στην αρχική', 'Back home')}</button></section></div>`;
 }
 
 function ensureExploreRun() {
   const current = collection();
-  const itemIds = availableWords().map(word => word.id);
-  if (game.explore.worldId === current.id && JSON.stringify(game.explore.itemIds) === JSON.stringify(itemIds)) return;
+  if (game.explore.worldId === current.id && game.explore.itemIds.length) return;
+  const availableIds = availableWords().map(word => word.id);
+  const itemIds = takePracticeWordIds(current.id, 'explore', availableIds, 6);
   game.explore = { worldId: current.id, itemIds, heard: [] };
 }
 
 function exploreRoute() {
   ensureExploreRun();
   const current = collection();
-  const words = availableWords();
+  const wordIds = new Set(game.explore.itemIds);
+  const words = availableWords().filter(word => wordIds.has(word.id));
   const source = sourceLanguage();
   const target = targetLanguage();
   const heard = new Set(game.explore.heard);
@@ -134,9 +139,11 @@ export function installCoreLearningGames(router) {
     game.lastReward = grantReward({
       xp: 20,
       shells: 6,
-      starResult: { worldId: current.id, questId: 'explore', accuracy: allWordsHeard ? 1 : 0, allWordsHeard }
+      starResult: { worldId: current.id, questId: 'explore', accuracy: allWordsHeard ? 1 : 0, allWordsHeard },
+      practiceResult: { worldId: current.id, exerciseId: 'explore' }
     });
     game.lastTitle = tr('Wörter entdeckt!', '¡Palabras descubiertas!', 'Ανακάλυψες λέξεις!', 'Words discovered!');
+    game.lastQuestId = 'explore';
     game.explore = { worldId: null, itemIds: [], heard: [] };
     router.navigate('game-complete');
   });
@@ -156,11 +163,30 @@ export function installCoreLearningGames(router) {
     if (round) speak(round[source].join(' '), languageMeta(source).voice, { rate: .78 });
   });
   registerAction('check-sentence', () => checkSentence(router));
+  registerAction('replay-core-game', () => {
+    if (game.lastQuestId === 'explore') {
+      game.explore = { worldId: null, itemIds: [], heard: [] };
+      router.navigate('explore');
+      return;
+    }
+    if (game.lastQuestId === 'listening') {
+      startListening(router, true);
+      return;
+    }
+    if (game.lastQuestId === 'sentence') {
+      startSentence(router, true);
+      return;
+    }
+    router.navigate('world');
+  });
 }
 
 function startListening(router, navigate = true) {
+  const current = collection();
+  const words = availableWords();
+  const itemIds = new Set(takePracticeWordIds(current.id, 'listening', words.map(word => word.id), 6));
   game.listening = {
-    items: shuffle(availableWords()).slice(0, 6),
+    items: words.filter(word => itemIds.has(word.id)),
     step: 0,
     score: 0,
     firstTryCorrect: 0,
@@ -188,10 +214,12 @@ function answerListening(router, id) {
     const bonus = grantReward({
       xp: 15,
       shells: 6,
-      starResult: { worldId: collection().id, questId: 'listening', accuracy }
+      starResult: { worldId: collection().id, questId: 'listening', accuracy },
+      practiceResult: { worldId: collection().id, exerciseId: 'listening' }
     });
     game.lastReward = { ...bonus, xp: game.listening.score * 10 + bonus.xp, shells: game.listening.score * 2 + bonus.shells };
     game.lastTitle = tr('Hör-Abenteuer geschafft!', '¡Aventura auditiva completada!', 'Η ακουστική περιπέτεια ολοκληρώθηκε!', 'Listening adventure complete!');
+    game.lastQuestId = 'listening';
     game.listening.current = null;
     router.navigate('game-complete');
     return;
@@ -202,8 +230,16 @@ function answerListening(router, id) {
 }
 
 function startSentence(router, navigate = true) {
+  const current = collection();
+  const indexedSentences = sentences.map((round, index) => ({ id: `sentence-${index}`, round }));
+  const roundIds = new Set(takePracticeWordIds(
+    current.id,
+    'sentence',
+    indexedSentences.map(item => item.id),
+    5
+  ));
   game.sentence = {
-    rounds: shuffle(sentences).slice(0, 5),
+    rounds: indexedSentences.filter(item => roundIds.has(item.id)).map(item => item.round),
     step: 0,
     score: 0,
     firstTryCorrect: 0,
@@ -262,10 +298,12 @@ function checkSentence(router) {
     const bonus = grantReward({
       xp: 20,
       shells: 5,
-      starResult: { worldId: collection().id, questId: 'sentence', accuracy }
+      starResult: { worldId: collection().id, questId: 'sentence', accuracy },
+      practiceResult: { worldId: collection().id, exerciseId: 'sentence' }
     });
     game.lastReward = { ...bonus, xp: game.sentence.score * 18 + bonus.xp, shells: game.sentence.score * 4 + bonus.shells };
     game.lastTitle = tr('Satzwerkstatt geschafft!', '¡Taller de frases completado!', 'Το εργαστήριο προτάσεων ολοκληρώθηκε!', 'Sentence workshop complete!');
+    game.lastQuestId = 'sentence';
     router.navigate('game-complete');
     return;
   }

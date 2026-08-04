@@ -26,6 +26,10 @@ export {
   recordQuestCompletion, dungeonStatus, recordDungeonCompletion,
 } from './master-stars.js';
 export {
+  nextPracticeStars, dailyPracticeSummary, recordPracticeCompletion,
+  takePracticeWordIds,
+} from './practice-rewards.js';
+export {
   STORE_PRODUCTS, getEconomyState, subscribeEconomy, isNativeCommerce,
   initializeEconomy, loadWallet, refreshEntitlements, loadStoreProducts,
   purchaseShells, syncPurchases, requestRewardedAd, creditGameplayShells,

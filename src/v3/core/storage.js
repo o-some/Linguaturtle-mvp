@@ -1,4 +1,4 @@
-export const STORAGE_VERSION = 5;
+export const STORAGE_VERSION = 6;
 export const STORAGE_KEY = 'linguaturtle-v3-core';
 export const SYNC_META_KEY = 'linguaturtle-v3-sync-meta';
 const LANGUAGE_CODES = ['de','es','el','en'];
@@ -139,6 +139,16 @@ export function migrateStorage(input, fallback) {
       };
     }
     merged.inventory.relics = Array.isArray(merged.inventory.relics) ? merged.inventory.relics : [];
+  }
+  if (Number(input.storageVersion || 0) < 6) {
+    merged.progress.practice = {
+      dayKey: '',
+      totalStars: 0,
+      runs: {},
+      wordHistory: {},
+      lastWordBatch: {},
+      ...(merged.progress.practice || {}),
+    };
   }
   delete merged.testShellGrantVersion;
   merged.storageVersion = STORAGE_VERSION;

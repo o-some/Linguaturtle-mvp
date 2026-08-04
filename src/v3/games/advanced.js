@@ -1,7 +1,7 @@
 import { collections } from '../content-multilingual.js';
 import {
   getState, setState, registerAction, grantReward,
-  sourceLanguage, targetLanguage, languageValue, uiText
+  sourceLanguage, targetLanguage, languageValue, uiText, takePracticeWordIds
 } from '../core/index.js?build=cinematic-worlds-1';
 import { assets } from '../../config/assets.js?build=cinematic-worlds-1';
 
@@ -14,20 +14,22 @@ let speedTimer=null;
 
 function startMemory(){
   const target=targetLanguage();
-  const words=shuffle(allWords()).slice(0,6);
+  const pool=allWords(),worldId=getState().session.collectionId;
+  const ids=new Set(takePracticeWordIds(worldId,'memory',pool.map(word=>word.id),6));
+  const words=pool.filter(word=>ids.has(word.id));
   memory={open:[],matched:[],cards:shuffle(words.flatMap(w=>[
     {id:`${w.id}-i`,pair:w.id,label:w.emoji},
     {id:`${w.id}-w`,pair:w.id,label:languageValue(w,target)}
   ]))};
   setState(d=>{d.session.activeGame='memory';return d});
 }
-function startSpeed(){clearInterval(speedTimer);const items=shuffle([...allWords(),...allWords()]).slice(0,30);speed={items,step:0,score:0,combo:0,time:45,current:items[0],options:[]};prepareSpeedQuestion();setState(d=>{d.session.activeGame='speed';return d})}
+function startSpeed(){clearInterval(speedTimer);const pool=allWords(),worldId=getState().session.collectionId;const ids=new Set(takePracticeWordIds(worldId,'speed',pool.map(word=>word.id),15));const words=pool.filter(word=>ids.has(word.id));const items=shuffle([...words,...words]).slice(0,30);speed={items,step:0,score:0,combo:0,time:45,current:items[0],options:[]};prepareSpeedQuestion();setState(d=>{d.session.activeGame='speed';return d})}
 function prepareSpeedQuestion(){const cur=speed.items[speed.step];speed.current=cur;speed.options=shuffle([cur,...shuffle(allWords().filter(w=>w.id!==cur.id)).slice(0,3)])}
 
 export function registerAdvancedRoutes(router,{top,nav,renderComplete}){
   router.register('memory',()=>{
     if(!memory.cards.length)startMemory();
-    if(memory.matched.length===memory.cards.length){const reward=grantReward({xp:50,shells:18});memory={cards:[],open:[],matched:[]};return renderComplete(tr('Palast-Memory geschafft!','¡Memoria del palacio completada!','Η μνήμη του παλατιού ολοκληρώθηκε!'),reward,'world')}
+    if(memory.matched.length===memory.cards.length){const worldId=getState().session.collectionId;const reward=grantReward({xp:50,shells:18,practiceResult:{worldId,exerciseId:'memory'}});memory={cards:[],open:[],matched:[]};setState(d=>{d.session.activeGame=null;return d});return renderComplete(tr('Palast-Memory geschafft!','¡Memoria del palacio completada!','Η μνήμη του παλατιού ολοκληρώθηκε!'),reward,'world','start-memory')}
     return `<div class="v3-shell page">${top('world')}<section class="page-title"><span class="eyebrow">${tr('PALAST-MEMORY','MEMORIA DEL PALACIO','ΜΝΗΜΗ ΤΟΥ ΠΑΛΑΤΙΟΥ')}</span><h1>${tr('Finde die Paare','Encuentra las parejas','Βρες τα ζευγάρια')}</h1><p>${tr('Verbinde Bild und passendes Wort.','Une la imagen con la palabra correcta.','Ταίριαξε την εικόνα με τη σωστή λέξη.')}</p></section><section class="advanced-memory-grid">${memory.cards.map(c=>{const open=memory.open.includes(c.id)||memory.matched.includes(c.id);return `<button class="${open?'open':''}" data-action="memory-card" data-card="${c.id}">${open?`<span>${c.label}</span>`:`<img class="memory-card-back" src="${assets.cards.neutralBack}" alt="">`}</button>`}).join('')}</section></div>${nav('island')}`;
   });
 
@@ -40,7 +42,7 @@ export function registerAdvancedRoutes(router,{top,nav,renderComplete}){
 
 export function registerAdvancedActions(router,{renderComplete}){
   registerAction('start-memory',()=>{startMemory();router.navigate('memory')});
-  registerAction('start-speed',()=>{startSpeed();router.navigate('speed');speedTimer=setInterval(()=>{speed.time--;const node=document.querySelector('#speedTime');if(node)node.textContent=String(speed.time);if(speed.time<=0){clearInterval(speedTimer);speedTimer=null;const reward=grantReward({xp:speed.score*5,shells:Math.max(6,Math.floor(speed.score/2))});setState(d=>{d.session.activeGame=null;return d});document.querySelector('#app').innerHTML=renderComplete(tr('Goldene Minute beendet!','¡Minuto dorado terminado!','Το χρυσό λεπτό τελείωσε!'),reward,'world')}},1000)});
+  registerAction('start-speed',()=>{startSpeed();router.navigate('speed');speedTimer=setInterval(()=>{speed.time--;const node=document.querySelector('#speedTime');if(node)node.textContent=String(speed.time);if(speed.time<=0){clearInterval(speedTimer);speedTimer=null;const worldId=getState().session.collectionId;const reward=grantReward({xp:speed.score*5,shells:Math.max(6,Math.floor(speed.score/2)),practiceResult:{worldId,exerciseId:'speed'}});setState(d=>{d.session.activeGame=null;return d});document.querySelector('#app').innerHTML=renderComplete(tr('Goldene Minute beendet!','¡Minuto dorado terminado!','Το χρυσό λεπτό τελείωσε!'),reward,'world','start-speed')}},1000)});
   registerAction('memory-card',({data})=>{const id=data.card;if(memory.open.includes(id)||memory.matched.includes(id)||memory.open.length>=2)return;memory.open.push(id);router.renderCurrent();if(memory.open.length===2){const [a,b]=memory.open.map(x=>memory.cards.find(c=>c.id===x));setTimeout(()=>{if(a.pair===b.pair)memory.matched.push(...memory.open);memory.open=[];router.renderCurrent()},600)}});
   registerAction('speed-answer',({data})=>{if(data.answer===speed.current.id){speed.score++;speed.combo++}else speed.combo=0;speed.step++;if(speed.step>=speed.items.length){speed.time=0;return}prepareSpeedQuestion();router.renderCurrent()});
 }

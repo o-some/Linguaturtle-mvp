@@ -17,4 +17,18 @@ body:has(.star-dungeon-page){background:#020f1b}.star-dungeon-page{position:rela
 /* The cinematic world stylesheet otherwise leaves this hint too pale. */
 .cinematic-island .world-instruction{background:#062f49!important;border-color:rgba(239,202,105,.58)!important;color:#f6e8ba!important}
 .cinematic-island .world-instruction i{color:#f0c65a!important}
+.daily-practice-total{display:grid;grid-template-columns:24px auto;grid-template-rows:auto auto;align-items:center;column-gap:5px;margin-left:auto;padding-left:12px;border-left:1px solid rgba(239,202,105,.34);color:#ffe49a}
+.daily-practice-total img{grid-row:1/-1;width:24px;height:24px;object-fit:contain}
+.daily-practice-total strong{font-size:1rem!important;line-height:1}
+.daily-practice-total small{margin:0!important;color:#bcdadc!important;font-size:.62rem}
 .dungeon-complete>.primary{display:flex;align-items:center;justify-content:center;gap:8px}
+.dungeon-complete>.dungeon-leave{border-color:rgba(239,202,105,.5);background:#06283e;color:#ffe8a8}
+
+.next-practice-reward{display:inline-flex;align-items:center;gap:5px;margin:8px 0 0;padding:5px 8px;border:1px solid rgba(236,194,86,.46);border-radius:999px;background:rgba(3,41,64,.82);color:#ffe49a!important;font-size:.7rem!important;font-weight:900}
+.next-practice-reward img{width:17px;height:17px;object-fit:contain}
+.practice-star-reward{display:flex;align-items:center;justify-content:center;gap:12px;max-width:330px;margin:16px auto;padding:13px 16px;border:1px solid #e5bd58;border-radius:16px;background:#073f5e;color:#fff0bd;text-align:left;box-shadow:0 12px 25px rgba(2,27,45,.22)}
+.practice-star-reward>img{width:48px!important;height:48px!important;object-fit:contain;filter:drop-shadow(0 7px 8px rgba(224,168,43,.34))}
+.practice-star-reward small,.practice-star-reward strong{display:block}
+.practice-star-reward small{color:#bcdadc;font-size:.72rem}
+.practice-star-reward strong{margin-top:3px;font-size:1rem}
+.celebration>.primary{display:flex;align-items:center;justify-content:center;gap:8px}

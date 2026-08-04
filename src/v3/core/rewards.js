@@ -1,6 +1,7 @@
 import { getState, setState } from './store.js';
 import { creditGameplayShells } from './economy.js';
 import { recordQuestCompletion } from './master-stars.js';
+import { recordPracticeCompletion } from './practice-rewards.js';
 
 export const MILESTONE_LEVELS = Object.freeze([3, 5, 7, 10, 15, 20, 30]);
 export const WEEKLY_GOAL_TARGET = 15;
@@ -170,7 +171,10 @@ export function grantReward(reward = {}, date = new Date()) {
   const starResult = reward.starResult
     ? recordQuestCompletion(reward.starResult, date)
     : { starsGained: 0, questStars: 0, totalWorldStars: 0, dungeonUnlocked: false };
-  return { xp, shells, doubled: doubleXp, ...starResult };
+  const practiceResult = reward.practiceResult
+    ? recordPracticeCompletion(reward.practiceResult, date)
+    : { practiceStars: 0, practiceRunCount: 0, dailyPracticeStars: 0 };
+  return { xp, shells, doubled: doubleXp, ...starResult, ...practiceResult };
 }
 
 export function spendShells(amount) {
