@@ -1,7 +1,7 @@
 import { readStorage, writeStorage } from './storage.js';
 
 export const initialState = {
-  storageVersion: 6,
+  storageVersion: 7,
   route: { name: 'home', params: {} },
   language: 'de',
   languages: { source: 'de', target: 'es' },
@@ -15,6 +15,7 @@ export const initialState = {
     lastLearningDate: '',
     weekly: { weekKey: '', completed: 0 },
     learned: {},
+    learnedByLanguage: {},
     mastery: {},
     stars: {},
     dungeons: {},

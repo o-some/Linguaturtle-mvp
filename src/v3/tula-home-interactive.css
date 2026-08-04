@@ -1,26 +1,64 @@
-.tula-home-page .page-title{margin-bottom:14px}
-.home-room-card{overflow:hidden;border:1px solid rgba(211,171,73,.6);border-radius:30px;background:#fffdf7;box-shadow:var(--shadow)}
-.home-room-toolbar{min-height:66px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,253,246,.98);border-bottom:1px solid rgba(211,171,73,.5)}
-.home-room-toolbar>div{display:flex;align-items:center;gap:10px}.home-room-toolbar>div>span{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;background:#e7f8fa;font-size:1.2rem}
-.home-room-toolbar p{margin:0}.home-room-toolbar strong,.home-room-toolbar small{display:block}.home-room-toolbar small{margin-top:2px;color:var(--muted)}
-.home-room-toolbar button{border:1px solid rgba(201,156,50,.5);border-radius:13px;padding:9px 12px;background:#fff;color:var(--navy);font-weight:900}
-.tula-home-page .tula-room{position:relative!important;height:auto!important;min-height:520px!important;margin:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;isolation:isolate;touch-action:none;background:#8b5b31!important}
+.tula-home-page .page-title{margin-bottom:12px}
+.home-room-tabs{max-width:760px;margin:0 auto 12px;padding:5px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px;border:1px solid rgba(204,165,70,.42);border-radius:16px;background:#fffaf0;box-shadow:0 9px 24px rgba(5,48,72,.1)}
+.home-room-tabs button{min-width:0;min-height:48px;padding:7px 5px;border:0;border-radius:12px;background:transparent;color:#36566c;display:flex;align-items:center;justify-content:center;gap:7px;font-weight:900}
+.home-room-tabs button i{font-size:1.15rem;color:#9b772c}
+.home-room-tabs button.active{background:#073f67;color:#fff;box-shadow:0 7px 16px rgba(3,47,80,.2)}
+.home-room-tabs button.active i{color:#ffd875}
+.home-room-tabs button:focus-visible{outline:3px solid #e3b84e;outline-offset:2px}
+.home-room-card{max-width:760px;margin-inline:auto;overflow:hidden;border:1px solid rgba(211,171,73,.6);border-radius:20px;background:#fffdf7;box-shadow:var(--shadow)}
+.home-room-toolbar{min-height:66px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fffaf0;border-bottom:1px solid rgba(211,171,73,.5)}
+.home-room-toolbar>div{display:flex;align-items:center;gap:10px}
+.home-room-toolbar>div>i{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#073f67;color:#ffd875;font-size:1.2rem}
+.home-room-toolbar p{margin:0}
+.home-room-toolbar strong,.home-room-toolbar small{display:block}
+.home-room-toolbar small{margin-top:2px;color:#5b6e78}
+.home-room-toolbar button{border:1px solid rgba(201,156,50,.55);border-radius:12px;padding:9px 12px;background:#fff;color:var(--navy);font-weight:900}
+.home-room-toolbar button:focus-visible{outline:3px solid #e3b84e;outline-offset:2px}
+.tula-home-page .tula-room{position:relative!important;height:min(72vh,680px)!important;min-height:520px!important;margin:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;isolation:isolate;touch-action:none;background:#6b431f!important}
 .tula-home-page .tula-room:before,.tula-home-page .tula-room:after{display:none!important}
-.home-room-scene{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center 64%;pointer-events:none;user-select:none}
+.home-room-scene{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center 57%;pointer-events:none;user-select:none}
 .tula-home-page .tula-room .room-items{position:absolute!important;inset:0!important;display:block!important}
-.home-room-object{position:absolute!important;z-index:5;transform:translate(-50%,-50%);display:grid!important;place-items:center;margin:0;padding:0;border:0;background:transparent!important;box-shadow:none!important;line-height:1;cursor:grab;touch-action:none;user-select:none;filter:drop-shadow(0 9px 6px rgba(0,35,50,.3));transition:filter .16s ease,transform .16s ease}
-.home-room-object:hover,.home-room-object:focus-visible{outline:3px dashed #ffe58d;outline-offset:5px;border-radius:17px}.home-room-object.dragging{z-index:30;cursor:grabbing;transform:translate(-50%,-50%) scale(1.08);filter:drop-shadow(0 15px 10px rgba(0,30,45,.4));transition:none}
-.home-room-object>span{width:auto!important;height:auto!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-size:clamp(3.5rem,8vw,6.2rem)}
-.home-room-object:not(.room-tula)>span{padding:.1em .16em!important;border:2px solid rgba(255,255,255,.92)!important;border-radius:22px!important;background:rgba(255,255,255,.86)!important;box-shadow:0 9px 22px rgba(54,49,36,.24)!important}
-.home-object-bed>span{font-size:clamp(4.5rem,10vw,7.8rem)}.home-object-lamp>span{filter:drop-shadow(0 0 12px #ffd65d)}.home-object-aquarium>span{font-size:clamp(3.7rem,8vw,6.5rem)}
-.tula-home-page .tula-room .room-tula{display:grid!important;position:absolute!important;right:auto!important;bottom:auto!important;width:clamp(120px,25vw,235px)!important;height:clamp(145px,29vw,275px)!important}
+.home-room-object{position:absolute!important;z-index:5;transform:translate(-50%,-50%);display:grid!important;place-items:center;margin:0;padding:0;border:0;background:transparent!important;box-shadow:none!important;line-height:1;cursor:grab;touch-action:none;user-select:none;filter:drop-shadow(0 9px 6px rgba(0,35,50,.3)) drop-shadow(0 0 4px rgba(255,216,101,.58));transition:filter .18s ease,transform .18s cubic-bezier(.2,.8,.2,1)}
+.home-room-object:hover,.home-room-object:focus-visible{outline:0;filter:drop-shadow(0 10px 7px rgba(0,35,50,.32)) drop-shadow(0 0 7px #ffd875) drop-shadow(0 0 15px rgba(255,205,69,.88));transform:translate(-50%,-50%) scale(1.035)}
+.home-room-object.dragging{z-index:30;cursor:grabbing;transform:translate(-50%,-50%) scale(1.08);filter:drop-shadow(0 15px 10px rgba(0,30,45,.4)) drop-shadow(0 0 9px #ffe39a) drop-shadow(0 0 22px #e6ad28);transition:none}
+.home-room-object-art{display:block;width:clamp(80px,15vw,150px);height:clamp(80px,15vw,150px);object-fit:contain;pointer-events:none}
+.home-object-bed .home-room-object-art{width:clamp(145px,28vw,265px);height:clamp(100px,20vw,190px)}
+.home-object-lamp .home-room-object-art{width:clamp(65px,11vw,110px);height:clamp(85px,15vw,145px)}
+.home-object-books .home-room-object-art{width:clamp(90px,16vw,155px);height:clamp(90px,16vw,155px)}
+.home-object-aquarium .home-room-object-art{width:clamp(100px,18vw,180px);height:clamp(90px,16vw,160px)}
+.home-object-garden-star-relic .home-room-object-art{width:clamp(58px,9vw,88px);height:clamp(58px,9vw,88px)}
+.tula-home-page .tula-room .room-tula{display:grid!important;position:absolute!important;right:auto!important;bottom:auto!important;width:clamp(125px,25vw,235px)!important;height:clamp(155px,30vw,285px)!important}
 .tula-home-page .room-tula img{width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 12px 9px rgba(0,31,46,.3))}
-.tula-home-page .tula-outfit{position:absolute;z-index:3;top:-4%;left:50%;transform:translateX(-50%) rotate(-4deg);font-size:clamp(2.5rem,6vw,4.8rem);pointer-events:none}
-.home-room-status{position:absolute;z-index:20;left:13px;top:12px;padding:7px 11px;border:1px solid rgba(255,232,157,.9);border-radius:999px;background:#073f67;color:#fff;font-size:.72rem;font-weight:800;pointer-events:none;box-shadow:0 6px 14px rgba(3,47,80,.22)}
-.home-shop-section{margin-top:14px}.home-shop-section .shop-card-v3.home-active{border-color:#d4a83f;background:linear-gradient(145deg,#fff,#fff5d6)}
-.home-shop-section .shop-card-v3 small{display:block;color:var(--muted)}.home-shop-section .shop-card-v3.home-active small{color:#84601d;font-weight:800}
+.home-shop-section{max-width:760px;margin:14px auto 0}
+.home-shop-section .shop-card-v3{min-height:104px}
+.home-shop-section .shop-card-v3.home-active{border-color:#d4a83f;background:linear-gradient(145deg,#fff,#fff5d6)}
+.home-shop-section .shop-card-v3 small{display:block;color:var(--muted)}
+.home-shop-section .shop-card-v3.home-active small{color:#84601d;font-weight:800}
+.home-catalog-art{width:92px;height:82px;object-fit:contain;filter:drop-shadow(0 7px 7px rgba(1,34,52,.22))}
+.wardrobe-room{touch-action:auto!important}
+.wardrobe-room .home-room-scene{object-position:center 58%}
+.wardrobe-tula{position:absolute;z-index:4;left:50%;bottom:3%;transform:translateX(-50%);width:clamp(210px,46vw,390px);height:88%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 16px 13px rgba(0,25,38,.36));pointer-events:none}
+.trophy-room{touch-action:auto!important}
+.trophy-room .home-room-scene{object-position:center 54%}
+.trophy-displays{position:absolute;inset:0;z-index:2}
+.trophy-podium{position:absolute;width:34%;min-height:94px;padding:8px 8px 7px;display:grid;grid-template-columns:42% 1fr;align-items:center;gap:5px;border-radius:14px;background:rgba(4,47,70,.9);color:#fff4cb;box-shadow:0 9px 22px rgba(0,20,31,.3)}
+.trophy-podium-1{left:4%;top:20%}.trophy-podium-2{right:4%;top:20%}.trophy-podium-3{left:4%;top:50%}.trophy-podium-4{right:4%;top:50%}
+.trophy-podium.locked{opacity:.76}
+.trophy-art{width:100%;height:68px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(255,214,95,.72))}
+.trophy-podium div>img{width:24px;height:18px;object-fit:cover;border-radius:3px}
+.trophy-podium strong,.trophy-podium small{display:block}
+.trophy-podium strong{margin-top:3px;font-size:.78rem}
+.trophy-podium small{margin-top:2px;color:#d6e5df;font-size:.62rem;line-height:1.25}
+.trophy-tula{position:absolute;left:50%;bottom:3%;transform:translateX(-50%);width:32%;height:43%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 13px 10px rgba(0,30,45,.35))}
 @media(max-width:430px){
- .home-room-toolbar{align-items:flex-start}.home-room-toolbar>div>span,.home-room-toolbar small{display:none}.home-room-toolbar strong{font-size:.82rem}.home-room-toolbar button{padding:8px 10px;font-size:.78rem}
- .tula-home-page .tula-room{min-height:430px!important}.home-room-status{max-width:calc(100% - 20px)}
+ .home-room-tabs{border-radius:14px}.home-room-tabs button{font-size:.72rem;gap:4px}.home-room-tabs button i{font-size:1rem}
+ .home-room-toolbar{align-items:flex-start}.home-room-toolbar small{font-size:.7rem}.home-room-toolbar strong{font-size:.82rem}.home-room-toolbar button{padding:8px 10px;font-size:.75rem}
+ .tula-home-page .tula-room{height:520px!important;min-height:520px!important}
+ .home-room-object-art{width:clamp(76px,24vw,105px);height:clamp(76px,24vw,105px)}
+ .home-object-bed .home-room-object-art{width:clamp(130px,39vw,175px);height:clamp(95px,29vw,130px)}
+ .home-object-lamp .home-room-object-art{width:70px;height:100px}.home-object-books .home-room-object-art{width:95px;height:95px}.home-object-aquarium .home-room-object-art{width:112px;height:100px}
+ .home-catalog-art{width:72px;height:70px}
+ .trophy-podium{width:41%;grid-template-columns:38% 1fr;padding:6px 5px;gap:3px}.trophy-podium-1,.trophy-podium-3{left:2%}.trophy-podium-2,.trophy-podium-4{right:2%}
+ .trophy-podium strong{font-size:.72rem}.trophy-podium small{font-size:.62rem}.trophy-art{height:57px}.trophy-tula{width:43%;height:39%}
 }
 @media(prefers-reduced-motion:reduce){.home-room-object{transition:none}}
