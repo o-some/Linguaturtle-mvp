@@ -50,7 +50,9 @@ test('home, island and learning world are separated', async ({ page }) => {
   await expect(page).toHaveTitle('Tulas Island');
   await expect(page.locator('.home-goal-claim')).toHaveCount(0);
   await page.locator('[data-route="island"]').first().click();
-  await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
+  await expect(page.locator('.page-title')).toHaveCount(0);
+  await expect(page.locator('.tula-home-feature')).toBeVisible();
+  expect(await page.locator('.tula-home-feature').evaluate(element => element.nextElementSibling?.classList.contains('island-map'))).toBe(true);
   await page.locator('[data-action="open-world"]').first().click();
   await expect(page.getByText(/Sammle Meistersterne/i)).toBeVisible();
   await expect(page.locator('.word-showcase')).toHaveCount(0);
@@ -118,7 +120,8 @@ test('interactive island map shows level requirements and blocks locked worlds',
   }
   await page.locator('.island-hotspot[data-collection="animals"]').click();
   await expect(page.locator('.v3-toast')).toContainText(/ab Level 3/i);
-  await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
+  await expect(page.locator('.tula-home-feature')).toBeVisible();
+  await expect(page.locator('.island-map')).toBeVisible();
   await page.locator('.island-hotspot[data-collection="garden"]').click();
   await expect(page.getByRole('heading', { name: 'Garten' })).toBeVisible();
   await expect(page.locator('.world-unlock-note')).toContainText('Level 1');
