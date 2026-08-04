@@ -1,4 +1,4 @@
-name: Deploy LinguaTurtle to GitHub Pages
+name: Deploy Tulas Island to GitHub Pages
 
 on:
   push:
