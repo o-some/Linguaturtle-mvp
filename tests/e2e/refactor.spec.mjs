@@ -428,12 +428,37 @@ test('Tula home purchase, placement, movement and outfit persist', async ({ page
   const movedX = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).inventory.homePositions.bed.x);
   expect(movedX).toBe(75);
 
+  await page.locator('[data-action="home-room"][data-room="wardrobe"]').click();
+  await expect(page.locator('.home-room-scene[src$="home_wardrobe_room.webp"]')).toBeVisible();
   const crownCard = page.locator('.shop-card-v3').filter({ hasText: 'Goldene Krone' });
   await crownCard.getByRole('button', { name: 'Kaufen' }).click();
-  await expect(page.locator('.tula-outfit')).toContainText('👑');
+  await expect(page.locator('.wardrobe-tula[src$="home_outfit_crown.webp"]')).toBeVisible();
   await page.reload();
+  await expect(page.locator('.wardrobe-tula[src$="home_outfit_crown.webp"]')).toBeVisible();
+  await page.locator('[data-action="home-room"][data-room="main"]').click();
   await expect(page.locator('[data-home-object="bed"]')).toBeVisible();
-  await expect(page.locator('.tula-outfit')).toContainText('👑');
+  await expect(page.locator('.room-tula img[src$="home_outfit_crown.webp"]')).toBeVisible();
+  expect(await page.locator('[data-home-object="bed"]').evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+  await expect(page.locator('[data-home-object="bed"] .home-room-object-art[src$="home_decor_bed.webp"]')).toBeVisible();
+});
+
+test('Tula trophy room separates learned words and badges by target language', async ({ page }) => {
+  await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.route = { name: 'tula-home', params: {} };
+    state.session.homeRoomId = 'trophies';
+    state.progress.learnedByLanguage = {
+      es: { garden: 15 },
+      en: { garden: 5 },
+    };
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+  await expect(page.locator('.home-room-scene[src$="home_trophy_room.webp"]')).toBeVisible();
+  await expect(page.locator('.trophy-podium')).toHaveCount(4);
+  await expect(page.getByText('ES · 15', { exact: true })).toBeVisible();
+  await expect(page.getByText('EN · 5', { exact: true })).toBeVisible();
+  await expect(page.locator('.trophy-tula[src$="tula_celebrating.webp"]')).toBeVisible();
 });
 
 test('profile and settings are reachable', async ({ page }) => {
@@ -563,6 +588,7 @@ test('version 4 progress migrates discovered words and initializes daily practic
   expect(migrated.state.progress.stars.library.explore.earned).toBe(1);
   expect(migrated.state.progress.stars.garden.explore.masteryConfirmedAt).toBeNull();
   expect(migrated.state.progress.practice.runs).toEqual({});
+  expect(migrated.state.progress.learnedByLanguage.es).toEqual({ garden: 4, library: 1 });
   expect(migrated.state.progress.byLanguage.es.legacyDiscovered).toBe(5);
 });
 

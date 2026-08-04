@@ -43,8 +43,15 @@ function nav(active) {
 }
 
 function markLearned(id, count) {
+  const target = targetLanguage();
   setState(draft => {
     draft.progress.learned[id] = Math.max(Number(draft.progress.learned[id] || 0), count);
+    draft.progress.learnedByLanguage ??= {};
+    draft.progress.learnedByLanguage[target] ??= {};
+    draft.progress.learnedByLanguage[target][id] = Math.max(
+      Number(draft.progress.learnedByLanguage[target][id] || 0),
+      count
+    );
     return draft;
   });
 }

@@ -30,4 +30,4 @@ Ein neuer Produktmeilenstein ist noch nicht festgelegt. Vor der nächsten größ
 
 ## Dokumentationsstatus
 
-`ARCHITECTURE.md` ist die technische Quelle der Wahrheit. `V3_ROADMAP.md`, `V3_INTERACTIVE_STATUS.md`, `V3_CORE_REFACTOR.md` und der frühere Gesamtplan sind historische Dokumente. Der token-sparende Codex-Workflow wurde am 4. August 2026 eingerichtet; `npm test` umfasst 78 End-to-End-Fälle.
+`ARCHITECTURE.md` ist die technische Quelle der Wahrheit. `V3_ROADMAP.md`, `V3_INTERACTIVE_STATUS.md`, `V3_CORE_REFACTOR.md` und der frühere Gesamtplan sind historische Dokumente. Der token-sparende Codex-Workflow wurde am 4. August 2026 eingerichtet; `npm test` umfasst 80 End-to-End-Fälle.

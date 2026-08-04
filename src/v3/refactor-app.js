@@ -73,7 +73,8 @@ const islandPlaceCard=(c,i,lv)=>{
 };
 const homeWorldButton=(c,s,lv)=>{
   const required=worldLevel(c.id),locked=lv<required;
-  return `<button class="${locked?'world-locked':''}" data-action="open-world" data-collection="${c.id}" ${locked?'data-locked="true"':''}><span>${c.icon}</span><div><strong>${collectionName(c)}</strong><small>${locked?`🔒 ${levelLabel(required)}`:`${s.progress.learned[c.id]||0}/${c.words.length} ${tr('Wörter entdeckt','palabras descubiertas','λέξεις ανακαλύφθηκαν')}`}</small></div><b>${locked?'🔒':'→'}</b></button>`;
+  const learned=Number(s.progress.learnedByLanguage?.[targetLanguage()]?.[c.id]||0);
+  return `<button class="${locked?'world-locked':''}" data-action="open-world" data-collection="${c.id}" ${locked?'data-locked="true"':''}><span>${c.icon}</span><div><strong>${collectionName(c)}</strong><small>${locked?`🔒 ${levelLabel(required)}`:`${learned}/${c.words.length} ${tr('Wörter entdeckt','palabras descubiertas','λέξεις ανακαλύφθηκαν')}`}</small></div><b>${locked?'🔒':'→'}</b></button>`;
 };
 
 let toastTimer=null;

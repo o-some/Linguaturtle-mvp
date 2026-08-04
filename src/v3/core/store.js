@@ -15,6 +15,7 @@ export const initialState = {
     lastLearningDate: '',
     weekly: { weekKey: '', completed: 0 },
     learned: {},
+    learnedByLanguage: {},
     mastery: {},
     stars: {},
     dungeons: {},

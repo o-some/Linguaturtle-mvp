@@ -150,6 +150,15 @@ export function migrateStorage(input, fallback) {
       ...(merged.progress.practice || {}),
     };
   }
+  if (Number(input.storageVersion || 0) < 7) {
+    merged.progress.learnedByLanguage = {
+      ...(merged.progress.learnedByLanguage || {}),
+    };
+    if (!Object.keys(merged.progress.learnedByLanguage).length
+      && Object.keys(merged.progress.learned || {}).length) {
+      merged.progress.learnedByLanguage[target] = structuredClone(merged.progress.learned);
+    }
+  }
   if (Number(input.storageVersion || 0) < 8) {
     merged.progress.byLanguage = { ...(merged.progress.byLanguage || {}) };
     const current = merged.progress.byLanguage[target] || {};
