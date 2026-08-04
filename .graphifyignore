@@ -1,0 +1,13 @@
+# Generierte Web-Bundles in den nativen Projekten
+android/app/src/main/assets/public/
+ios/App/App/public/
+
+# Historische oder reine Vorschau-Einstiege
+app.js
+enhancements.js
+core-preview/
+
+# Lokale und generierte Verzeichnisse
+node_modules/
+dist/
+graphify-out/

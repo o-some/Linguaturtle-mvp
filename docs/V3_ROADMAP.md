@@ -1,5 +1,7 @@
 # Tulas Island 3.0
 
+> **Historische Roadmap:** Meilensteine und Git-Workflow entsprechen nicht vollständig dem aktuellen Stand. Maßgeblich sind [NOW.md](NOW.md) und [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Ziel
 
 Tulas Island wird von einer klassischen Lern-App zu einer modularen, illustrierten Sprachlernwelt für Kinder weiterentwickelt. Die öffentliche Version auf `main` bleibt stabil. Entwicklung erfolgt über `develop` und Feature-Branches.

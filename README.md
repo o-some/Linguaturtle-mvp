@@ -2,6 +2,14 @@
 
 Ein mobil optimierter Sprachlern-Prototyp für Kinder. Die App funktioniert vollständig als Gast, speichert Fortschritt immer zuerst lokal und kann ihn optional über ein Elternkonto mit Supabase synchronisieren.
 
+## Projektkontext
+
+- [Aktueller Stand](docs/NOW.md)
+- [Technische Architektur](docs/ARCHITECTURE.md)
+- [Schlanker Codex-Workflow](docs/WORKFLOW.md)
+
+Frühere V3-Status- und Roadmap-Dateien sind historische Momentaufnahmen und keine aktuellen Arbeitsaufträge.
+
 ## Lokal starten
 
 ```bash

@@ -1,5 +1,7 @@
 # Tulas Island V3 – Core Refactor
 
+> **Historischer Refactor-Plan:** Die Kernsanierung wurde später abgeschlossen. Maßgeblich sind [NOW.md](NOW.md), [ARCHITECTURE.md](ARCHITECTURE.md) und [RELEASE_PHASE_1_1.md](../RELEASE_PHASE_1_1.md).
+
 ## Ziel
 
 Die bisherige MVP-Struktur wird schrittweise durch einen zentralen, testbaren Anwendungskern ersetzt. Die öffentliche App auf `main` bleibt während der Migration unverändert.

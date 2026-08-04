@@ -1,5 +1,7 @@
 # Tulas Island 3.0 – Interaktiver Stand
 
+> **Historische Momentaufnahme:** Diese Datei beschreibt einen früheren Entwicklungsstand. Maßgeblich sind [NOW.md](NOW.md) und [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Fertig
 
 - Turtle-Island-Startseite

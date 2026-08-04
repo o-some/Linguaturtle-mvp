@@ -9,3 +9,7 @@ android/local.properties
 android/captures/
 ios/App/Pods/
 ios/App/DerivedData/
+
+# Lokale Planungs- und Indexierungswerkzeuge
+/.obsidian/
+/graphify-out/
