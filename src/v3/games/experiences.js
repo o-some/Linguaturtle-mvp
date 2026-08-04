@@ -1,12 +1,12 @@
 import { collections } from '../content-multilingual.js';
 import {
   getState,setState,registerAction,speak,grantReward,spendEconomyShells,levelFromXp,
-  sourceLanguage,targetLanguage,languageMeta,languageValue,uiText
+  sourceLanguage,targetLanguage,languageMeta,languageValue,uiText,LANGUAGE_CODES
 } from '../core/index.js?build=cinematic-worlds-1';
 import { profileConfig } from '../screens/child-profile.js?build=cinematic-worlds-1';
 import { assets } from '../../config/assets.js?build=cinematic-worlds-1';
 
-const tr=(de,es,el=de)=>uiText(de,es,el);
+const tr=(de,es,el=de,en=null)=>uiText(de,es,el,en);
 const shuffle=a=>[...a].sort(()=>Math.random()-.5);
 const allWords=()=>collections.flatMap(c=>c.words.map(w=>({...w,collection:c.id})));
 const rewardArt=(src,alt='')=>`<img class="reward-art" src="${src}" alt="${alt}">`;
@@ -41,14 +41,23 @@ const phrases=[
 ];
 
 const homeCatalog=[
- {id:'plant',icon:'🪴',cost:25,type:'decor',de:'Olivenbaum',es:'Olivo',el:'Ελιά',position:{x:68,y:22}},
- {id:'bed',icon:'🛏️',cost:60,type:'decor',de:'Wolkenbett',es:'Cama nube',el:'Κρεβάτι σύννεφο',position:{x:77,y:77}},
- {id:'lamp',icon:'🪔',cost:35,type:'decor',de:'Goldene Lampe',es:'Lámpara dorada',el:'Χρυσή λάμπα',position:{x:82,y:43}},
- {id:'books',icon:'📚',cost:40,type:'decor',de:'Bücherregal',es:'Estantería',el:'Βιβλιοθήκη',position:{x:43,y:24}},
- {id:'aquarium',icon:'🐠',cost:90,type:'decor',de:'Aquarium',es:'Acuario',el:'Ενυδρείο',position:{x:18,y:54}},
- {id:'crown',icon:'👑',cost:110,type:'outfit',de:'Goldene Krone',es:'Corona dorada',el:'Χρυσό στέμμα'},
- {id:'garden-star-relic',asset:assets.rewards.xpStar,cost:0,type:'decor',rewardOnly:true,de:'Sternensamen des Gartens',es:'Semilla estelar del jardín',el:'Αστερόσπορος του κήπου',en:'Garden Star Seed',position:{x:23,y:29}}
+ {id:'plant',asset:assets.home.decor.plant,cost:25,type:'decor',room:'main',de:'Olivenbaum',es:'Olivo',el:'Ελιά',position:{x:68,y:22}},
+ {id:'bed',asset:assets.home.decor.bed,cost:60,type:'decor',room:'main',de:'Wolkenbett',es:'Cama nube',el:'Κρεβάτι σύννεφο',position:{x:77,y:77}},
+ {id:'lamp',asset:assets.home.decor.lamp,cost:35,type:'decor',room:'main',de:'Goldene Lampe',es:'Lámpara dorada',el:'Χρυσή λάμπα',position:{x:82,y:43}},
+ {id:'books',asset:assets.home.decor.books,cost:40,type:'decor',room:'main',de:'Bücherregal',es:'Estantería',el:'Βιβλιοθήκη',position:{x:43,y:24}},
+ {id:'aquarium',asset:assets.home.decor.aquarium,cost:90,type:'decor',room:'main',de:'Aquarium',es:'Acuario',el:'Ενυδρείο',position:{x:18,y:54}},
+ {id:'crown',asset:assets.home.outfits.crown,cost:110,type:'outfit',room:'wardrobe',de:'Goldene Krone',es:'Corona dorada',el:'Χρυσό στέμμα'},
+ {id:'flower',asset:assets.home.outfits.flower,cost:45,type:'outfit',room:'wardrobe',de:'Blumenkranz',es:'Corona de flores',el:'Στεφάνι λουλουδιών',en:'Flower crown'},
+ {id:'sailor',asset:assets.home.outfits.sailor,cost:65,type:'outfit',room:'wardrobe',de:'Matrosen-Outfit',es:'Traje marinero',el:'Ναυτική στολή',en:'Sailor outfit'},
+ {id:'explorer',asset:assets.home.outfits.explorer,cost:80,type:'outfit',room:'wardrobe',de:'Entdecker-Outfit',es:'Traje de exploradora',el:'Στολή εξερεύνησης',en:'Explorer outfit'},
+ {id:'garden-star-relic',asset:assets.rewards.xpStar,cost:0,type:'decor',room:'main',rewardOnly:true,de:'Sternensamen des Gartens',es:'Semilla estelar del jardín',el:'Αστερόσπορος του κήπου',en:'Garden Star Seed',position:{x:23,y:29}}
 ];
+const homeRooms=[
+ {id:'main',icon:'ph-house',de:'Tulas Zimmer',es:'Habitación',el:'Δωμάτιο',en:"Tula's room"},
+ {id:'trophies',icon:'ph-trophy',de:'Trophäen',es:'Trofeos',el:'Τρόπαια',en:'Trophies'},
+ {id:'wardrobe',icon:'ph-t-shirt',de:'Ankleide',es:'Vestidor',el:'Βεστιάριο',en:'Wardrobe'}
+];
+const badgeThresholds=[5,15,30,60,100];
 const HOME_LAYOUT_VERSION=3;
 const defaultTulaPosition={x:50,y:70};
 const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
@@ -67,13 +76,14 @@ function homeViewState(state){
   owned,
   placed,
   outfit:state.inventory.homeOutfit||legacyOutfit,
+  room:homeRooms.some(room=>room.id===state.session.homeRoomId)?state.session.homeRoomId:'main',
   positions:state.inventory.homePositions||{},
   tulaPosition:safePoint(state.inventory.tulaHomePosition,defaultTulaPosition)
  };
 }
 function roomObject(item,positions){
  const point=safePoint(positions[item.id],item.position);
- return `<button class="home-room-object home-object-${item.id}" data-home-object="${item.id}" style="left:${point.x}%;top:${point.y}%" aria-label="${languageValue(item,sourceLanguage())} ${tr('verschieben','mover','μετακίνηση')}">${item.asset?`<img src="${item.asset}" alt="">`:`<span aria-hidden="true">${item.icon}</span>`}</button>`;
+ return `<button class="home-room-object home-object-${item.id}" data-home-object="${item.id}" style="left:${point.x}%;top:${point.y}%" aria-label="${languageValue(item,sourceLanguage())} ${tr('verschieben','mover','μετακίνηση')}"><img class="home-room-object-art" src="${item.asset}" alt=""></button>`;
 }
 function migrateHomeLayout(){
  const state=getState();
@@ -96,9 +106,39 @@ function storiesRoute({top,nav}){const source=sourceLanguage();return `<div clas
 function storyRoute({top,nav}){const s=stories[story.index],p=s.pages[story.step],source=sourceLanguage(),target=targetLanguage();if(!p){const r=grantReward({xp:30,shells:10,countDaily:true});story={index:0,step:0,score:0};return `<div class="v3-shell page">${top()}<section class="celebration"><img src="${assets.characters.tula.poses.celebrating}" alt="Tula"><h1>${tr('Geschichte geschafft!','¡Historia completada!','Η ιστορία ολοκληρώθηκε!')}</h1><div class="reward-row"><div>${rewardArt(assets.rewards.xpStar,'XP')}<strong>+${r.xp}</strong></div><div>${rewardArt(assets.rewards.currencyShell,tr('Muscheln','Conchas','Κοχύλια'))}<strong>+${r.shells}</strong></div></div><button class="primary" data-action="navigate" data-route="stories">${tr('Weitere Geschichte','Otra historia','Άλλη ιστορία')}</button></section></div>`}const pose=story.index===2?assets.characters.tula.poses.sleeping:assets.characters.tula.poses.happy;return `<div class="v3-shell page">${top('stories')}<section class="story-card story-card-with-tula"><img class="story-tula" src="${pose}" alt="Tula"><div><span>${s.icon}</span><small>${story.step+1}/3</small><h1>${languageValue(s,source)}</h1><p>${languageValue(p,target)}</p><small>${languageValue(p,source)}</small><button data-action="story-speak">🔊 ${tr('Vorlesen','Leer en voz alta','Ανάγνωση')}</button><button class="primary" data-action="story-next">${tr('Weiter','Continuar','Συνέχεια')} →</button></div></section></div>${nav('home')}`}
 function travelRoute({top,nav}){if(travel.step>=travel.items.length){const mode=travel.mode,base=mode==='castle'?{xp:60,shells:25}:{xp:40,shells:14};const r=grantReward({...base,countDaily:true});travel={mode:'harbor',items:[],step:0,score:0,current:null};return `<div class="v3-shell page">${top()}<section class="celebration"><img src="${assets.characters.tula.poses.celebrating}" alt="Tula"><h1>${tr('Abenteuer geschafft!','¡Aventura completada!','Η περιπέτεια ολοκληρώθηκε!')}</h1><div class="reward-row"><div>${rewardArt(assets.rewards.xpStar,'XP')}<strong>+${r.xp}</strong></div><div>${rewardArt(assets.rewards.currencyShell,tr('Muscheln','Conchas','Κοχύλια'))}<strong>+${r.shells}</strong></div></div><button class="primary" data-action="navigate" data-route="island">${tr('Zur Insel','Volver a la isla','Πίσω στο νησί')}</button></section></div>`}
  const x=travel.items[travel.step];travel.current=x;const source=sourceLanguage(),target=targetLanguage(),scene=travel.mode==='castle'?assets.backgrounds.worlds.castle:assets.backgrounds.worlds.harbor;const opts=shuffle([x,...shuffle(phrases.filter(p=>p!==x)).slice(0,travel.mode==='castle'?3:2)]);return `<div class="v3-shell page expansion-page">${top('island')}<section class="${travel.mode==='castle'?'castle-hero':'harbor-hero'} expansion-art-hero"><img class="expansion-scene" src="${scene}" alt=""><div><small>${travel.mode==='castle'?tr('BOSS-LEVEL','NIVEL JEFE','ΤΕΛΙΚΟ ΕΠΙΠΕΔΟ'):tr('REISE & DIALOGE','VIAJES Y DIÁLOGOS','ΤΑΞΙΔΙΑ ΚΑΙ ΔΙΑΛΟΓΟΙ')}</small><h1>${languageValue(x,source)}</h1></div></section><div class="dialog-options">${opts.map(o=>`<button data-action="travel-answer" data-value="${languageValue(o,target)}">${languageValue(o,target)}</button>`).join('')}</div></div>${nav('island')}`}
+function learnedLanguageTotal(state,code){
+ return Object.values(state.progress.learnedByLanguage?.[code]||{}).reduce((sum,count)=>sum+Number(count||0),0);
+}
+function trophyArt(count){
+ const earned=badgeThresholds.filter(threshold=>count>=threshold).length;
+ return {
+  earned,
+  src:[assets.rewards.currencyShell,assets.rewards.currencyShell,assets.rewards.chests.bronze,assets.rewards.chests.silver,assets.rewards.chests.gold,assets.rewards.chests.jewel][earned]
+ };
+}
+function trophyRoomMarkup(state){
+ const source=sourceLanguage();
+ const podiums=LANGUAGE_CODES.map((code,index)=>{
+  const count=learnedLanguageTotal(state,code),trophy=trophyArt(count),language=languageMeta(code);
+  const next=badgeThresholds.find(threshold=>threshold>count);
+  return `<article class="trophy-podium trophy-podium-${index+1} ${trophy.earned?'earned':'locked'}">
+   <img class="trophy-art" src="${trophy.src}" alt="">
+   <div><img src="${language.flagSrc}" alt="${language.name}"><strong>${language.short} · ${count}</strong><small>${trophy.earned}/5 ${tr('Badges','Insignias','Σήματα','Badges')}${next?` · ${next-count} ${tr('fehlen','faltan','ακόμη','to go')}`:''}</small></div>
+  </article>`;
+ }).join('');
+ const total=LANGUAGE_CODES.reduce((sum,code)=>sum+learnedLanguageTotal(state,code),0);
+ return `<section class="home-room-card trophy-room-card">
+  <header class="home-room-toolbar"><div><i class="ph-bold ph-trophy" aria-hidden="true"></i><p><strong>${total} ${tr('Wörter in allen Sprachen','palabras en todos los idiomas','λέξεις σε όλες τις γλώσσες')}</strong><small>${tr('Neue Badges warten bei 5, 15, 30, 60 und 100 Wörtern','Nuevas insignias a las 5, 15, 30, 60 y 100 palabras','Νέα σήματα στις 5, 15, 30, 60 και 100 λέξεις')}</small></p></div></header>
+  <div class="tula-room trophy-room">
+   <img class="home-room-scene" src="${assets.backgrounds.home.trophyRoom}" alt="">
+   <div class="trophy-displays">${podiums}<img class="trophy-tula" src="${assets.characters.tula.poses.celebrating}" alt="Tula"></div>
+  </div>
+ </section>`;
+}
 function homeRoute({top,nav}){
  migrateHomeLayout();
- const s=getState(),home=homeViewState(s),source=sourceLanguage(),tula=home.tulaPosition;
+ const state=getState(),home=homeViewState(state),source=sourceLanguage(),tula=home.tulaPosition;
+ const selectedOutfit=homeCatalog.find(item=>item.id===home.outfit);
  const status=item=>{
   if(!home.owned.includes(item.id))return currencyAmount(item.cost);
   if(item.type==='outfit')return home.outfit===item.id?tr('Tula trägt es','Tula lo lleva','Η Τούλα το φοράει'):tr('Gekauft','Comprado','Αγορασμένο');
@@ -109,18 +149,37 @@ function homeRoute({top,nav}){
   if(item.type==='outfit')return home.outfit===item.id?tr('Ausziehen','Quitar','Αφαίρεση'):tr('Anziehen','Poner','Φόρεμα');
   return home.placed.includes(item.id)?'✓':tr('Aufstellen','Colocar','Τοποθέτηση');
  };
- return `<div class="v3-shell page tula-home-page">${top('island')}
- <section class="page-title"><span class="eyebrow">${tr('TULAS ZUHAUSE','CASA DE TULA','ΤΟ ΣΠΙΤΙ ΤΗΣ ΤΟΥΛΑ')}</span><h1>${tr('Mach es dir gemütlich','Ponte cómodo','Νιώσε σαν στο σπίτι σου')}</h1></section>
- <section class="home-room-card">
-  <header class="home-room-toolbar"><div><span>☝️</span><p><strong>${tr('Ziehen & abstellen','Arrastra y coloca','Σύρε και τοποθέτησε')}</strong><small>${tr('Die Positionen bleiben gespeichert','Las posiciones se guardan','Οι θέσεις αποθηκεύονται')}</small></p></div><button data-action="home-reset">${tr('Aufräumen','Ordenar','Τακτοποίηση')}</button></header>
+ const roomTabs=`<nav class="home-room-tabs" aria-label="${tr('Zimmer auswählen','Elegir habitación','Επιλογή δωματίου')}">${homeRooms.map(room=>`<button class="${home.room===room.id?'active':''}" data-action="home-room" data-room="${room.id}"><i class="ph-bold ${room.icon}" aria-hidden="true"></i><span>${languageValue(room,source)}</span></button>`).join('')}</nav>`;
+ const mainRoom=`<section class="home-room-card">
+  <header class="home-room-toolbar"><div><i class="ph-bold ph-hand-grabbing" aria-hidden="true"></i><p><strong>${tr('Ziehen & abstellen','Arrastra y coloca','Σύρε και τοποθέτησε')}</strong><small>${tr('Der goldene Schein zeigt dir bewegliche Dinge','El brillo dorado muestra lo que puedes mover','Η χρυσή λάμψη δείχνει τι μετακινείται')}</small></p></div><button data-action="home-reset">${tr('Aufräumen','Ordenar','Τακτοποίηση')}</button></header>
   <div class="tula-room" data-home-room>
    <img class="home-room-scene" src="${assets.backgrounds.home.interior}" alt="">
-   <div class="room-items">${homeCatalog.filter(i=>i.type==='decor'&&home.placed.includes(i.id)).map(i=>roomObject(i,home.positions)).join('')}</div>
-   <button class="room-tula home-room-object" data-home-object="tula" style="left:${tula.x}%;top:${tula.y}%" aria-label="Tula ${tr('verschieben','mover','μετακίνηση')}"><img src="${assets.characters.tula.poses.neutral}" alt=""><span class="tula-outfit" aria-hidden="true">${homeCatalog.find(i=>i.id===home.outfit)?.icon||''}</span></button>
-   <span class="home-room-status">${home.outfit?`${tr('Tula trägt','Tula lleva','Η Τούλα φοράει')}: ${languageValue(homeCatalog.find(i=>i.id===home.outfit),source)}`:tr('Wähle ein Outfit für Tula','Elige un atuendo para Tula','Διάλεξε ρούχο για την Τούλα')}</span>
+   <div class="room-items">${homeCatalog.filter(item=>item.room==='main'&&item.type==='decor'&&home.placed.includes(item.id)).map(item=>roomObject(item,home.positions)).join('')}</div>
+   <button class="room-tula home-room-object" data-home-object="tula" style="left:${tula.x}%;top:${tula.y}%" aria-label="Tula ${tr('verschieben','mover','μετακίνηση')}"><img src="${selectedOutfit?.asset||assets.characters.tula.poses.neutral}" alt="Tula"></button>
   </div>
- </section>
- <section class="shop-section home-shop-section">${homeCatalog.filter(i=>!i.rewardOnly||home.owned.includes(i.id)).map(i=>`<article class="shop-card-v3 ${home.placed.includes(i.id)||home.outfit===i.id?'home-active':''}">${i.asset?`<img class="home-relic-catalog-art" src="${i.asset}" alt="">`:`<span>${i.icon}</span>`}<div><strong>${languageValue(i,source)}</strong><small>${i.rewardOnly?tr('Im Sternen-Dungeon gefunden','Encontrada en la mazmorra estelar','Βρέθηκε στο μπουντρούμι των αστεριών'):status(i)}</small></div><button data-action="home-item" data-id="${i.id}">${action(i)}</button></article>`).join('')}</section>
+ </section>`;
+ const wardrobeRoom=`<section class="home-room-card wardrobe-room-card">
+  <header class="home-room-toolbar"><div><i class="ph-bold ph-t-shirt" aria-hidden="true"></i><p><strong>${tr('Tulas Lieblingslooks','Los looks favoritos de Tula','Τα αγαπημένα ρούχα της Τούλα')}</strong><small>${selectedOutfit?`${tr('Ausgewählt','Seleccionado','Επιλεγμένο')}: ${languageValue(selectedOutfit,source)}`:tr('Wähle unten ein Outfit aus','Elige un traje abajo','Διάλεξε μια στολή παρακάτω')}</small></p></div></header>
+  <div class="tula-room wardrobe-room">
+   <img class="home-room-scene" src="${assets.backgrounds.home.wardrobeRoom}" alt="">
+   <img class="wardrobe-tula" src="${selectedOutfit?.asset||assets.characters.tula.poses.neutral}" alt="Tula">
+  </div>
+ </section>`;
+ const catalog=homeCatalog.filter(item=>item.room===home.room&&(!item.rewardOnly||home.owned.includes(item.id)));
+ const catalogMarkup=catalog.length?`<section class="shop-section home-shop-section">${catalog.map(item=>`<article class="shop-card-v3 ${home.placed.includes(item.id)||home.outfit===item.id?'home-active':''}">
+  <img class="home-catalog-art" src="${item.asset}" alt="">
+  <div><strong>${languageValue(item,source)}</strong><small>${item.rewardOnly?tr('Im Sternen-Dungeon gefunden','Encontrada en la mazmorra estelar','Βρέθηκε στο μπουντρούμι των αστεριών'):status(item)}</small></div>
+  <button data-action="home-item" data-id="${item.id}">${action(item)}</button>
+ </article>`).join('')}</section>`:'';
+ const titles={
+  main:tr('Mach es dir gemütlich','Ponte cómodo','Νιώσε σαν στο σπίτι σου'),
+  trophies:tr('Deine Sprachschätze','Tus tesoros lingüísticos','Οι γλωσσικοί σου θησαυροί'),
+  wardrobe:tr('Zieh Tula etwas Schönes an','Viste a Tula','Ντύσε όμορφα την Τούλα')
+ };
+ const roomMarkup=home.room==='trophies'?trophyRoomMarkup(state):home.room==='wardrobe'?wardrobeRoom:mainRoom;
+ return `<div class="v3-shell page tula-home-page">${top('island')}
+ <section class="page-title"><h1>${titles[home.room]}</h1></section>
+ ${roomTabs}${roomMarkup}${catalogMarkup}
  </div>${nav('island')}`;
 }
 
@@ -137,6 +196,7 @@ export function registerExperienceActions(router){
  registerAction('open-harbor',()=>{if(levelFromXp()<7)return alert(tr('Der Hafen öffnet ab Level 7.','El puerto se abre en nivel 7.','Το λιμάνι ανοίγει στο επίπεδο 7.'));travel={mode:'harbor',items:[...phrases],step:0,score:0,current:null};router.navigate('harbor')});
  registerAction('open-castle',()=>{if(levelFromXp()<10)return alert(tr('Das Schloss öffnet ab Level 10.','El castillo se abre en nivel 10.','Το κάστρο ανοίγει στο επίπεδο 10.'));travel={mode:'castle',items:shuffle(phrases).slice(0,5),step:0,score:0,current:null};router.navigate('castle')});
  registerAction('travel-answer',({data})=>{if(data.value===languageValue(travel.current,targetLanguage()))travel.score++;travel.step++;router.renderCurrent()});
+ registerAction('home-room',({data})=>{if(!homeRooms.some(room=>room.id===data.room))return;setState(d=>{d.session.homeRoomId=data.room;return d});router.renderCurrent()});
  registerAction('home-item',async({data})=>{
   const item=homeCatalog.find(i=>i.id===data.id);if(!item)return;
   const before=homeViewState(getState()),isNew=!before.owned.includes(item.id);

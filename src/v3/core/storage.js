@@ -1,4 +1,4 @@
-export const STORAGE_VERSION = 6;
+export const STORAGE_VERSION = 7;
 export const STORAGE_KEY = 'linguaturtle-v3-core';
 export const SYNC_META_KEY = 'linguaturtle-v3-sync-meta';
 const LANGUAGE_CODES = ['de','es','el','en'];
@@ -149,6 +149,15 @@ export function migrateStorage(input, fallback) {
       lastWordBatch: {},
       ...(merged.progress.practice || {}),
     };
+  }
+  if (Number(input.storageVersion || 0) < 7) {
+    merged.progress.learnedByLanguage = {
+      ...(merged.progress.learnedByLanguage || {}),
+    };
+    if (!Object.keys(merged.progress.learnedByLanguage).length
+      && Object.keys(merged.progress.learned || {}).length) {
+      merged.progress.learnedByLanguage[target] = structuredClone(merged.progress.learned);
+    }
   }
   delete merged.testShellGrantVersion;
   merged.storageVersion = STORAGE_VERSION;

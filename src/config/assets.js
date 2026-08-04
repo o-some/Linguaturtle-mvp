@@ -20,7 +20,9 @@ export const assets = Object.freeze({
     home: {
       cinematic: 'assets/creative-v2/home_cinematic_island.webp',
       tropicalBay: 'assets/creative/home_tropical_bay.webp',
-      interior: 'assets/creative/home_tula_house_interior.webp'
+      interior: 'assets/creative/home_tula_house_interior.webp',
+      trophyRoom: 'assets/creative-home-v2/home_trophy_room.webp',
+      wardrobeRoom: 'assets/creative-home-v2/home_wardrobe_room.webp'
     },
     cinematic: {
       island: 'assets/creative-v2/island_cinematic_map.webp',
@@ -65,6 +67,21 @@ export const assets = Object.freeze({
       silver: 'assets/creative/reward_chest_silver.webp',
       gold: 'assets/creative/reward_chest_gold.webp',
       jewel: 'assets/creative/reward_chest_jewel.webp'
+    }
+  },
+  home: {
+    decor: {
+      plant: 'assets/creative-home-v2/home_decor_plant.webp',
+      bed: 'assets/creative-home-v2/home_decor_bed.webp',
+      lamp: 'assets/creative-home-v2/home_decor_lamp.webp',
+      books: 'assets/creative-home-v2/home_decor_books.webp',
+      aquarium: 'assets/creative-home-v2/home_decor_aquarium.webp'
+    },
+    outfits: {
+      crown: 'assets/creative-home-v2/home_outfit_crown.webp',
+      flower: 'assets/creative-home-v2/home_outfit_flower.webp',
+      sailor: 'assets/creative-home-v2/home_outfit_sailor.webp',
+      explorer: 'assets/creative-home-v2/home_outfit_explorer.webp'
     }
   }
 });
