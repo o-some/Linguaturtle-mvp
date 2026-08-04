@@ -2,9 +2,10 @@ import { collections } from '../content-multilingual.js';
 import {
   getState, setState, registerAction, speak, grantReward,
   sourceLanguage, targetLanguage, languageMeta, languageValue, uiText, flagImage, pairBadge,
-  takePracticeWordIds
+  takePracticeWordIds, recordLanguageActivity
 } from '../core/index.js?build=cinematic-worlds-1';
 import { assets } from '../../config/assets.js?build=cinematic-worlds-1';
+import { A1_SENTENCES } from '../cefr-content.js';
 
 const shuffle = list => [...list].sort(() => Math.random() - .5);
 const tr = (de, es, el = de, en = null) => uiText(de, es, el, en);
@@ -16,19 +17,10 @@ const availableWords = () => {
 };
 const currencyIcon = (className = 'currency-shell') => `<img class="${className}" src="${assets.rewards.currencyShell}" alt="">`;
 
-const sentences = [
-  { de: ['Der', 'Hund', 'rennt', '.'], es: ['El', 'perro', 'corre', '.'], el: ['Ο', 'σκύλος', 'τρέχει', '.'], en: ['The', 'dog', 'runs', '.'] },
-  { de: ['Die', 'Katze', 'schläft', '.'], es: ['El', 'gato', 'duerme', '.'], el: ['Η', 'γάτα', 'κοιμάται', '.'], en: ['The', 'cat', 'sleeps', '.'] },
-  { de: ['Ich', 'esse', 'einen', 'Apfel', '.'], es: ['Yo', 'como', 'una', 'manzana', '.'], el: ['Εγώ', 'τρώω', 'ένα', 'μήλο', '.'], en: ['I', 'eat', 'an', 'apple', '.'] },
-  { de: ['Das', 'Wasser', 'ist', 'kalt', '.'], es: ['El', 'agua', 'está', 'fría', '.'], el: ['Το', 'νερό', 'είναι', 'κρύο', '.'], en: ['The', 'water', 'is', 'cold', '.'] },
-  { de: ['Wo', 'ist', 'mein', 'Buch', '?'], es: ['¿', 'Dónde', 'está', 'mi', 'libro', '?'], el: ['Πού', 'είναι', 'το', 'βιβλίο', 'μου', ';'], en: ['Where', 'is', 'my', 'book', '?'] },
-  { de: ['Die', 'Blume', 'ist', 'gelb', '.'], es: ['La', 'flor', 'es', 'amarilla', '.'], el: ['Το', 'λουλούδι', 'είναι', 'κίτρινο', '.'], en: ['The', 'flower', 'is', 'yellow', '.'] }
-];
-
 const game = {
   explore: { worldId: null, itemIds: [], heard: [] },
   listening: { items: [], step: 0, score: 0, firstTryCorrect: 0, currentAttempted: false, current: null },
-  sentence: { rounds: [], step: 0, score: 0, firstTryCorrect: 0, currentAttempted: false, feedback: '', bank: [], built: [] },
+  sentence: { rounds: [], roundIds: [], step: 0, score: 0, firstTryCorrect: 0, currentAttempted: false, feedback: '', bank: [], built: [] },
   lastReward: null,
   lastTitle: '',
   lastQuestId: null
@@ -143,6 +135,11 @@ export function installCoreLearningGames(router) {
     const current = collection();
     const allWordsHeard = game.explore.itemIds.every(id => game.explore.heard.includes(id));
     markLearned(current.id, availableWords().length);
+    recordLanguageActivity({
+      skill: 'discovery',
+      itemIds: game.explore.heard,
+      completed: true,
+    });
     game.lastReward = grantReward({
       xp: 20,
       shells: 6,
@@ -218,6 +215,13 @@ function answerListening(router, id) {
   markLearned(collection().id, game.listening.step);
   if (game.listening.step >= game.listening.items.length) {
     const accuracy = game.listening.items.length ? game.listening.firstTryCorrect / game.listening.items.length : 0;
+    recordLanguageActivity({
+      skill: 'listening',
+      itemIds: game.listening.items.map(item => item.id),
+      correct: game.listening.firstTryCorrect,
+      total: game.listening.items.length,
+      completed: true,
+    });
     const bonus = grantReward({
       xp: 15,
       shells: 6,
@@ -238,7 +242,7 @@ function answerListening(router, id) {
 
 function startSentence(router, navigate = true) {
   const current = collection();
-  const indexedSentences = sentences.map((round, index) => ({ id: `sentence-${index}`, round }));
+  const indexedSentences = A1_SENTENCES.map(item => ({ id: item.id, round: item }));
   const roundIds = new Set(takePracticeWordIds(
     current.id,
     'sentence',
@@ -247,6 +251,7 @@ function startSentence(router, navigate = true) {
   ));
   game.sentence = {
     rounds: indexedSentences.filter(item => roundIds.has(item.id)).map(item => item.round),
+    roundIds: indexedSentences.filter(item => roundIds.has(item.id)).map(item => item.id),
     step: 0,
     score: 0,
     firstTryCorrect: 0,
@@ -302,6 +307,13 @@ function checkSentence(router) {
   game.sentence.step++;
   if (game.sentence.step >= game.sentence.rounds.length) {
     const accuracy = game.sentence.rounds.length ? game.sentence.firstTryCorrect / game.sentence.rounds.length : 0;
+    recordLanguageActivity({
+      skill: 'sentence',
+      itemIds: game.sentence.roundIds,
+      correct: game.sentence.firstTryCorrect,
+      total: game.sentence.rounds.length,
+      completed: true,
+    });
     const bonus = grantReward({
       xp: 20,
       shells: 5,

@@ -1,4 +1,4 @@
-export const STORAGE_VERSION = 7;
+export const STORAGE_VERSION = 8;
 export const STORAGE_KEY = 'linguaturtle-v3-core';
 export const SYNC_META_KEY = 'linguaturtle-v3-sync-meta';
 const LANGUAGE_CODES = ['de','es','el','en'];
@@ -158,6 +158,22 @@ export function migrateStorage(input, fallback) {
       && Object.keys(merged.progress.learned || {}).length) {
       merged.progress.learnedByLanguage[target] = structuredClone(merged.progress.learned);
     }
+  }
+  if (Number(input.storageVersion || 0) < 8) {
+    merged.progress.byLanguage = { ...(merged.progress.byLanguage || {}) };
+    const current = merged.progress.byLanguage[target] || {};
+    merged.progress.byLanguage[target] = {
+      legacyDiscovered: Math.max(
+        Number(current.legacyDiscovered || 0),
+        Object.values(merged.progress.learned || {}).reduce((sum, value) => sum + Math.max(0, Number(value || 0)), 0)
+      ),
+      discovered: Array.isArray(current.discovered) ? current.discovered : [],
+      activities: { ...(current.activities || {}) },
+      cefr: { earned: [], assessments: {}, ...(current.cefr || {}) },
+    };
+    merged.inventory.languageBadges = Array.isArray(merged.inventory.languageBadges)
+      ? merged.inventory.languageBadges
+      : [];
   }
   delete merged.testShellGrantVersion;
   merged.storageVersion = STORAGE_VERSION;

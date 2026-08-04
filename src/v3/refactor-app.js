@@ -14,6 +14,7 @@ import { registerExperienceRoutes, registerExperienceActions } from './games/exp
 import { registerStarDungeon, renderQuestStarBadge, renderStarGate } from './games/star-dungeon.js?build=master-stars-1';
 import { renderShop, renderProfile, renderSettings, registerProgressionActions } from './screens/progression.js?build=cinematic-worlds-1';
 import { renderChildProfile, registerChildProfileActions } from './screens/child-profile.js?build=cinematic-worlds-1';
+import { registerLanguagePassport } from './screens/language-passport.js?build=cefr-1';
 import { assets } from '../config/assets.js?build=cinematic-worlds-1';
 import { getAccountState, initializeAccount, subscribeAccount } from './core/account.js';
 import { initializeEconomy, subscribeEconomy } from './core/economy.js';
@@ -35,7 +36,7 @@ const collectionSubtitle=c=>c[`subtitle${sourceLanguage()==='de'?'De':sourceLang
 const worldArtwork=id=>assets.backgrounds.worlds[id]||null;
 const WORLD_LEVELS=Object.freeze(Object.fromEntries(collections.map((c,i)=>[c.id,i+1])));
 const worldLevel=id=>WORLD_LEVELS[id]||1;
-const levelLabel=level=>`${tr('Ab Level','Desde el nivel','Από το επίπεδο')} ${level}`;
+const levelLabel=level=>`${tr('Ab Inselstufe','Desde el nivel de isla','Από το επίπεδο νησιού','From island level')} ${level}`;
 const mapSpotClass=id=>`map-spot-${id}`;
 const rewardArt=(src,alt='')=>`<img class="reward-art" src="${src}" alt="${alt}">`;
 const currencyIcon=(className='currency-shell')=>`<img class="${className}" src="${assets.rewards.currencyShell}" alt="">`;
@@ -99,12 +100,12 @@ function rewardNoticeMarkup(notice){
     ? tr('Tagesziel geschafft!','¡Objetivo diario completado!','Ο ημερήσιος στόχος ολοκληρώθηκε!','Daily goal complete!')
     : isWeekly
       ? tr('Wochenziel geschafft!','¡Objetivo semanal completado!','Ο εβδομαδιαίος στόχος ολοκληρώθηκε!','Weekly goal complete!')
-      : tr(`Level ${notice.level} erreicht!`,`¡Nivel ${notice.level} alcanzado!`,`Έφτασες στο επίπεδο ${notice.level}!`,`Level ${notice.level} reached!`);
+      : tr(`Inselstufe ${notice.level} erreicht!`,`¡Nivel de isla ${notice.level} alcanzado!`,`Έφτασες στο επίπεδο νησιού ${notice.level}!`,`Island level ${notice.level} reached!`);
   const body=isDaily
     ? tr('Drei Abenteuer sind geschafft. Öffne deine Schatztruhe und hol dir die Belohnung.','Has completado tres aventuras. Abre el cofre y recoge tu recompensa.','Ολοκλήρωσες τρεις περιπέτειες. Άνοιξε το σεντούκι και πάρε την ανταμοιβή.','You completed three adventures. Open the chest and claim your reward.')
     : isWeekly
       ? tr('Du hast 15 Abenteuer in dieser Woche geschafft. Deine große Muscheltruhe ist bereit.','Has completado 15 aventuras esta semana. Tu gran cofre de conchas está listo.','Ολοκλήρωσες 15 περιπέτειες αυτή την εβδομάδα. Το μεγάλο σεντούκι είναι έτοιμο.','You completed 15 adventures this week. Your big shell chest is ready.')
-      : tr('Dein neuer Level-Schatz wartet im Profil auf dich.','Tu nuevo tesoro de nivel te espera en el perfil.','Ο νέος θησαυρός επιπέδου σε περιμένει στο προφίλ.','Your new level treasure is waiting in your profile.');
+      : tr('Dein neuer Inselstufen-Schatz wartet im Profil auf dich.','Tu nuevo tesoro de nivel de isla te espera en el perfil.','Ο νέος θησαυρός επιπέδου νησιού σε περιμένει στο προφίλ.','Your new island-level treasure is waiting in your profile.');
   const art=isDaily?assets.rewards.chests.gold:isWeekly?assets.rewards.chests.jewel:milestoneChest(notice.level);
   const key=noticeKey(notice);
   return `<section class="reward-notice-modal" data-reward-notice="${key}" role="dialog" aria-modal="true" aria-labelledby="reward-notice-title">
@@ -235,12 +236,15 @@ function nav(active){
 
 function progressCard(){
   const s=getState(),lv=levelFromXp(s.progress.xp),p=levelProgress(s.progress.xp);
-  return `<section class="progress-card"><div class="progress-head"><strong>${tr('Level','Nivel','Επίπεδο','Level')} ${lv}</strong><span>${tr('Jedes Abenteuer bringt dich weiter','Cada aventura te hace avanzar','Κάθε περιπέτεια σε προχωρά','Every adventure moves you forward')}</span></div><div class="bar" role="progressbar" aria-label="${tr(`Level ${lv} Fortschritt`,`Progreso del nivel ${lv}`,`Πρόοδος επιπέδου ${lv}`,`Level ${lv} progress`)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p.current}"><i style="width:${p.percent}%"></i></div></section>`;
+  const hint=p.maxed
+    ?tr('Maximale Inselstufe erreicht','Nivel de isla máximo alcanzado','Έφτασες στο μέγιστο επίπεδο νησιού','Maximum island level reached')
+    :tr('Jedes Abenteuer bringt dich weiter','Cada aventura te hace avanzar','Κάθε περιπέτεια σε προχωρά','Every adventure moves you forward');
+  return `<section class="progress-card"><div class="progress-head"><strong>${tr('Inselstufe','Nivel de isla','Επίπεδο νησιού','Island level')} ${lv}</strong><span>${hint}</span></div><div class="bar" role="progressbar" aria-label="${tr(`Fortschritt der Inselstufe ${lv}`,`Progreso del nivel de isla ${lv}`,`Πρόοδος επιπέδου νησιού ${lv}`,`Island level ${lv} progress`)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p.current}"><i style="width:${p.percent}%"></i></div></section>`;
 }
 
 function renderComplete(title,reward,back='world',replayAction=''){
   const practiceStars=Math.max(0,Number(reward.practiceStars||0));
-  return `<div class="v3-shell page">${top()}<section class="celebration"><img src="${assets.characters.tula.poses.celebrating}" alt="Tula"><h1>${title}</h1><p>${tr('Tula ist stolz auf dich. Dein Level wächst im Hintergrund weiter.','Tula está orgullosa de ti. Tu nivel sigue creciendo.','Η Τούλα είναι περήφανη για σένα. Το επίπεδό σου συνεχίζει να μεγαλώνει.','Tula is proud of you. Your level keeps growing in the background.')}</p>${practiceStars?`<div class="practice-star-reward"><img src="${assets.rewards.xpStar}" alt=""><div><small>${tr('Heute verdient','Ganadas hoy','Κερδήθηκαν σήμερα','Earned today')}</small><strong>+${practiceStars} ${tr('Übungssterne','estrellas de práctica','αστέρια εξάσκησης','practice stars')}</strong></div></div>`:''}<div class="reward-row reward-row-single"><div>${rewardArt(assets.rewards.currencyShell,tr('Muscheln','Conchas','Κοχύλια','Shells'))}<strong>+${reward.shells}</strong><small>${tr('Muscheln','Conchas','Κοχύλια','Shells')}</small></div></div>${replayAction?`<button class="primary" data-action="${replayAction}">${tr('Nochmal spielen','Jugar otra vez','Παίξε ξανά','Play again')} <i class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i></button>`:''}<button class="secondary" data-action="navigate" data-route="${back}">${tr('Andere Übung wählen','Elegir otro ejercicio','Διάλεξε άλλη άσκηση','Choose another exercise')}</button><button class="secondary" data-action="navigate" data-route="home"><i class="ph-bold ph-house" aria-hidden="true"></i> ${tr('Zur Startseite','Ir al inicio','Στην αρχική','Back home')}</button></section></div>`;
+  return `<div class="v3-shell page">${top()}<section class="celebration"><img src="${assets.characters.tula.poses.celebrating}" alt="Tula"><h1>${title}</h1><p>${tr('Tula ist stolz auf dich. Deine Inselstufe wächst im Hintergrund weiter.','Tula está orgullosa de ti. Tu nivel de isla sigue creciendo.','Η Τούλα είναι περήφανη για σένα. Το επίπεδο νησιού σου συνεχίζει να μεγαλώνει.','Tula is proud of you. Your island level keeps growing in the background.')}</p>${practiceStars?`<div class="practice-star-reward"><img src="${assets.rewards.xpStar}" alt=""><div><small>${tr('Heute verdient','Ganadas hoy','Κερδήθηκαν σήμερα','Earned today')}</small><strong>+${practiceStars} ${tr('Übungssterne','estrellas de práctica','αστέρια εξάσκησης','practice stars')}</strong></div></div>`:''}<div class="reward-row reward-row-single"><div>${rewardArt(assets.rewards.currencyShell,tr('Muscheln','Conchas','Κοχύλια','Shells'))}<strong>+${reward.shells}</strong><small>${tr('Muscheln','Conchas','Κοχύλια','Shells')}</small></div></div>${replayAction?`<button class="primary" data-action="${replayAction}">${tr('Nochmal spielen','Jugar otra vez','Παίξε ξανά','Play again')} <i class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i></button>`:''}<button class="secondary" data-action="navigate" data-route="${back}">${tr('Andere Übung wählen','Elegir otro ejercicio','Διάλεξε άλλη άσκηση','Choose another exercise')}</button><button class="secondary" data-action="navigate" data-route="home"><i class="ph-bold ph-house" aria-hidden="true"></i> ${tr('Zur Startseite','Ir al inicio','Στην αρχική','Back home')}</button></section></div>`;
 }
 
 function languageOption(code,selected,action){
@@ -297,9 +301,9 @@ router.register('home',()=>{
         </button>
         <div class="home-goal-bar" role="progressbar" aria-label="${tr('Tagesziel','Objetivo diario','Ημερήσιος στόχος','Daily goal')}" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${daily}"><i style="width:${dailyPercent}%"></i></div>
         <div class="home-level-goal">
-          <span class="home-level-label">${tr('Level','Nivel','Επίπεδο','Level')} <strong>${lv}</strong></span>
-          <span class="home-level-track" role="progressbar" aria-label="${tr(`Level ${lv} Fortschritt`,`Progreso del nivel ${lv}`,`Πρόοδος επιπέδου ${lv}`,`Level ${lv} progress`)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${level.current}"><i style="width:${level.percent}%"></i></span>
-          <span class="home-level-value">${level.percent}%</span>
+          <span class="home-level-label">${tr('Inselstufe','Nivel de isla','Επίπεδο νησιού','Island level')} <strong>${lv}</strong></span>
+          <span class="home-level-track" role="progressbar" aria-label="${tr(`Fortschritt der Inselstufe ${lv}`,`Progreso del nivel de isla ${lv}`,`Πρόοδος επιπέδου νησιού ${lv}`,`Island level ${lv} progress`)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${level.current}"><i style="width:${level.percent}%"></i></span>
+          <span class="home-level-value">${level.maxed?'MAX':`${level.percent}%`}</span>
         </div>
         <div class="home-weekly-goal">
           <span class="home-weekly-label">${tr('Wochenziel','Objetivo semanal','Εβδομαδιαίος στόχος','Weekly goal')} <strong>${weekly}/${WEEKLY_GOAL_TARGET}</strong></span>
@@ -334,7 +338,7 @@ router.register('world',()=>{
     return `<button data-action="navigate" data-route="${id}">${modeArt(id,title)}<div><strong>${title}</strong><small>${description}</small>${renderQuestStarBadge(c.id,id)}${practiceReward(id)}</div><b><i class="ph-bold ph-arrow-right" aria-hidden="true"></i></b></button>`;
   };
   return `<div class="v3-shell page cinematic-subpage cinematic-island">${cinematicBackground(assets.backgrounds.cinematic.island)}${top('island')}
-    <section class="place-hero ${artwork?'place-hero-art':''}">${artwork?`<img class="world-scene" src="${artwork}" alt="">`:`<span>${c.icon}</span>`}<div><h1>${collectionName(c)}</h1><p>${collectionSubtitle(c)}</p><span class="world-unlock-note"><i class="ph-bold ph-check" aria-hidden="true"></i> ${tr('Freigeschaltet ab Level','Disponible desde el nivel','Διαθέσιμο από το επίπεδο','Available from level')} ${required}</span></div></section>
+    <section class="place-hero ${artwork?'place-hero-art':''}">${artwork?`<img class="world-scene" src="${artwork}" alt="">`:`<span>${c.icon}</span>`}<div><h1>${collectionName(c)}</h1><p>${collectionSubtitle(c)}</p><span class="world-unlock-note"><i class="ph-bold ph-check" aria-hidden="true"></i> ${tr('Freigeschaltet ab Inselstufe','Disponible desde el nivel de isla','Διαθέσιμο από το επίπεδο νησιού','Available from island level')} ${required}</span></div></section>
     ${renderStarGate(c)}
     <section class="world-instruction"><span class="world-step"><i class="ph-bold ph-star" aria-hidden="true"></i></span><div><strong>${tr('Sammle Meistersterne','Consigue estrellas maestras','Μάζεψε αστέρια δεξιοτεχνίας','Collect mastery stars')}</strong><small>${flagImage(sourceLanguage(),'language-mini-flag')} ${languageMeta(sourceLanguage()).short} <i class="ph-bold ph-arrow-right" aria-hidden="true"></i> ${flagImage(targetLanguage(),'language-mini-flag')} ${languageMeta(targetLanguage()).short}</small></div><span class="daily-practice-total"><img src="${assets.rewards.xpStar}" alt=""><strong>${dailyStars}</strong><small>${tr('heute','hoy','σήμερα','today')}</small></span></section>
     <section class="mode-picker master-quest-picker">
@@ -380,13 +384,14 @@ installCoreLearningGames(router);
 registerAdvancedRoutes(router,{top,nav,renderComplete});
 registerExperienceRoutes(router,{top,nav});
 registerStarDungeon(router,{top,showToast});
+registerLanguagePassport(router,{top,nav,showToast});
 router.setNotFound(()=>`<div class="v3-shell page">${top('home')}<section class="page-title"><h1>${tr('Seite nicht gefunden','Página no encontrada','Η σελίδα δεν βρέθηκε')}</h1></section></div>`);
 
 registerAction('navigate',({data})=>router.navigate(data.route));
 registerAction('open-world',({data})=>{
   const required=worldLevel(data.collection),current=levelFromXp();
   if(current<required){
-    showToast(`🔒 ${tr(`Diese Lernwelt öffnet sich ab Level ${required}.`,`Este mundo se abre en el nivel ${required}.`,`Αυτός ο κόσμος ανοίγει στο επίπεδο ${required}.`,`This learning world opens at level ${required}.`)}`);
+    showToast(`🔒 ${tr(`Diese Lernwelt öffnet sich ab Inselstufe ${required}.`,`Este mundo se abre en el nivel de isla ${required}.`,`Αυτός ο κόσμος ανοίγει στο επίπεδο νησιού ${required}.`,`This learning world opens at island level ${required}.`)}`);
     return;
   }
   setState(d=>{d.session.collectionId=data.collection;return d});

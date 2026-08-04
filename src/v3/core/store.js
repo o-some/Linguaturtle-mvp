@@ -1,7 +1,7 @@
 import { readStorage, writeStorage } from './storage.js';
 
 export const initialState = {
-  storageVersion: 7,
+  storageVersion: 8,
   route: { name: 'home', params: {} },
   language: 'de',
   languages: { source: 'de', target: 'es' },
@@ -26,6 +26,7 @@ export const initialState = {
       wordHistory: {},
       lastWordBatch: {},
     },
+    byLanguage: {},
   },
   settings: { sound: true, motion: true, music: false },
   inventory: {
@@ -40,6 +41,7 @@ export const initialState = {
     homePlaced: ['plant'],
     homeOutfit: null,
     relics: [],
+    languageBadges: [],
     homePositions: { plant: { x: 68, y: 22 } },
     tulaHomePosition: { x: 50, y: 70 },
   },
@@ -51,6 +53,7 @@ export const initialState = {
     error: null,
     rewardNotices: [],
     focusMilestone: null,
+    cefrAssessment: null,
   },
 };
 
