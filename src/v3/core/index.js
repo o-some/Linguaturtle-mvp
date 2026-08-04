@@ -11,6 +11,7 @@ export {
   spendShells,
   levelFromXp,
   levelProgress,
+  MAX_ISLAND_LEVEL,
   MILESTONE_LEVELS,
   WEEKLY_GOAL_TARGET,
   WEEKLY_GOAL_REWARD,
@@ -29,6 +30,10 @@ export {
   nextPracticeStars, dailyPracticeSummary, recordPracticeCompletion,
   takePracticeWordIds,
 } from './practice-rewards.js';
+export {
+  CEFR_LEVELS, A1_REQUIREMENTS, getLanguageProgress, recordLanguageActivity,
+  getCefrStatus, completeCefrAssessment, meetsLanguageRequirement,
+} from './cefr.js';
 export {
   STORE_PRODUCTS, getEconomyState, subscribeEconomy, isNativeCommerce,
   initializeEconomy, loadWallet, refreshEntitlements, loadStoreProducts,

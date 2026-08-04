@@ -56,7 +56,7 @@ test('home, island and learning world are separated', async ({ page }) => {
   await expect(page.locator('.word-showcase')).toHaveCount(0);
 });
 
-test('level 3 stays synchronized while XP remain hidden from the child UI', async ({ page }) => {
+test('island level 3 stays synchronized while XP remain hidden from the child UI', async ({ page }) => {
   await page.evaluate(async () => {
     const { currentDayKey, currentWeekKey } = await import('/src/v3/core/rewards.js');
     const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
@@ -69,7 +69,7 @@ test('level 3 stays synchronized while XP remain hidden from the child UI', asyn
   });
   await page.reload();
 
-  await expect(page.locator('.home-level-label')).toContainText('Level 3');
+  await expect(page.locator('.home-level-label')).toContainText('Inselstufe 3');
   await expect(page.locator('.home-level-value')).toHaveText('50%');
   await expect(page.locator('.home-level-track')).toHaveAttribute('aria-valuenow', '50');
   await expect(page.locator('.cinematic-home')).not.toContainText('XP');
@@ -77,7 +77,7 @@ test('level 3 stays synchronized while XP remain hidden from the child UI', asyn
   await expect(page.locator('.home-weekly-track')).toHaveAttribute('aria-valuenow', '7');
 
   await page.locator('[data-route="profile"]').first().click();
-  await expect(page.locator('.profile-hero-v3')).toContainText('Level 3 · 0 Meistersterne');
+  await expect(page.locator('.profile-hero-v3')).toContainText('Inselstufe 3 · 0 Meistersterne');
   await expect(page.locator('.progress-card .bar')).toHaveAttribute('aria-valuenow', '50');
   await expect(page.locator('.progress-card')).toContainText('Jedes Abenteuer bringt dich weiter');
   await expect(page.locator('.cinematic-profile')).not.toContainText('XP');
@@ -100,9 +100,9 @@ test('interactive island map shows level requirements and blocks locked worlds',
   });
   await page.reload();
   await expect(page.locator('.island-hotspot')).toHaveCount(8);
-  await expect(page.locator('.island-hotspot[data-collection="garden"]')).toContainText('Ab Level 1');
-  await expect(page.locator('.island-hotspot[data-collection="library"]')).toContainText('Ab Level 2');
-  await expect(page.locator('.island-hotspot[data-collection="animals"]')).toContainText('Ab Level 3');
+  await expect(page.locator('.island-hotspot[data-collection="garden"]')).toContainText('Ab Inselstufe 1');
+  await expect(page.locator('.island-hotspot[data-collection="library"]')).toContainText('Ab Inselstufe 2');
+  await expect(page.locator('.island-hotspot[data-collection="animals"]')).toContainText('Ab Inselstufe 3');
   const hotspotBoxes = await page.locator('.island-hotspot').evaluateAll(elements => elements.map(element => {
     const box = element.getBoundingClientRect();
     return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, height: box.height };
@@ -117,11 +117,11 @@ test('interactive island map shows level requirements and blocks locked worlds',
     }
   }
   await page.locator('.island-hotspot[data-collection="animals"]').click();
-  await expect(page.locator('.v3-toast')).toContainText(/ab Level 3/i);
+  await expect(page.locator('.v3-toast')).toContainText(/ab Inselstufe 3/i);
   await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
   await page.locator('.island-hotspot[data-collection="garden"]').click();
   await expect(page.getByRole('heading', { name: 'Garten' })).toBeVisible();
-  await expect(page.locator('.world-unlock-note')).toContainText('Level 1');
+  await expect(page.locator('.world-unlock-note')).toContainText('Inselstufe 1');
 });
 
 test('all finished Creative Production assets are visible in their intended routes', async ({ page }) => {
@@ -154,6 +154,7 @@ test('all finished Creative Production assets are visible in their intended rout
   await page.locator('[data-route="profile"]').first().click();
   await expect(page.locator('.cinematic-subpage-bg[src$="profile_cinematic_sanctuary.webp"]')).toBeVisible();
   await expect(page.locator('.profile-hero-v3 img[src$="tula_profile.webp"]')).toBeVisible();
+  await page.locator('.milestone-history summary').click();
   for (const chest of ['bronze','silver','gold','jewel']) {
     await expect(page.locator(`.milestone-chest[src$="reward_chest_${chest}.webp"]`).first()).toBeVisible();
   }
@@ -556,12 +557,108 @@ test('version 4 progress migrates discovered words and initializes daily practic
     }, initialState);
     return { state, version: STORAGE_VERSION };
   });
-  expect(migrated.version).toBe(6);
+  expect(migrated.version).toBe(8);
   expect(migrated.state.progress.xp).toBe(850);
   expect(migrated.state.progress.stars.garden.explore.earned).toBe(2);
   expect(migrated.state.progress.stars.library.explore.earned).toBe(1);
   expect(migrated.state.progress.stars.garden.explore.masteryConfirmedAt).toBeNull();
   expect(migrated.state.progress.practice.runs).toEqual({});
+  expect(migrated.state.progress.byLanguage.es.legacyDiscovered).toBe(5);
+});
+
+test('island level is capped at 100', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const { levelFromXp, levelProgress } = await import('/src/v3/core/rewards.js');
+    return { level: levelFromXp(1000000), progress: levelProgress(1000000) };
+  });
+  expect(result.level).toBe(100);
+  expect(result.progress).toEqual({ current: 100, missing: 0, percent: 100, maxed: true });
+});
+
+test('A1 badges are earned independently per language and only rewarded once', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const { getState, setState } = await import('/src/v3/core/store.js');
+    const { completeCefrAssessment, getCefrStatus, meetsLanguageRequirement, recordLanguageActivity } = await import('/src/v3/core/cefr.js');
+    const ready = () => ({
+      legacyDiscovered: 40,
+      discovered: [],
+      activities: {
+        listening: { correct: 24, total: 24, sessions: 4 },
+        sentence: { correct: 12, total: 12, sessions: 3, unique: ['s1', 's2', 's3', 's4', 's5', 's6'] },
+        stories: ['story-0', 'story-1', 'story-2'],
+        dialogue: { correct: 6, total: 6, sessions: 1 },
+        speaking: ['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9', 'w10'],
+      },
+      cefr: { earned: [], assessments: {} },
+    });
+    setState(draft => {
+      draft.progress.byLanguage = { es: ready(), el: ready() };
+      draft.progress.shells = 100;
+      draft.inventory.languageBadges = [];
+      return draft;
+    });
+    const perfect = Object.fromEntries(['vocabulary', 'listening', 'sentence', 'dialogue'].map(section => [section, { correct: 5, total: 5 }]));
+    const weak = Object.fromEntries(['vocabulary', 'listening', 'sentence', 'dialogue'].map(section => [section, { correct: 2, total: 5 }]));
+    const first = completeCefrAssessment('es', 'A1', perfect);
+    const repeated = completeCefrAssessment('es', 'A1', perfect);
+    const failed = completeCefrAssessment('el', 'A1', weak);
+    const beforePractice = getCefrStatus('el').remediationRemaining;
+    recordLanguageActivity({ language: 'el', skill: 'discovery', completed: true });
+    return {
+      first,
+      repeated,
+      failed,
+      shells: getState().progress.shells,
+      badges: getState().inventory.languageBadges,
+      esEarned: getCefrStatus('es').earned,
+      elEarned: getCefrStatus('el').earned,
+      beforePractice,
+      afterPractice: getCefrStatus('el').remediationRemaining,
+      gate: meetsLanguageRequirement({ minLevel: 'A1', languageCount: 2 }),
+    };
+  });
+  expect(result.first).toMatchObject({ passed: true, newlyEarned: true, reward: 50 });
+  expect(result.repeated).toMatchObject({ passed: true, newlyEarned: false, reward: 0 });
+  expect(result.failed.passed).toBe(false);
+  expect(result.shells).toBe(150);
+  expect(result.badges).toEqual(['es-A1']);
+  expect(result.esEarned).toBe(true);
+  expect(result.elEarned).toBe(false);
+  expect(result.beforePractice).toBe(3);
+  expect(result.afterPractice).toBe(2);
+  expect(result.gate).toMatchObject({ met: false, count: 1, required: 2, languages: ['es'] });
+});
+
+test('profile shows a language passport with the six CEFR-oriented badges', async ({ page }) => {
+  await page.locator('[data-route="profile"]').first().click();
+  await expect(page.getByRole('heading', { name: 'Meine Sprachen' })).toBeVisible();
+  await page.getByRole('button', { name: /Meinen Sprachenpass öffnen/i }).click();
+  await expect(page.getByRole('heading', { name: 'Mein Sprachenpass' })).toBeVisible();
+  await expect(page.locator('.cefr-ladder article')).toHaveCount(6);
+  await expect(page.locator('.cefr-ladder')).toContainText(/A1[\s\S]*A2[\s\S]*B1[\s\S]*B2[\s\S]*C1[\s\S]*C2/);
+  await expect(page.locator('.cefr-ladder')).toContainText('In Vorbereitung');
+  await expect(page.locator('.passport-goal-evidence').first()).toContainText(/0\/4 Runden/);
+  await expect(page.locator('.cefr-disclaimer')).toContainText(/kein offizielles Sprachzertifikat/i);
+});
+
+test('an active A1 assessment survives a reload', async ({ page }) => {
+  await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.route = { name: 'cefr-assessment', params: {} };
+    state.session.cefrAssessment = {
+      language: 'es',
+      questions: [{ section: 'vocabulary', prompt: 'Haus', hint: 'Wähle die passende Übersetzung.', answer: 'casa', options: ['casa', 'perro'] }],
+      step: 0,
+      scores: { vocabulary: { correct: 0, total: 0 } },
+      finished: false,
+      result: null,
+    };
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Haus' })).toBeVisible();
+  await expect(page.locator('.cefr-quiz-head')).toContainText('1/1');
+  await expect(page.getByRole('button', { name: 'casa' })).toBeVisible();
 });
 
 test('browser shop contains neither real-money purchases nor ads', async ({ page }) => {
@@ -857,7 +954,7 @@ test('reaching a milestone opens the profile reward path and allows claiming it'
   await page.locator('[data-action="finish-explore"]').click();
 
   const modal = page.locator('.reward-notice-modal[data-reward-notice="level-3"]');
-  await expect(modal.getByRole('heading', { name: /Level 3 erreicht/i })).toBeVisible();
+  await expect(modal.getByRole('heading', { name: /Inselstufe 3 erreicht/i })).toBeVisible();
   await modal.getByRole('button', { name: /Zum Profil-Schatz/i }).click();
 
   const milestone = page.locator('[data-milestone="3"]');

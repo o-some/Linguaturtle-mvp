@@ -3,7 +3,8 @@ import { creditGameplayShells } from './economy.js';
 import { recordQuestCompletion } from './master-stars.js';
 import { recordPracticeCompletion } from './practice-rewards.js';
 
-export const MILESTONE_LEVELS = Object.freeze([3, 5, 7, 10, 15, 20, 30]);
+export const MILESTONE_LEVELS = Object.freeze([3, 5, 7, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
+export const MAX_ISLAND_LEVEL = 100;
 export const WEEKLY_GOAL_TARGET = 15;
 export const WEEKLY_GOAL_REWARD = 250;
 
@@ -185,10 +186,13 @@ export function spendShells(amount) {
 }
 
 export function levelFromXp(xp = getState().progress.xp) {
-  return Math.floor(Number(xp || 0) / 100) + 1;
+  return Math.min(MAX_ISLAND_LEVEL, Math.floor(Number(xp || 0) / 100) + 1);
 }
 
 export function levelProgress(xp = getState().progress.xp) {
+  if (Number(xp || 0) >= (MAX_ISLAND_LEVEL - 1) * 100) {
+    return { current: 100, missing: 0, percent: 100, maxed: true };
+  }
   const current = Number(xp || 0) % 100;
-  return { current, missing: current === 0 ? 100 : 100 - current, percent: current };
+  return { current, missing: current === 0 ? 100 : 100 - current, percent: current, maxed: false };
 }

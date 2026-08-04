@@ -13,7 +13,8 @@ Tulas Island ist eine local-first Sprachlern-App für Kinder. Die Web-App läuft
 - Home, Insel, Bibliothek, Garten, Wortkatalog, Boutique, Profil, Einstellungen und Tulas Zuhause.
 - Wortentdeckung, Hör-Abenteuer, Satzwerkstatt, Memory, Goldene Minute, Sprechtrainer und Mini-Geschichten.
 - Lokaler Fortschritt, optionale Cloud-Synchronisierung, Konfliktbehandlung und Offline-Warteschlange.
-- Tages- und Wochenziele, Streaks, Levelbelohnungen, Übungssterne und Mastery-Sterne.
+- Tages- und Wochenziele, Streaks, Inselstufen bis 100, Inselstufenbelohnungen, Übungssterne und Mastery-Sterne.
+- GER-orientierter Sprachenpass mit getrenntem Fortschritt pro Zielsprache und sechs sichtbaren Stufen A1–C2. A1 wird über Lernnachweise und eine Abschlussprüfung verdient; A2–C2 sind in Vorbereitung. Die Lernstufen sind kein offizielles Sprachzertifikat.
 - Garten-Sternendungeon mit wiederholbaren Belohnungen und Relikt.
 - Native Kauf- und Werbegrenzen für iOS und Android; im Browser bleiben Echtgeldkäufe und Werbung deaktiviert.
 - Syntax-, Architektur- und Playwright-End-to-End-Prüfungen.
@@ -29,4 +30,4 @@ Ein neuer Produktmeilenstein ist noch nicht festgelegt. Vor der nächsten größ
 
 ## Dokumentationsstatus
 
-`ARCHITECTURE.md` ist die technische Quelle der Wahrheit. `V3_ROADMAP.md`, `V3_INTERACTIVE_STATUS.md`, `V3_CORE_REFACTOR.md` und der frühere Gesamtplan sind historische Dokumente. Der token-sparende Codex-Workflow wurde am 4. August 2026 eingerichtet; `npm test` bestand dabei mit 70 End-to-End-Fällen.
+`ARCHITECTURE.md` ist die technische Quelle der Wahrheit. `V3_ROADMAP.md`, `V3_INTERACTIVE_STATUS.md`, `V3_CORE_REFACTOR.md` und der frühere Gesamtplan sind historische Dokumente. Der token-sparende Codex-Workflow wurde am 4. August 2026 eingerichtet; `npm test` umfasst 78 End-to-End-Fälle.
