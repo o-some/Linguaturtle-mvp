@@ -1,4 +1,4 @@
-export const STORAGE_VERSION = 4;
+export const STORAGE_VERSION = 5;
 export const STORAGE_KEY = 'linguaturtle-v3-core';
 export const SYNC_META_KEY = 'linguaturtle-v3-sync-meta';
 const LANGUAGE_CODES = ['de','es','el','en'];
@@ -59,8 +59,12 @@ export function hydrateDurableState(current, cloudPayload, fallback) {
   next.inventory.unlockedWords = structuredClone(current.inventory.unlockedWords || []);
   next.inventory.boosters = structuredClone(current.inventory.boosters || {});
   next.inventory.homeOwned = structuredClone(current.inventory.homeOwned || []);
+  const placeableItems = new Set([
+    ...next.inventory.homeOwned,
+    ...(next.inventory.relics || []),
+  ]);
   next.inventory.homePlaced = (next.inventory.homePlaced || [])
-    .filter(item => next.inventory.homeOwned.includes(item));
+    .filter(item => placeableItems.has(item));
   if (next.inventory.homeOutfit && !next.inventory.homeOwned.includes(next.inventory.homeOutfit)) {
     next.inventory.homeOutfit = null;
   }
@@ -114,6 +118,27 @@ export function migrateStorage(input, fallback) {
   };
   if (Number(input.storageVersion || 0) < 3 && Number(input.testShellGrantVersion || 0) > 0) {
     merged.progress.shells = 150;
+  }
+  if (Number(input.storageVersion || 0) < 5) {
+    merged.progress.stars = { ...(merged.progress.stars || {}) };
+    merged.progress.dungeons = { ...(merged.progress.dungeons || {}) };
+    const legacyTimestamp = Number(input.updatedAt || 0) > 0
+      ? new Date(Number(input.updatedAt)).toISOString()
+      : new Date().toISOString();
+    for (const [worldId, learnedCount] of Object.entries(merged.progress.learned || {})) {
+      const earned = Number(learnedCount || 0) >= 4 ? 2 : Number(learnedCount || 0) > 0 ? 1 : 0;
+      if (!earned || merged.progress.stars[worldId]?.explore) continue;
+      merged.progress.stars[worldId] = {
+        ...(merged.progress.stars[worldId] || {}),
+        explore: {
+          earned,
+          bestAccuracy: earned >= 2 ? 1 : 0,
+          completedAt: legacyTimestamp,
+          masteryConfirmedAt: null,
+        },
+      };
+    }
+    merged.inventory.relics = Array.isArray(merged.inventory.relics) ? merged.inventory.relics : [];
   }
   delete merged.testShellGrantVersion;
   merged.storageVersion = STORAGE_VERSION;

@@ -46,9 +46,10 @@ const homeCatalog=[
  {id:'lamp',icon:'🪔',cost:35,type:'decor',de:'Goldene Lampe',es:'Lámpara dorada',el:'Χρυσή λάμπα',position:{x:82,y:43}},
  {id:'books',icon:'📚',cost:40,type:'decor',de:'Bücherregal',es:'Estantería',el:'Βιβλιοθήκη',position:{x:43,y:24}},
  {id:'aquarium',icon:'🐠',cost:90,type:'decor',de:'Aquarium',es:'Acuario',el:'Ενυδρείο',position:{x:18,y:54}},
- {id:'crown',icon:'👑',cost:110,type:'outfit',de:'Goldene Krone',es:'Corona dorada',el:'Χρυσό στέμμα'}
+ {id:'crown',icon:'👑',cost:110,type:'outfit',de:'Goldene Krone',es:'Corona dorada',el:'Χρυσό στέμμα'},
+ {id:'garden-star-relic',asset:assets.rewards.xpStar,cost:0,type:'decor',rewardOnly:true,de:'Sternensamen des Gartens',es:'Semilla estelar del jardín',el:'Αστερόσπορος του κήπου',en:'Garden Star Seed',position:{x:23,y:29}}
 ];
-const HOME_LAYOUT_VERSION=2;
+const HOME_LAYOUT_VERSION=3;
 const defaultTulaPosition={x:50,y:70};
 const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
 const safePoint=(point,fallback)=>({
@@ -57,7 +58,9 @@ const safePoint=(point,fallback)=>({
 });
 function homeViewState(state){
  const legacy=Array.isArray(state.inventory.homeEquipped)?state.inventory.homeEquipped:[];
- const owned=Array.isArray(state.inventory.homeOwned)?state.inventory.homeOwned:['plant'];
+ const purchased=Array.isArray(state.inventory.homeOwned)?state.inventory.homeOwned:['plant'];
+ const relics=Array.isArray(state.inventory.relics)?state.inventory.relics:[];
+ const owned=[...new Set([...purchased,...relics])];
  const placed=Array.isArray(state.inventory.homePlaced)?state.inventory.homePlaced:(legacy.length?legacy.filter(id=>homeCatalog.find(item=>item.id===id)?.type==='decor'):['plant']);
  const legacyOutfit=legacy.find(id=>homeCatalog.find(item=>item.id===id)?.type==='outfit')||null;
  return {
@@ -70,7 +73,7 @@ function homeViewState(state){
 }
 function roomObject(item,positions){
  const point=safePoint(positions[item.id],item.position);
- return `<button class="home-room-object home-object-${item.id}" data-home-object="${item.id}" style="left:${point.x}%;top:${point.y}%" aria-label="${languageValue(item,sourceLanguage())} ${tr('verschieben','mover','μετακίνηση')}"><span aria-hidden="true">${item.icon}</span></button>`;
+ return `<button class="home-room-object home-object-${item.id}" data-home-object="${item.id}" style="left:${point.x}%;top:${point.y}%" aria-label="${languageValue(item,sourceLanguage())} ${tr('verschieben','mover','μετακίνηση')}">${item.asset?`<img src="${item.asset}" alt="">`:`<span aria-hidden="true">${item.icon}</span>`}</button>`;
 }
 function migrateHomeLayout(){
  const state=getState();
@@ -117,7 +120,7 @@ function homeRoute({top,nav}){
    <span class="home-room-status">${home.outfit?`${tr('Tula trägt','Tula lleva','Η Τούλα φοράει')}: ${languageValue(homeCatalog.find(i=>i.id===home.outfit),source)}`:tr('Wähle ein Outfit für Tula','Elige un atuendo para Tula','Διάλεξε ρούχο για την Τούλα')}</span>
   </div>
  </section>
- <section class="shop-section home-shop-section">${homeCatalog.map(i=>`<article class="shop-card-v3 ${home.placed.includes(i.id)||home.outfit===i.id?'home-active':''}"><span>${i.icon}</span><div><strong>${languageValue(i,source)}</strong><small>${status(i)}</small></div><button data-action="home-item" data-id="${i.id}">${action(i)}</button></article>`).join('')}</section>
+ <section class="shop-section home-shop-section">${homeCatalog.filter(i=>!i.rewardOnly||home.owned.includes(i.id)).map(i=>`<article class="shop-card-v3 ${home.placed.includes(i.id)||home.outfit===i.id?'home-active':''}">${i.asset?`<img class="home-relic-catalog-art" src="${i.asset}" alt="">`:`<span>${i.icon}</span>`}<div><strong>${languageValue(i,source)}</strong><small>${i.rewardOnly?tr('Im Sternen-Dungeon gefunden','Encontrada en la mazmorra estelar','Βρέθηκε στο μπουντρούμι των αστεριών'):status(i)}</small></div><button data-action="home-item" data-id="${i.id}">${action(i)}</button></article>`).join('')}</section>
  </div>${nav('island')}`;
 }
 

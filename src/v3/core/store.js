@@ -1,7 +1,7 @@
 import { readStorage, writeStorage } from './storage.js';
 
 export const initialState = {
-  storageVersion: 4,
+  storageVersion: 5,
   route: { name: 'home', params: {} },
   language: 'de',
   languages: { source: 'de', target: 'es' },
@@ -16,6 +16,8 @@ export const initialState = {
     weekly: { weekKey: '', completed: 0 },
     learned: {},
     mastery: {},
+    stars: {},
+    dungeons: {},
   },
   settings: { sound: true, motion: true, music: false },
   inventory: {
@@ -29,6 +31,7 @@ export const initialState = {
     homeOwned: ['plant'],
     homePlaced: ['plant'],
     homeOutfit: null,
+    relics: [],
     homePositions: { plant: { x: 68, y: 22 } },
     tulaHomePosition: { x: 50, y: 70 },
   },

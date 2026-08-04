@@ -20,6 +20,12 @@ export {
   ensureWeeklyGoalState,
 } from './rewards.js?build=cinematic-worlds-1';
 export {
+  STAR_QUESTS, STARS_PER_QUEST, STARS_PER_WORLD, STAR_ACCURACY_TARGET,
+  DUNGEON_UNLOCK_STARS, DUNGEON_SECRET_STARS, DUNGEON_GOLD_STARS,
+  questStars, worldStarTotal, totalMasterStars, isMasteryEligible,
+  recordQuestCompletion, dungeonStatus, recordDungeonCompletion,
+} from './master-stars.js';
+export {
   STORE_PRODUCTS, getEconomyState, subscribeEconomy, isNativeCommerce,
   initializeEconomy, loadWallet, refreshEntitlements, loadStoreProducts,
   purchaseShells, syncPurchases, requestRewardedAd, creditGameplayShells,

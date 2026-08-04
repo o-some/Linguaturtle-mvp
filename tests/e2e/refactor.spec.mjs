@@ -52,11 +52,11 @@ test('home, island and learning world are separated', async ({ page }) => {
   await page.locator('[data-route="island"]').first().click();
   await expect(page.getByRole('heading', { name: /Wohin möchtest du/i })).toBeVisible();
   await page.locator('[data-action="open-world"]').first().click();
-  await expect(page.getByText(/Wähle jetzt eine Übung/i)).toBeVisible();
+  await expect(page.getByText(/Sammle Meistersterne/i)).toBeVisible();
   await expect(page.locator('.word-showcase')).toHaveCount(0);
 });
 
-test('level 3 and its XP progress stay synchronized across home, profile, settings and island', async ({ page }) => {
+test('level 3 stays synchronized while XP remain hidden from the child UI', async ({ page }) => {
   await page.evaluate(async () => {
     const { currentDayKey, currentWeekKey } = await import('/src/v3/core/rewards.js');
     const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
@@ -70,15 +70,17 @@ test('level 3 and its XP progress stay synchronized across home, profile, settin
   await page.reload();
 
   await expect(page.locator('.home-level-label')).toContainText('Level 3');
-  await expect(page.locator('.home-level-value')).toHaveText('50/100 XP');
+  await expect(page.locator('.home-level-value')).toHaveText('50%');
   await expect(page.locator('.home-level-track')).toHaveAttribute('aria-valuenow', '50');
+  await expect(page.locator('.cinematic-home')).not.toContainText('XP');
   await expect(page.locator('.home-goal-bar')).toHaveAttribute('aria-valuenow', '1');
   await expect(page.locator('.home-weekly-track')).toHaveAttribute('aria-valuenow', '7');
 
   await page.locator('[data-route="profile"]').first().click();
-  await expect(page.locator('.profile-hero-v3')).toContainText('Level 3 · 250 XP');
+  await expect(page.locator('.profile-hero-v3')).toContainText('Level 3 · 0 Meistersterne');
   await expect(page.locator('.progress-card .bar')).toHaveAttribute('aria-valuenow', '50');
-  await expect(page.locator('.progress-card')).toContainText('Noch 50 XP bis Level 4');
+  await expect(page.locator('.progress-card')).toContainText('Jedes Abenteuer bringt dich weiter');
+  await expect(page.locator('.cinematic-profile')).not.toContainText('XP');
 
   await page.locator('[data-action="open-settings"]').click();
   await expect(page.locator('.parent-summary')).toContainText('3');
@@ -176,6 +178,122 @@ test('explore opens only after selecting the exercise', async ({ page }) => {
   await expect(page.locator('.reward-row img[src$="reward_shell_pearl.webp"]')).toBeVisible();
 });
 
+test('mastery stars only improve, unlock at six and require a later day for the third star', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const {
+      recordQuestCompletion, questStars, worldStarTotal, dungeonStatus,
+    } = await import('/src/v3/core/master-stars.js');
+    const firstDay = new Date(2026, 7, 4, 12);
+    const nextDay = new Date(2026, 7, 5, 12);
+    const explore = recordQuestCompletion({
+      worldId: 'garden', questId: 'explore', accuracy: 1, allWordsHeard: true,
+    }, firstDay);
+    const duplicate = recordQuestCompletion({
+      worldId: 'garden', questId: 'explore', accuracy: 1, allWordsHeard: true,
+    }, firstDay);
+    const poorLaterRun = recordQuestCompletion({
+      worldId: 'garden', questId: 'explore', accuracy: 0, allWordsHeard: false,
+    }, nextDay);
+    const mastery = recordQuestCompletion({
+      worldId: 'garden', questId: 'explore', accuracy: 1, allWordsHeard: true,
+    }, nextDay);
+    recordQuestCompletion({ worldId: 'garden', questId: 'listening', accuracy: .8 }, firstDay);
+    const beforeUnlock = recordQuestCompletion({ worldId: 'garden', questId: 'sentence', accuracy: 0 }, firstDay);
+    const unlock = recordQuestCompletion({ worldId: 'garden', questId: 'sentence', accuracy: .8 }, firstDay);
+    return {
+      explore, duplicate, poorLaterRun, mastery, beforeUnlock, unlock,
+      exploreStars: questStars('garden', 'explore'),
+      total: worldStarTotal('garden'),
+      dungeon: dungeonStatus('garden'),
+    };
+  });
+
+  expect(result.explore.questStars).toBe(2);
+  expect(result.duplicate.starsGained).toBe(0);
+  expect(result.poorLaterRun.questStars).toBe(2);
+  expect(result.mastery.questStars).toBe(3);
+  expect(result.exploreStars).toBe(3);
+  expect(result.beforeUnlock.totalWorldStars).toBe(6);
+  expect(result.beforeUnlock.dungeonUnlocked).toBe(true);
+  expect(result.unlock.totalWorldStars).toBe(7);
+  expect(result.unlock.dungeonUnlocked).toBe(false);
+  expect(result.total).toBe(7);
+  expect(result.dungeon.unlocked).toBe(true);
+});
+
+test('dungeon rewards are idempotent and secret states follow eight and nine stars', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const { setState } = await import('/src/v3/core/store.js');
+    const { recordDungeonCompletion, dungeonStatus } = await import('/src/v3/core/master-stars.js');
+    const quest = earned => ({ earned, bestAccuracy: 1, completedAt: '2026-08-01T10:00:00.000Z', masteryConfirmedAt: earned === 3 ? '2026-08-02T10:00:00.000Z' : null });
+    setState(draft => {
+      draft.progress.stars.garden = { explore: quest(2), listening: quest(2), sentence: quest(2) };
+      return draft;
+    });
+    const first = recordDungeonCompletion('garden', 88, new Date(2026, 7, 4, 12));
+    const replay = recordDungeonCompletion('garden', 90, new Date(2026, 7, 4, 14));
+    const duplicateReplay = recordDungeonCompletion('garden', 95, new Date(2026, 7, 4, 16));
+    const nextDay = recordDungeonCompletion('garden', 96, new Date(2026, 7, 5, 12));
+    setState(draft => {
+      draft.progress.stars.garden.explore.earned = 3;
+      draft.progress.stars.garden.listening.earned = 3;
+      return draft;
+    });
+    const eight = dungeonStatus('garden');
+    setState(draft => { draft.progress.stars.garden.sentence.earned = 3; return draft; });
+    const nine = dungeonStatus('garden');
+    return { first, replay, duplicateReplay, nextDay, eight, nine };
+  });
+
+  expect(result.first).toMatchObject({ firstClear: true, xp: 60, shells: 50 });
+  expect(result.replay).toMatchObject({ dailyReplay: true, xp: 15, shells: 5 });
+  expect(result.duplicateReplay).toMatchObject({ xp: 0, shells: 0 });
+  expect(result.nextDay).toMatchObject({ dailyReplay: true, xp: 15, shells: 5 });
+  expect(result.eight.secretAvailable).toBe(true);
+  expect(result.eight.goldAvailable).toBe(false);
+  expect(result.nine.goldAvailable).toBe(true);
+});
+
+test('the garden Star Dungeon runs through all three chambers and grants its relic', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { recordQuestCompletion } = await import('/src/v3/core/master-stars.js');
+    const day = new Date(2026, 7, 4, 12);
+    recordQuestCompletion({ worldId: 'garden', questId: 'explore', accuracy: 1, allWordsHeard: true }, day);
+    recordQuestCompletion({ worldId: 'garden', questId: 'listening', accuracy: 1 }, day);
+    recordQuestCompletion({ worldId: 'garden', questId: 'sentence', accuracy: 1 }, day);
+  });
+  await page.locator('[data-route="island"]').first().click();
+  await page.locator('[data-action="open-world"][data-collection="garden"]').first().click();
+  await expect(page.locator('.star-gate.is-open')).toContainText('6/9');
+  await page.locator('[data-action="open-star-dungeon"]').click();
+
+  for (let index = 0; index < 3; index += 1) {
+    const questionId = await page.locator('.dungeon-stage[data-question-id]').getAttribute('data-question-id');
+    await page.locator(`[data-action="dungeon-echo-answer"][data-word="${questionId}"]`).click();
+  }
+  await expect(page.locator('.dungeon-rune')).toBeVisible();
+
+  for (let round = 0; round < 2; round += 1) {
+    const ids = await page.locator('.rune-prompt [data-word-id]').evaluateAll(nodes => nodes.map(node => node.dataset.wordId));
+    for (const id of ids) await page.locator(`.rune-bank [data-word-id="${id}"]`).click();
+    await page.locator('[data-action="dungeon-rune-check"]').click();
+  }
+  await expect(page.locator('.dungeon-guardian')).toBeVisible();
+
+  for (let index = 0; index < 3; index += 1) {
+    const questionId = await page.locator('.guardian-stage[data-question-id]').getAttribute('data-question-id');
+    await page.locator(`[data-action="dungeon-guardian-answer"][data-word="${questionId}"]`).click();
+  }
+
+  await expect(page.locator('.dungeon-complete')).toBeVisible();
+  await expect(page.locator('.dungeon-treasure')).toContainText('Sternensamen des Gartens');
+  await expect(page.locator('.dungeon-reward-row')).toContainText('+50');
+  const state = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(state.inventory.relics).toContain('garden-star-relic');
+  expect(state.inventory.homePlaced).toContain('garden-star-relic');
+  expect(state.progress.dungeons.garden.firstClearedAt).toBeTruthy();
+});
+
 test('words area lists real words and unlocks one with the shared shell currency', async ({ page }) => {
   await page.locator('[data-route="words"]').first().click();
   await expect(page.getByRole('heading', { name: /Neue Wörter lernen/i })).toBeVisible();
@@ -219,6 +337,7 @@ test('listening quiz accepts an answer and persists reward', async ({ page }) =>
 
 test('shop purchase changes the central store', async ({ page }) => {
   await page.locator('[data-route="shop"]').first().click();
+  await expect(page.locator('[data-action="buy-item"][data-item="sentence"]')).toHaveCount(0);
   const buy = page.locator('[data-action="buy-item"]:not([disabled])').first();
   await expect(buy).toBeVisible();
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')).progress.shells);
@@ -261,7 +380,7 @@ test('Tula home purchase, placement, movement and outfit persist', async ({ page
 
 test('profile and settings are reachable', async ({ page }) => {
   await page.locator('[data-route="profile"]').first().click();
-  await expect(page.getByText(/DEIN FORTSCHRITT/i)).toBeVisible();
+  await expect(page.locator('.profile-hero-v3 h1')).toContainText('Mia');
   await page.locator('[data-action="open-settings"]').click();
   await expect(page.getByText(/ELTERNBEREICH/i)).toBeVisible();
   await expect(page.getByText(/Elternkonto noch nicht verbunden/i)).toBeVisible();
@@ -369,9 +488,28 @@ test('legacy 5000-shell test grant is reset and not imported', async ({ page }) 
   expect(migrated.testShellGrantVersion).toBeUndefined();
 });
 
+test('version 4 progress migrates discovered words into at most two explorer stars', async ({ page }) => {
+  const migrated = await page.evaluate(async () => {
+    const { initialState } = await import('/src/v3/core/store.js');
+    const { migrateStorage, STORAGE_VERSION } = await import('/src/v3/core/storage.js');
+    const state = migrateStorage({
+      storageVersion: 4,
+      updatedAt: Date.UTC(2026, 7, 3, 10),
+      progress: { xp: 850, learned: { garden: 4, library: 1 } },
+    }, initialState);
+    return { state, version: STORAGE_VERSION };
+  });
+  expect(migrated.version).toBe(5);
+  expect(migrated.state.progress.xp).toBe(850);
+  expect(migrated.state.progress.stars.garden.explore.earned).toBe(2);
+  expect(migrated.state.progress.stars.library.explore.earned).toBe(1);
+  expect(migrated.state.progress.stars.garden.explore.masteryConfirmedAt).toBeNull();
+});
+
 test('browser shop contains neither real-money purchases nor ads', async ({ page }) => {
   await page.locator('[data-route="shop"]').first().click();
   await expect(page.locator('.mobile-shop-note')).toContainText(/weder Echtgeldkäufe noch Werbung/i);
+  await expect(page.locator('.cinematic-shop')).not.toContainText('XP');
   await expect(page.locator('[data-action="purchase-shells"]')).toHaveCount(0);
   await expect(page.locator('[data-action="watch-rewarded-ad"]')).toHaveCount(0);
 });
@@ -549,7 +687,8 @@ test('guest economy is preserved locally while an account wallet is active', asy
       draft.inventory.unlockedWords = ['apple'];
       draft.inventory.boosters.hints = 4;
       draft.inventory.homeOwned = ['plant', 'bed'];
-      draft.inventory.homePlaced = ['plant', 'bed'];
+      draft.inventory.relics = ['garden-star-relic'];
+      draft.inventory.homePlaced = ['plant', 'bed', 'garden-star-relic'];
       return draft;
     });
     preserveGuestEconomy('parent-test');
@@ -571,6 +710,7 @@ test('guest economy is preserved locally while an account wallet is active', asy
   expect(result.inventory.unlockedWords).toContain('apple');
   expect(result.inventory.boosters.hints).toBe(4);
   expect(result.inventory.homeOwned).toContain('bed');
+  expect(result.inventory.homePlaced).toContain('garden-star-relic');
   expect(result.economy.guestSnapshot).toBeNull();
 });
 

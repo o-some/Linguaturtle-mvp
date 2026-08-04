@@ -65,8 +65,12 @@ function applyEntitlements(entitlements = []) {
       ...entitlements.filter(item => item.item_type === 'home' && item.quantity > 0)
         .map(item => item.item_id.replace(/^home:/, '')),
     ])];
+    const placeableItems = new Set([
+      ...draft.inventory.homeOwned,
+      ...(draft.inventory.relics || []),
+    ]);
     draft.inventory.homePlaced = (draft.inventory.homePlaced || [])
-      .filter(item => draft.inventory.homeOwned.includes(item));
+      .filter(item => placeableItems.has(item));
     if (!draft.inventory.homePlaced.includes('plant')) draft.inventory.homePlaced.push('plant');
     if (draft.inventory.homeOutfit && !draft.inventory.homeOwned.includes(draft.inventory.homeOutfit)) {
       draft.inventory.homeOutfit = null;
@@ -122,8 +126,12 @@ export function restoreGuestEconomy() {
       draft.inventory.unlockedWords = [...(snapshot.unlockedWords || [])];
       draft.inventory.boosters = { ...(snapshot.boosters || {}) };
       draft.inventory.homeOwned = [...new Set(['plant', ...(snapshot.homeOwned || [])])];
+      const placeableItems = new Set([
+        ...draft.inventory.homeOwned,
+        ...(draft.inventory.relics || []),
+      ]);
       draft.inventory.homePlaced = (snapshot.homePlaced || [])
-        .filter(item => draft.inventory.homeOwned.includes(item));
+        .filter(item => placeableItems.has(item));
       if (!draft.inventory.homePlaced.includes('plant')) draft.inventory.homePlaced.push('plant');
       draft.inventory.homeOutfit = snapshot.homeOutfit
         && draft.inventory.homeOwned.includes(snapshot.homeOutfit)

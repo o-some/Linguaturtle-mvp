@@ -1,5 +1,6 @@
 import { getState, setState } from './store.js';
 import { creditGameplayShells } from './economy.js';
+import { recordQuestCompletion } from './master-stars.js';
 
 export const MILESTONE_LEVELS = Object.freeze([3, 5, 7, 10, 15, 20, 30]);
 export const WEEKLY_GOAL_TARGET = 15;
@@ -160,9 +161,16 @@ export function grantReward(reward = {}, date = new Date()) {
       });
     return draft;
   });
-  if (shells > 0) creditGameplayShells(shells, 'learning').catch(() => {});
+  if (shells > 0) creditGameplayShells(
+    shells,
+    reward.reason || 'learning',
+    reward.idempotencyKey || null
+  ).catch(() => {});
 
-  return { xp, shells, doubled: doubleXp };
+  const starResult = reward.starResult
+    ? recordQuestCompletion(reward.starResult, date)
+    : { starsGained: 0, questStars: 0, totalWorldStars: 0, dungeonUnlocked: false };
+  return { xp, shells, doubled: doubleXp, ...starResult };
 }
 
 export function spendShells(amount) {
