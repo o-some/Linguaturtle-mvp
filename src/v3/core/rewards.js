@@ -5,6 +5,63 @@ export const MILESTONE_LEVELS = Object.freeze([3, 5, 7, 10, 15, 20, 30]);
 export const WEEKLY_GOAL_TARGET = 15;
 export const WEEKLY_GOAL_REWARD = 250;
 
+export function currentDayKey(date = new Date()) {
+  const local = new Date(date);
+  const year = local.getFullYear();
+  const month = String(local.getMonth() + 1).padStart(2, '0');
+  const day = String(local.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function dayOrdinal(dayKey) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dayKey || ''));
+  if (!match) return null;
+  return Math.floor(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) / 86400000);
+}
+
+function dayDistance(fromDayKey, toDayKey) {
+  const from = dayOrdinal(fromDayKey);
+  const to = dayOrdinal(toDayKey);
+  return from === null || to === null ? null : to - from;
+}
+
+export function ensureDailyGoalState(date = new Date()) {
+  const dayKey = currentDayKey(date);
+  const state = getState();
+  const storedDayKey = state.progress.dailyDate || '';
+  const learningGap = dayDistance(state.progress.lastLearningDate, dayKey);
+  const staleStreak = learningGap !== null && learningGap > 1;
+  if (storedDayKey === dayKey && !staleStreak) {
+    return {
+      dayKey,
+      completed: Number(state.progress.daily || 0),
+      streak: Number(state.progress.streak || 0),
+    };
+  }
+
+  const next = setState(draft => {
+    // Older installs did not store a date. Keep today's visible progress once
+    // during migration, then use the date key for every future reset.
+    if (storedDayKey && storedDayKey !== dayKey) {
+      draft.progress.daily = 0;
+      draft.inventory.dailyGoalClaimed = false;
+      draft.session.rewardNotices = (draft.session.rewardNotices || [])
+        .filter(notice => notice.type !== 'daily');
+    }
+    draft.progress.dailyDate = dayKey;
+    if (!draft.progress.lastLearningDate && Number(draft.progress.streak || 0) > 0) {
+      draft.progress.lastLearningDate = dayKey;
+    }
+    if (staleStreak) draft.progress.streak = 0;
+    return draft;
+  });
+  return {
+    dayKey,
+    completed: Number(next.progress.daily || 0),
+    streak: Number(next.progress.streak || 0),
+  };
+}
+
 export function currentWeekKey(date = new Date()) {
   const monday = new Date(date);
   monday.setHours(12, 0, 0, 0);
@@ -29,12 +86,14 @@ export function ensureWeeklyGoalState() {
   }).progress.weekly;
 }
 
-export function grantReward(reward = {}) {
+export function grantReward(reward = {}, date = new Date()) {
+  ensureDailyGoalState(date);
   const baseXp = Math.max(0, Number(reward.xp || 0));
   const shells = Math.max(0, Number(reward.shells || 0));
   const state = getState();
   const previousDaily = Number(state.progress.daily || 0);
-  const weekKey = currentWeekKey();
+  const dayKey = currentDayKey(date);
+  const weekKey = currentWeekKey(date);
   const previousWeekly = state.progress.weekly?.weekKey === weekKey
     ? Number(state.progress.weekly.completed || 0)
     : 0;
@@ -52,6 +111,13 @@ export function grantReward(reward = {}) {
     draft.progress.xp += xp;
     draft.progress.shells += shells;
     if (reward.countDaily !== false) {
+      if (draft.progress.lastLearningDate !== dayKey) {
+        const continuedYesterday = dayDistance(draft.progress.lastLearningDate, dayKey) === 1;
+        draft.progress.streak = continuedYesterday
+          ? Math.max(1, Number(draft.progress.streak || 0)) + 1
+          : 1;
+        draft.progress.lastLearningDate = dayKey;
+      }
       draft.progress.daily = Math.min(5, draft.progress.daily + 1);
       draft.progress.weekly.completed = Math.min(
         WEEKLY_GOAL_TARGET,

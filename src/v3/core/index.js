@@ -14,6 +14,8 @@ export {
   MILESTONE_LEVELS,
   WEEKLY_GOAL_TARGET,
   WEEKLY_GOAL_REWARD,
+  currentDayKey,
+  ensureDailyGoalState,
   currentWeekKey,
   ensureWeeklyGoalState,
 } from './rewards.js?build=cinematic-worlds-1';
@@ -21,6 +23,7 @@ export {
   STORE_PRODUCTS, getEconomyState, subscribeEconomy, isNativeCommerce,
   initializeEconomy, loadWallet, refreshEntitlements, loadStoreProducts,
   purchaseShells, syncPurchases, requestRewardedAd, creditGameplayShells,
+  preserveGuestEconomy, restoreGuestEconomy,
   spendShells as spendEconomyShells
 } from './economy.js';
 export { migrateLegacyState } from './legacy-migration.js';

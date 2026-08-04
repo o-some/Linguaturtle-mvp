@@ -56,6 +56,39 @@ test('home, island and learning world are separated', async ({ page }) => {
   await expect(page.locator('.word-showcase')).toHaveCount(0);
 });
 
+test('level 3 and its XP progress stay synchronized across home, profile, settings and island', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { currentDayKey, currentWeekKey } = await import('/src/v3/core/rewards.js');
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.progress.xp = 250;
+    state.progress.daily = 1;
+    state.progress.dailyDate = currentDayKey();
+    state.progress.weekly = { weekKey: currentWeekKey(), completed: 7 };
+    state.route = { name: 'home', params: {} };
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+
+  await expect(page.locator('.home-level-label')).toContainText('Level 3');
+  await expect(page.locator('.home-level-value')).toHaveText('50/100 XP');
+  await expect(page.locator('.home-level-track')).toHaveAttribute('aria-valuenow', '50');
+  await expect(page.locator('.home-goal-bar')).toHaveAttribute('aria-valuenow', '1');
+  await expect(page.locator('.home-weekly-track')).toHaveAttribute('aria-valuenow', '7');
+
+  await page.locator('[data-route="profile"]').first().click();
+  await expect(page.locator('.profile-hero-v3')).toContainText('Level 3 · 250 XP');
+  await expect(page.locator('.progress-card .bar')).toHaveAttribute('aria-valuenow', '50');
+  await expect(page.locator('.progress-card')).toContainText('Noch 50 XP bis Level 4');
+
+  await page.locator('[data-action="open-settings"]').click();
+  await expect(page.locator('.parent-summary')).toContainText('3');
+  await expect(page.locator('.parent-summary')).toContainText('250');
+
+  await page.locator('[data-route="island"]').first().click();
+  await expect(page.locator('.island-hotspot[data-collection="animals"]')).not.toHaveClass(/locked/);
+  await expect(page.locator('.island-hotspot[data-collection="home"]')).toHaveClass(/locked/);
+});
+
 test('interactive island map shows level requirements and blocks locked worlds', async ({ page }) => {
   await page.evaluate(() => {
     const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
@@ -434,6 +467,111 @@ test('daily goal completion opens a claim modal and grants the daily treasure', 
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
   expect(after.progress.shells).toBe(before + 31);
   expect(after.inventory.dailyGoalClaimed).toBe(true);
+});
+
+test('a new calendar day resets the daily goal and advances the streak only once', async ({ page }) => {
+  await page.evaluate(() => {
+    const localKey = date => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.progress.daily = 3;
+    state.progress.dailyDate = localKey(yesterday);
+    state.progress.lastLearningDate = localKey(yesterday);
+    state.progress.streak = 4;
+    state.inventory.dailyGoalClaimed = true;
+    state.session.rewardNotices = [{ type: 'daily', shells: 25 }];
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+
+  await expect(page.locator('.home-goal-copy')).toContainText('0 / 3');
+  await expect(page.locator('.home-goal-meta')).toContainText('4');
+  await expect(page.locator('.reward-notice-modal[data-reward-notice="daily"]')).toHaveCount(0);
+  const reset = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(reset.progress.daily).toBe(0);
+  expect(reset.inventory.dailyGoalClaimed).toBe(false);
+
+  await page.locator('[data-action="open-world"]').first().click();
+  await page.getByRole('button', { name: /Wörter entdecken/i }).click();
+  await page.locator('[data-action="finish-explore"]').click();
+  let after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(after.progress.daily).toBe(1);
+  expect(after.progress.streak).toBe(5);
+
+  await page.evaluate(async () => {
+    const { grantReward } = await import('/src/v3/core/rewards.js');
+    grantReward({ xp: 1, shells: 0 });
+  });
+  after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(after.progress.daily).toBe(2);
+  expect(after.progress.streak).toBe(5);
+});
+
+test('the streak expires after a missed calendar day', async ({ page }) => {
+  await page.evaluate(() => {
+    const localKey = date => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    const staleDay = new Date();
+    staleDay.setDate(staleDay.getDate() - 2);
+    const state = JSON.parse(localStorage.getItem('linguaturtle-v3-core'));
+    state.progress.daily = 2;
+    state.progress.dailyDate = localKey(staleDay);
+    state.progress.lastLearningDate = localKey(staleDay);
+    state.progress.streak = 8;
+    localStorage.setItem('linguaturtle-v3-core', JSON.stringify(state));
+  });
+  await page.reload();
+
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem('linguaturtle-v3-core')));
+  expect(after.progress.daily).toBe(0);
+  expect(after.progress.streak).toBe(0);
+  await expect(page.locator('.home-goal-copy')).toContainText('0 / 3');
+  await expect(page.locator('.home-goal-meta')).toContainText('0');
+});
+
+test('guest economy is preserved locally while an account wallet is active', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const { getState, setState } = await import('/src/v3/core/store.js');
+    const { preserveGuestEconomy, restoreGuestEconomy } = await import('/src/v3/core/economy.js');
+    setState(draft => {
+      draft.progress.shells = 777;
+      draft.inventory.unlockedModes = ['memory'];
+      draft.inventory.unlockedWords = ['apple'];
+      draft.inventory.boosters.hints = 4;
+      draft.inventory.homeOwned = ['plant', 'bed'];
+      draft.inventory.homePlaced = ['plant', 'bed'];
+      return draft;
+    });
+    preserveGuestEconomy('parent-test');
+    setState(draft => {
+      draft.progress.shells = 150;
+      draft.inventory.unlockedModes = [];
+      draft.inventory.unlockedWords = [];
+      draft.inventory.boosters.hints = 0;
+      draft.inventory.homeOwned = ['plant'];
+      draft.inventory.homePlaced = ['plant'];
+      return draft;
+    });
+    restoreGuestEconomy();
+    return getState();
+  });
+
+  expect(result.progress.shells).toBe(777);
+  expect(result.inventory.unlockedModes).toContain('memory');
+  expect(result.inventory.unlockedWords).toContain('apple');
+  expect(result.inventory.boosters.hints).toBe(4);
+  expect(result.inventory.homeOwned).toContain('bed');
+  expect(result.economy.guestSnapshot).toBeNull();
 });
 
 test('weekly goal opens a popup and grants 250 shells', async ({ page }) => {

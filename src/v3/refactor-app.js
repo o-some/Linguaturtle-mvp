@@ -3,7 +3,7 @@ import {
   createRouter, registerAction, bindActions, getState, setState, subscribe,
   migrateLegacyState, levelFromXp, levelProgress, spendEconomyShells, creditGameplayShells, speak,
   MILESTONE_LEVELS, WEEKLY_GOAL_TARGET, WEEKLY_GOAL_REWARD,
-  currentWeekKey, ensureWeeklyGoalState,
+  currentDayKey, ensureDailyGoalState, currentWeekKey, ensureWeeklyGoalState,
   LANGUAGES, LANGUAGE_CODES, ensureLanguagePair, sourceLanguage, targetLanguage,
   languageMeta, languageValue, uiText, flagImage, pairBadge,
   setSourceLanguage, setTargetLanguage, swapLanguages
@@ -21,6 +21,7 @@ const app=document.querySelector('#app');
 const router=createRouter(app);
 migrateLegacyState();
 ensureLanguagePair();
+ensureDailyGoalState();
 ensureWeeklyGoalState();
 
 const tr=(de,es,el=de,en=null)=>uiText(de,es,el,en);
@@ -232,7 +233,7 @@ function nav(active){
 
 function progressCard(){
   const s=getState(),lv=levelFromXp(s.progress.xp),p=levelProgress(s.progress.xp);
-  return `<section class="progress-card"><div class="progress-head"><strong>${tr('Level','Nivel','Επίπεδο')} ${lv}</strong><span>${tr(`Noch ${p.missing} XP bis Level ${lv+1}`,`Faltan ${p.missing} XP para nivel ${lv+1}`,`Απομένουν ${p.missing} XP για το επίπεδο ${lv+1}`)}</span></div><div class="bar"><i style="width:${p.percent}%"></i></div></section>`;
+  return `<section class="progress-card"><div class="progress-head"><strong>${tr('Level','Nivel','Επίπεδο')} ${lv}</strong><span>${tr(`Noch ${p.missing} XP bis Level ${lv+1}`,`Faltan ${p.missing} XP para nivel ${lv+1}`,`Απομένουν ${p.missing} XP για το επίπεδο ${lv+1}`)}</span></div><div class="bar" role="progressbar" aria-label="${tr(`Level ${lv} Fortschritt`,`Progreso del nivel ${lv}`,`Πρόοδος επιπέδου ${lv}`,`Level ${lv} progress`)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p.current}"><i style="width:${p.percent}%"></i></div></section>`;
 }
 
 function renderComplete(title,reward,back='world'){
@@ -257,6 +258,7 @@ router.register('language-select',()=>{
 
 router.register('home',()=>{
   const s=getState(),c=currentCollection(),lv=levelFromXp(s.progress.xp);
+  const level=levelProgress(s.progress.xp);
   const daily=Math.max(0,Math.min(3,Number(s.progress.daily)||0)),dailyPercent=(daily/3)*100;
   const weekly=Math.max(0,Math.min(WEEKLY_GOAL_TARGET,Number(s.progress.weekly?.completed)||0));
   const weeklyPercent=(weekly/WEEKLY_GOAL_TARGET)*100;
@@ -276,7 +278,7 @@ router.register('home',()=>{
         </button>
       </div>
       <img class="cinematic-home-tula" src="${assets.characters.tula.poses.waving}" alt="Tula">
-      <section class="home-goal-panel" aria-label="${tr('Tagesziel','Objetivo diario','Ημερήσιος στόχος')}">
+      <section class="home-goal-panel" aria-label="${tr('Dein Fortschritt','Tu progreso','Η πρόοδός σου','Your progress')}">
         <div class="home-goal-badge">${rewardArt(assets.rewards.xpStar,'')}</div>
         <div class="home-goal-copy">
           <small>${tr('Tagesziel','Objetivo diario','Ημερήσιος στόχος')}</small>
@@ -284,17 +286,21 @@ router.register('home',()=>{
           <span>${daily===3?tr('Geschafft!','¡Completado!','Ολοκληρώθηκε!'):tr('heute geschafft','hechas hoy','σήμερα')}</span>
         </div>
         <div class="home-goal-meta">
-          <span><img src="${assets.rewards.streak}" alt="">${s.progress.streak}</span>
-          <span>${tr('Level','Nivel','Επίπεδο')} ${lv}</span>
+          <span aria-label="${tr(`${s.progress.streak} Lerntage in Folge`,`${s.progress.streak} días seguidos`,`${s.progress.streak} συνεχόμενες ημέρες`,`${s.progress.streak} day streak`)}"><img src="${assets.rewards.streak}" alt="">${s.progress.streak}</span>
         </div>
         <button class="home-island-preview" data-action="navigate" data-route="island" aria-label="${tr('Insel öffnen','Abrir la isla','Άνοιγμα νησιού','Open island')}">
           <img src="${assets.island.overview}" alt="">
           <i class="ph-bold ph-arrow-right" aria-hidden="true"></i>
         </button>
-        <div class="home-goal-bar"><i style="width:${dailyPercent}%"></i></div>
+        <div class="home-goal-bar" role="progressbar" aria-label="${tr('Tagesziel','Objetivo diario','Ημερήσιος στόχος','Daily goal')}" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${daily}"><i style="width:${dailyPercent}%"></i></div>
+        <div class="home-level-goal">
+          <span class="home-level-label">${tr('Level','Nivel','Επίπεδο','Level')} <strong>${lv}</strong></span>
+          <span class="home-level-track" role="progressbar" aria-label="${tr(`Level ${lv} Fortschritt`,`Progreso del nivel ${lv}`,`Πρόοδος επιπέδου ${lv}`,`Level ${lv} progress`)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${level.current}"><i style="width:${level.percent}%"></i></span>
+          <span class="home-level-value">${level.current}/100 XP</span>
+        </div>
         <div class="home-weekly-goal">
           <span class="home-weekly-label">${tr('Wochenziel','Objetivo semanal','Εβδομαδιαίος στόχος','Weekly goal')} <strong>${weekly}/${WEEKLY_GOAL_TARGET}</strong></span>
-          <span class="home-weekly-track"><i style="width:${weeklyPercent}%"></i></span>
+          <span class="home-weekly-track" role="progressbar" aria-label="${tr('Wochenziel','Objetivo semanal','Εβδομαδιαίος στόχος','Weekly goal')}" aria-valuemin="0" aria-valuemax="${WEEKLY_GOAL_TARGET}" aria-valuenow="${weekly}"><i style="width:${weeklyPercent}%"></i></span>
           <span class="home-weekly-reward">${currencyIcon()}<strong>+${WEEKLY_GOAL_REWARD}</strong></span>
         </div>
       </section>
@@ -383,7 +389,7 @@ registerAction('claim-daily-goal',()=>{
   creditGameplayShells(
     shells,
     'daily-goal',
-    `daily-goal-${new Date().toISOString().slice(0,10)}`
+    `daily-goal-${currentDayKey()}`
   ).catch(()=>{});
   showToast(tr(`Tagesziel-Belohnung: +${shells} Muscheln!`,`Recompensa diaria: ¡+${shells} conchas!`,`Ημερήσια ανταμοιβή: +${shells} κοχύλια!`,`Daily reward: +${shells} shells!`));
   router.renderCurrent();

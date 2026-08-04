@@ -1,7 +1,7 @@
 import { readStorage, writeStorage } from './storage.js';
 
 export const initialState = {
-  storageVersion: 3,
+  storageVersion: 4,
   route: { name: 'home', params: {} },
   language: 'de',
   languages: { source: 'de', target: 'es' },
@@ -11,6 +11,8 @@ export const initialState = {
     shells: 150,
     streak: 0,
     daily: 0,
+    dailyDate: '',
+    lastLearningDate: '',
     weekly: { weekKey: '', completed: 0 },
     learned: {},
     mastery: {},
@@ -30,7 +32,7 @@ export const initialState = {
     homePositions: { plant: { x: 68, y: 22 } },
     tulaHomePosition: { x: 50, y: 70 },
   },
-  economy: { pendingRewards: [] },
+  economy: { pendingRewards: [], guestSnapshot: null },
   session: {
     activeGame: null,
     collectionId: 'garden',

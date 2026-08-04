@@ -178,10 +178,10 @@ body:has(.cinematic-home){background:#021a2e}
   bottom:5px;
   display:grid;
   grid-template-columns:auto minmax(0,1fr) auto 72px;
-  grid-template-rows:auto 7px auto;
+  grid-template-rows:auto 7px auto auto;
   align-items:center;
   gap:7px 10px;
-  min-height:106px;
+  min-height:130px;
   padding:13px 14px 12px;
   border:1px solid rgba(235,190,76,.92);
   border-radius:28px;
@@ -193,7 +193,7 @@ body:has(.cinematic-home){background:#021a2e}
   display:grid;
   place-items:center;
   grid-column:1;
-  grid-row:1 / span 3;
+  grid-row:1 / span 4;
   width:54px;
   height:54px;
   border:1px solid rgba(244,205,103,.7);
@@ -230,7 +230,7 @@ body:has(.cinematic-home){background:#021a2e}
 .home-island-preview{
   position:relative;
   grid-column:4;
-  grid-row:1 / span 3;
+  grid-row:1 / span 4;
   width:72px;
   height:58px;
   padding:0;
@@ -270,33 +270,48 @@ body:has(.cinematic-home){background:#021a2e}
   background:linear-gradient(90deg,#2fc1c6,#f4ca62);
   box-shadow:0 0 11px rgba(66,210,208,.55);
 }
+.home-level-goal,
 .home-weekly-goal{
   grid-column:2 / 4;
-  grid-row:3;
   display:grid;
   grid-template-columns:auto minmax(48px,1fr) auto;
   align-items:center;
   gap:7px;
   min-width:0;
 }
+.home-level-goal{grid-row:3}
+.home-weekly-goal{grid-row:4}
+.home-level-label,
 .home-weekly-label{
   color:#d9f8f5;
   font-size:.61rem;
   font-weight:850;
   white-space:nowrap;
 }
+.home-level-label strong,
 .home-weekly-label strong{color:#ffe49a}
+.home-level-track,
 .home-weekly-track{
   height:6px;
   overflow:hidden;
   border-radius:999px;
   background:rgba(0,15,28,.72);
 }
+.home-level-track i,
 .home-weekly-track i{
   display:block;
   height:100%;
   border-radius:inherit;
   background:#e7b84d;
+}
+.home-level-track i{
+  background:linear-gradient(90deg,#58d5d5,#f4ca62);
+}
+.home-level-value{
+  color:#d9f8f5;
+  font-size:.58rem;
+  font-weight:850;
+  white-space:nowrap;
 }
 .home-weekly-reward{
   display:flex;
@@ -389,9 +404,10 @@ body:has(.cinematic-home){background:#021a2e}
   .cinematic-home-copy h1{font-size:2.55rem}
   .cinematic-home-copy p{font-size:.9rem}
   .home-goal-meta{display:none}
-  .home-goal-bar{grid-column:2 / 3}
-  .home-weekly-goal{grid-column:2 / 4;gap:5px}
-  .home-weekly-label{font-size:.56rem}
+  .home-goal-bar{grid-column:2 / 4}
+  .home-level-goal,.home-weekly-goal{grid-column:2 / 4;gap:5px}
+  .home-level-label,.home-weekly-label{font-size:.56rem}
+  .home-level-value{font-size:.53rem}
 }
 @media(min-width:700px){
   .cinematic-home-copy{padding-top:80px}

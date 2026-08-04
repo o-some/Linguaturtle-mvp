@@ -1,4 +1,4 @@
-export const STORAGE_VERSION = 3;
+export const STORAGE_VERSION = 4;
 export const STORAGE_KEY = 'linguaturtle-v3-core';
 export const SYNC_META_KEY = 'linguaturtle-v3-sync-meta';
 const LANGUAGE_CODES = ['de','es','el','en'];

@@ -1,5 +1,6 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { getState, setState } from './store.js';
+import { readSyncMeta } from './storage.js';
 import {
   getAccountState,
   invokeAuthenticatedFunction,
@@ -89,6 +90,59 @@ function applySnapshot(snapshot) {
     error: '',
   });
   return snapshot;
+}
+
+export function preserveGuestEconomy(nextUserId) {
+  const state = getState();
+  if (state.economy?.guestSnapshot) return state.economy.guestSnapshot;
+  if (readSyncMeta().ownerUserId === nextUserId) return null;
+  const snapshot = {
+    shells: Math.max(0, Number(state.progress.shells || 0)),
+    unlockedModes: [...(state.inventory.unlockedModes || [])],
+    unlockedWords: [...(state.inventory.unlockedWords || [])],
+    boosters: { ...(state.inventory.boosters || {}) },
+    homeOwned: [...(state.inventory.homeOwned || [])],
+    homePlaced: [...(state.inventory.homePlaced || [])],
+    homeOutfit: state.inventory.homeOutfit || null,
+  };
+  setState(draft => {
+    draft.economy ??= { pendingRewards: [], guestSnapshot: null };
+    draft.economy.guestSnapshot = snapshot;
+    return draft;
+  });
+  return snapshot;
+}
+
+export function restoreGuestEconomy() {
+  const snapshot = getState().economy?.guestSnapshot;
+  setState(draft => {
+    if (snapshot) {
+      draft.progress.shells = Math.max(0, Number(snapshot.shells || 0));
+      draft.inventory.unlockedModes = [...(snapshot.unlockedModes || [])];
+      draft.inventory.unlockedWords = [...(snapshot.unlockedWords || [])];
+      draft.inventory.boosters = { ...(snapshot.boosters || {}) };
+      draft.inventory.homeOwned = [...new Set(['plant', ...(snapshot.homeOwned || [])])];
+      draft.inventory.homePlaced = (snapshot.homePlaced || [])
+        .filter(item => draft.inventory.homeOwned.includes(item));
+      if (!draft.inventory.homePlaced.includes('plant')) draft.inventory.homePlaced.push('plant');
+      draft.inventory.homeOutfit = snapshot.homeOutfit
+        && draft.inventory.homeOwned.includes(snapshot.homeOutfit)
+        ? snapshot.homeOutfit
+        : null;
+    } else {
+      draft.progress.shells = 150;
+      draft.inventory.unlockedModes = [];
+      draft.inventory.unlockedWords = [];
+      draft.inventory.boosters = { doubleXp: 0, hints: 0, jumps: 0 };
+      draft.inventory.homeOwned = ['plant'];
+      draft.inventory.homePlaced = ['plant'];
+      draft.inventory.homeOutfit = null;
+    }
+    draft.economy ??= { pendingRewards: [], guestSnapshot: null };
+    draft.economy.guestSnapshot = null;
+    return draft;
+  });
+  return snapshot || null;
 }
 
 export function getEconomyState() {
@@ -302,6 +356,7 @@ export async function initializeEconomy() {
   subscribeAccount(account => {
     const userId = account.user?.id || null;
     if (userId && userId !== activeEconomyUserId) {
+      preserveGuestEconomy(userId);
       activeEconomyUserId = userId;
       flushGameplayRewards()
         .catch(() => null)
@@ -309,11 +364,7 @@ export async function initializeEconomy() {
       if (economyState.native) loadStoreProducts().catch(() => {});
     } else if (!userId && activeEconomyUserId) {
       activeEconomyUserId = null;
-      setState(draft => {
-        draft.progress.shells = 150;
-        return draft;
-      });
-      applyEntitlements([]);
+      restoreGuestEconomy();
       emit({ walletRevision: 0, reversalDebt: 0, adRemaining: 0, error: '' });
     }
   });
